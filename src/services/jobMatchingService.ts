@@ -44,7 +44,7 @@ export const jobMatchingService = {
 
     // 4. Evidence Verification Bonus
     // Verified evidence across required skills grants up to +8 bonus points
-    const verifiedEvidenceCount = evidences.filter(e => e.verified && required.some(r => r.toLowerCase() === e.skillName.toLowerCase())).length;
+    const verifiedEvidenceCount = evidences.filter(e => (e.verified ?? (e.confidence >= 0.8)) && required.some(r => r.toLowerCase() === (e.skillName || e.skill || '').toLowerCase())).length;
     const evidenceBonus = Math.min(8, verifiedEvidenceCount * 2);
 
     // Weighted composite: Skills (65%), Experience/Projects (20%), Education/Academics (15%) + Evidence Bonus

@@ -1,6 +1,6 @@
 {
-  "name": "CareerAI",
-  "description": "AI-powered career readiness and capability intelligence platform connecting students, skills, evidence, learning, and job opportunities.",
+  "name": "Nexminds",
+  "description": "Nexminds is a career readiness and capability intelligence platform connecting students, skills, evidence, learning, and job opportunities.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

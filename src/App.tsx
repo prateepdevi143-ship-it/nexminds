@@ -23,6 +23,7 @@ import { RoleSelectionScreen } from './components/RoleSelectionScreen';
 import { StudentOnboarding } from './components/StudentOnboarding';
 import { CompanyOnboarding } from './components/CompanyOnboarding';
 import { Navbar } from './components/Navbar';
+import { Sidebar } from './components/Sidebar';
 import { StudentDashboard } from './components/StudentDashboard';
 import { ResumeIntelligence } from './components/ResumeIntelligence';
 import { SkillsEvidenceGraph } from './components/SkillsEvidenceGraph';
@@ -37,6 +38,13 @@ import { CompanyPortal } from './components/CompanyPortal';
 import { AdminPortal } from './components/AdminPortal';
 import { Student, SkillEvidence, CareerGoal, Job, Application, Notification, User, UserRole } from './types';
 import { api } from './services/api';
+import {
+  subscribeToRealtimeJobs,
+  subscribeToRealtimeApplications,
+  subscribeToRealtimeNotifications,
+  subscribeToRealtimeEvidences,
+  initializeFirestoreDatabase
+} from './services/firestoreService';
 
 export default function App() {
   const {
@@ -54,12 +62,14 @@ export default function App() {
   const [activeRole, setActiveRole] = useState<'student' | 'company' | 'admin'>('student');
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [student, setStudent] = useState<Student | null>(null);
+  const [allStudents, setAllStudents] = useState<Student[]>([]);
   const [evidences, setEvidences] = useState<SkillEvidence[]>([]);
   const [targetCareer, setTargetCareer] = useState<CareerGoal | null>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [assessmentTargetSkill, setAssessmentTargetSkill] = useState<string | undefined>(undefined);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // Sync activeRole with authRole when user logs in or role changes
@@ -73,44 +83,116 @@ export default function App() {
     }
   }, [authRole]);
 
-  // Load data whenever firebase user changes or user completes onboarding
+  // Load data whenever user changes or user completes onboarding
   useEffect(() => {
-    if (firebaseUser && !needsRoleSelection && !needsOnboarding) {
+    if ((firebaseUser || authUser) && !needsRoleSelection && !needsOnboarding) {
       loadAllData();
-    } else if (!firebaseUser && !authLoading) {
+    } else if (!firebaseUser && !authUser && !authLoading) {
       setLoading(false);
     }
-  }, [firebaseUser, needsRoleSelection, needsOnboarding, authLoading]);
+  }, [firebaseUser, authUser, needsRoleSelection, needsOnboarding, authLoading]);
 
-  const loadAllData = async () => {
+  const loadAllData = async (targetStudentId?: string) => {
     setLoading(true);
     try {
-      const [
-        profileData,
-        jobsData,
-        applicationsData,
-        notificationsData
-      ] = await Promise.all([
-        api.getStudentProfile(),
+      const activeStudentId = targetStudentId || localStorage.getItem('careerai_student_id') || undefined;
+      const results = await Promise.allSettled([
+        api.getStudentProfile(activeStudentId),
         api.getJobs(),
         api.getApplications(),
-        api.getNotifications()
+        api.getNotifications(),
+        api.getStudents()
       ]);
 
-      if (profileData && profileData.student) {
-        setStudent(profileData.student);
-        setEvidences(profileData.evidences || []);
-        setTargetCareer(profileData.targetCareer || null);
+      if (results[0].status === 'fulfilled' && results[0].value) {
+        const profileData = results[0].value;
+        if (profileData.student) {
+          setStudent(profileData.student);
+          setEvidences(profileData.evidences || []);
+          setTargetCareer(profileData.targetCareer || null);
+        }
       }
-      setJobs(jobsData || []);
-      setApplications(applicationsData || []);
-      setNotifications(notificationsData || []);
+
+      if (results[1].status === 'fulfilled' && results[1].value) {
+        setJobs(results[1].value || []);
+      }
+
+      if (results[2].status === 'fulfilled' && results[2].value) {
+        setApplications(results[2].value || []);
+      }
+
+      if (results[3].status === 'fulfilled' && results[3].value) {
+        setNotifications(results[3].value || []);
+      }
+
+      if (results[4].status === 'fulfilled' && results[4].value) {
+        setAllStudents(results[4].value || []);
+      }
+
+      // Initialize / sync Firestore NoSQL real-time collections with initial dataset if empty
+      initializeFirestoreDatabase({
+        jobs: results[1].status === 'fulfilled' ? results[1].value : undefined,
+        students: results[4].status === 'fulfilled' && results[4].value?.length ? results[4].value : (results[0].status === 'fulfilled' && results[0].value?.student ? [results[0].value.student] : undefined),
+        applications: results[2].status === 'fulfilled' ? results[2].value : undefined,
+        evidences: results[0].status === 'fulfilled' && results[0].value?.evidences ? results[0].value.evidences : undefined,
+        notifications: results[3].status === 'fulfilled' ? results[3].value : undefined
+      }).catch(err => console.warn('Firestore database initialization note:', err));
     } catch (err) {
-      console.error('Error loading data', err);
+      console.warn('Notice during data synchronization:', err);
     } finally {
       setLoading(false);
     }
   };
+
+  // Real-Time NoSQL Database Subscriptions (Firebase Firestore)
+  useEffect(() => {
+    let unsubJobs: (() => void) | undefined;
+    let unsubApps: (() => void) | undefined;
+    let unsubNotifs: (() => void) | undefined;
+    let unsubEvidences: (() => void) | undefined;
+
+    try {
+      // Real-time synchronization of published jobs
+      unsubJobs = subscribeToRealtimeJobs(realtimeJobs => {
+        if (realtimeJobs && realtimeJobs.length > 0) {
+          setJobs(realtimeJobs);
+        }
+      });
+
+      // Real-time synchronization of candidate application pipeline
+      unsubApps = subscribeToRealtimeApplications(realtimeApps => {
+        if (realtimeApps && realtimeApps.length > 0) {
+          setApplications(realtimeApps);
+        }
+      });
+
+      // Real-time synchronization of verified skill artifacts
+      if (student?.id) {
+        unsubEvidences = subscribeToRealtimeEvidences(student.id, realtimeEvs => {
+          if (realtimeEvs && realtimeEvs.length > 0) {
+            setEvidences(realtimeEvs);
+          }
+        });
+      }
+
+      // Real-time notifications listener
+      const currentUid = firebaseUser?.uid || (authUser?.id || 'usr_student_01');
+      unsubNotifs = subscribeToRealtimeNotifications(currentUid, realtimeNotifs => {
+        if (realtimeNotifs) {
+          setNotifications(realtimeNotifs);
+        }
+      });
+    } catch (e) {
+      console.warn('Real-time database subscription notice:', e);
+    }
+
+    return () => {
+      if (unsubJobs) unsubJobs();
+      if (unsubApps) unsubApps();
+      if (unsubNotifs) unsubNotifs();
+      if (unsubEvidences) unsubEvidences();
+    };
+  }, [student?.id, firebaseUser?.uid, authUser?.id]);
 
   const handleRoleSwitch = async (role: 'student' | 'company' | 'admin') => {
     setActiveRole(role);
@@ -122,6 +204,18 @@ export default function App() {
     if (role === 'student') setActiveTab('dashboard');
     else if (role === 'company') setActiveTab('company-dashboard');
     else if (role === 'admin') setActiveTab('admin-portal');
+  };
+
+  const handleSwitchStudent = async (studentId: string) => {
+    try {
+      setLoading(true);
+      await api.switchStudent(studentId);
+      await loadAllData(studentId);
+    } catch (e) {
+      console.error('Failed to switch student', e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleApplyJob = async (jobId: string) => {
@@ -156,13 +250,13 @@ export default function App() {
           <Sparkles className="w-5 h-5" />
         </div>
         <p className="text-sm font-semibold text-slate-800">Checking credentials...</p>
-        <p className="text-xs text-slate-500 mt-1">Authenticating with CareerAI platform</p>
+        <p className="text-xs text-slate-500 mt-1">Authenticating with Nexminds platform</p>
       </div>
     );
   }
 
   // Not signed in -> Show Auth Modal
-  if (!firebaseUser) {
+  if (!firebaseUser && !authUser) {
     return <AuthModal />;
   }
 
@@ -179,13 +273,19 @@ export default function App() {
     return <StudentOnboarding />;
   }
 
-  const currentUser: User = authUser || {
+  const currentUser: User = authUser || (firebaseUser ? {
     id: firebaseUser.uid,
-    email: firebaseUser.email || 'user@careerai.dev',
-    name: firebaseUser.displayName || 'CareerAI Member',
+    email: firebaseUser.email || 'user@nexminds.dev',
+    name: firebaseUser.displayName || 'Nexminds Member',
     role: activeRole,
     createdAt: new Date().toISOString()
-  };
+  } : {
+    id: 'usr_student_01',
+    email: 'student01@nexminds.demo',
+    name: 'Nexminds Student',
+    role: activeRole,
+    createdAt: new Date().toISOString()
+  });
 
   interface TabItem {
     id: string;
@@ -236,11 +336,12 @@ export default function App() {
   }
 
   // Active student fallback if student object is still resolving
+  const fallbackUserId = firebaseUser?.uid || currentUser?.id || 'usr_student_01';
   const currentStudent: Student = student || {
-    id: `std_${firebaseUser.uid.substring(0, 10)}`,
-    userId: firebaseUser.uid,
-    name: firebaseUser.displayName || 'CareerAI Student',
-    email: firebaseUser.email || 'student@careerai.dev',
+    id: `std_${fallbackUserId.substring(0, 10)}`,
+    userId: fallbackUserId,
+    name: firebaseUser?.displayName || currentUser?.name || 'Nexminds Student',
+    email: firebaseUser?.email || currentUser?.email || 'student@nexminds.dev',
     college: authStudentProfile?.college || 'University Partner',
     degree: authStudentProfile?.degree || 'Bachelor of Science',
     graduationYear: authStudentProfile?.graduationYear || 2026,
@@ -270,55 +371,37 @@ export default function App() {
         user={currentUser}
         activeRole={activeRole}
         onSwitchRole={handleRoleSwitch}
+        students={allStudents}
+        currentStudent={currentStudent}
+        onSwitchStudent={handleSwitchStudent}
         notifications={notifications}
         onMarkNotificationRead={handleMarkNotificationRead}
         onResetSeed={handleResetSeed}
         activeTab={activeTab}
         onSelectTab={setActiveTab}
         onSignOut={signOut}
+        onToggleMobileSidebar={() => setMobileSidebarOpen(prev => !prev)}
       />
 
-      {/* Role Subnav / Tab Bar */}
-      <div className="border-b border-slate-200 bg-white sticky top-16 z-30 shadow-xs overflow-x-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <nav className="flex space-x-1 py-2">
-            {currentTabs.map(tab => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  id={`subnav-${tab.id}`}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
-                    isActive
-                      ? 'bg-slate-900 text-white font-semibold shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                  }`}
-                >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-indigo-300' : 'text-slate-400'}`} />
-                  <span>{tab.label}</span>
-                  {tab.badge !== undefined && (
-                    <span
-                      className={`px-1.5 py-0.2 rounded-full text-[10px] font-semibold ${
-                        isActive
-                          ? 'bg-white/20 text-white'
-                          : 'bg-slate-200 text-slate-700'
-                      }`}
-                    >
-                      {tab.badge}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </nav>
-        </div>
-      </div>
+      {/* Main Workspace: Features Arranged Vertically on Left Side */}
+      <div className="flex-1 flex w-full">
+        <Sidebar
+          activeTab={activeTab}
+          onSelectTab={setActiveTab}
+          activeRole={activeRole}
+          student={currentStudent}
+          targetCareer={currentCareerGoal}
+          currentUser={currentUser}
+          jobsCount={jobs.length}
+          evidencesCount={evidences.length}
+          applicationsCount={applications.length}
+          isOpenMobile={mobileSidebarOpen}
+          onCloseMobile={() => setMobileSidebarOpen(false)}
+        />
 
-      {/* Main View Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <AnimatePresence mode="wait">
+        {/* Main View Area */}
+        <main className="flex-1 min-w-0 px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl mx-auto w-full">
+          <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
             initial={{ opacity: 0, y: 6 }}
@@ -331,6 +414,8 @@ export default function App() {
                 {activeTab === 'dashboard' && (
                   <StudentDashboard
                     student={currentStudent}
+                    allStudents={allStudents}
+                    onSwitchStudent={handleSwitchStudent}
                     evidences={evidences}
                     targetCareer={currentCareerGoal}
                     jobs={jobs}
@@ -427,11 +512,12 @@ export default function App() {
           </motion.div>
         </AnimatePresence>
       </main>
+      </div>
 
       {/* Footer */}
       <footer className="border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <p>© 2026 CareerAI. All rights reserved. Skills-based talent matching platform.</p>
+          <p>© 2026 Nexminds. All rights reserved. Capability intelligence & career readiness platform.</p>
           <div className="flex items-center gap-4 text-[11px] text-slate-500">
             <span>Verified Skills Evaluation</span>
             <span>•</span>

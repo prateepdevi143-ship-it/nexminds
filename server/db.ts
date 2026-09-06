@@ -1,10 +1,12 @@
 import fs from 'fs';
 import path from 'path';
-import { User, Student, Company, Job, Application, SkillEvidence, CanonicalSkill, CareerGoal, Course, Assessment, Notification } from '../src/types';
+import { User, Student, Company, Job, Application, SkillEvidence, CanonicalSkill, CareerGoal, Course, Assessment, Notification, MandatoryAssessmentAttempt, RecruiterFeedback } from '../src/types';
 import { DEMO_USERS, DEMO_STUDENTS, DEMO_COMPANIES, DEMO_JOBS, DEMO_EVIDENCES, CAREER_GOALS, ADMIN_INDUSTRIES_SEED, AdminIndustryData } from './data/demoAccountsData';
 import { DEMO_APPLICATIONS } from './data/applicationsData';
 import { COMPREHENSIVE_COURSES } from './data/coursesData';
 import { SKILL_ASSESSMENTS_SEED } from './data/questionsData';
+import { DEMO_NOTIFICATIONS } from './data/notificationsData';
+import { DEMO_RECRUITER_FEEDBACKS } from './data/recruiterFeedbacksData';
 
 export interface DatabaseSchema {
   users: User[];
@@ -19,6 +21,8 @@ export interface DatabaseSchema {
   assessments: Assessment[];
   notifications: Notification[];
   industries: AdminIndustryData[];
+  assessmentAttempts: MandatoryAssessmentAttempt[];
+  recruiterFeedbacks: RecruiterFeedback[];
 }
 
 const DB_DIR = path.join(process.cwd(), 'data');
@@ -103,8 +107,10 @@ export const INITIAL_SEED: DatabaseSchema = {
   careers: CAREER_GOALS,
   courses: COMPREHENSIVE_COURSES,
   assessments: SKILL_ASSESSMENTS_SEED as any,
-  notifications: INITIAL_NOTIFICATIONS,
-  industries: ADMIN_INDUSTRIES_SEED
+  notifications: DEMO_NOTIFICATIONS,
+  industries: ADMIN_INDUSTRIES_SEED,
+  assessmentAttempts: [],
+  recruiterFeedbacks: DEMO_RECRUITER_FEEDBACKS as any
 };
 
 class DatabaseStore {
@@ -122,8 +128,8 @@ class DatabaseStore {
       if (fs.existsSync(DB_PATH)) {
         const raw = fs.readFileSync(DB_PATH, 'utf-8');
         const parsed = JSON.parse(raw);
-        // Verify database is populated with the updated Tamil Nadu 15-student seed
-        if (parsed.users && parsed.users.some((u: any) => u.id === 'usr_student_01')) {
+        // Verify database is populated with the updated seed (check for student 10)
+        if (parsed.users && parsed.users.some((u: any) => u.id === 'usr_student_10') && parsed.applications && parsed.applications.length >= 18) {
           return {
             users: parsed.users || INITIAL_SEED.users,
             students: parsed.students || INITIAL_SEED.students,
@@ -136,7 +142,9 @@ class DatabaseStore {
             courses: parsed.courses || INITIAL_SEED.courses,
             assessments: parsed.assessments || INITIAL_SEED.assessments,
             notifications: parsed.notifications || INITIAL_SEED.notifications,
-            industries: parsed.industries || INITIAL_SEED.industries
+            industries: parsed.industries || INITIAL_SEED.industries,
+            assessmentAttempts: parsed.assessmentAttempts || [],
+            recruiterFeedbacks: parsed.recruiterFeedbacks || INITIAL_SEED.recruiterFeedbacks
           };
         }
       }

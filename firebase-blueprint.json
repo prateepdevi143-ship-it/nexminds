@@ -1,67 +1,149 @@
 {
-  "version": "1.0.0",
   "entities": {
-    "users": {
-      "path": "/users/{userId}",
-      "fields": {
-        "email": "string",
-        "name": "string",
-        "role": "'student' | 'company' | 'admin'",
-        "createdAt": "timestamp"
-      }
+    "User": {
+      "title": "User",
+      "description": "User profile and role metadata",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "email": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string", "enum": ["student", "company", "admin"] },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "email", "name", "role"]
     },
-    "students": {
-      "path": "/students/{studentId}",
-      "fields": {
-        "userId": "string",
-        "name": "string",
-        "email": "string",
-        "college": "string",
-        "degree": "string",
-        "graduationYear": "number",
-        "cgpa": "number",
-        "careerGoal": "string",
-        "careerReadinessScore": "number",
-        "profileCompletion": "number",
-        "skills": "array<StudentSkill>",
-        "projects": "array<Project>",
-        "education": "array<Education>",
-        "experience": "array<Experience>"
-      }
+    "Student": {
+      "title": "Student",
+      "description": "Student capability profile, readiness index, and verified skills",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "college": { "type": "string" },
+        "degree": { "type": "string" },
+        "graduationYear": { "type": "number" },
+        "cgpa": { "type": "number" },
+        "careerGoal": { "type": "string" },
+        "careerReadinessScore": { "type": "number" },
+        "profileCompletion": { "type": "number" },
+        "skills": { "type": "array" },
+        "projects": { "type": "array" },
+        "education": { "type": "array" },
+        "experience": { "type": "array" }
+      },
+      "required": ["id", "userId", "name", "email"]
     },
-    "companies": {
-      "path": "/companies/{companyId}",
-      "fields": {
-        "userId": "string",
-        "name": "string",
-        "industry": "string",
-        "location": "string",
-        "verified": "boolean"
-      }
+    "Company": {
+      "title": "Company",
+      "description": "Recruiting employer profile and hiring details",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "industry": { "type": "string" },
+        "location": { "type": "string" },
+        "verified": { "type": "boolean" }
+      },
+      "required": ["id", "userId", "name"]
     },
-    "jobs": {
-      "path": "/jobs/{jobId}",
-      "fields": {
-        "companyId": "string",
-        "companyName": "string",
-        "title": "string",
-        "requiredSkills": "array<string>",
-        "preferredSkills": "array<string>",
-        "status": "'published' | 'draft' | 'closed'",
-        "applicantCount": "number"
-      }
+    "Job": {
+      "title": "Job",
+      "description": "Job or internship posting with skill requirements",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "companyId": { "type": "string" },
+        "companyName": { "type": "string" },
+        "title": { "type": "string" },
+        "requiredSkills": { "type": "array" },
+        "preferredSkills": { "type": "array" },
+        "status": { "type": "string", "enum": ["published", "draft", "closed"] },
+        "applicantCount": { "type": "number" }
+      },
+      "required": ["id", "companyId", "title", "status"]
     },
-    "applications": {
-      "path": "/applications/{applicationId}",
-      "fields": {
-        "studentId": "string",
-        "studentName": "string",
-        "jobId": "string",
-        "companyId": "string",
-        "status": "'applied' | 'under_review' | 'shortlisted' | 'interview' | 'selected' | 'rejected'",
-        "candidateScore": "number",
-        "timeline": "array<TimelineEvent>"
-      }
+    "Application": {
+      "title": "Application",
+      "description": "Real-time job application pipeline and recruiter evaluation",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "studentName": { "type": "string" },
+        "jobId": { "type": "string" },
+        "companyId": { "type": "string" },
+        "status": {
+          "type": "string",
+          "enum": ["applied", "under_review", "shortlisted", "interview", "selected", "rejected", "withdrawn"]
+        },
+        "candidateScore": { "type": "number" },
+        "timeline": { "type": "array" }
+      },
+      "required": ["id", "studentId", "jobId", "companyId", "status"]
+    },
+    "SkillEvidence": {
+      "title": "SkillEvidence",
+      "description": "Verified proof artifact for student competency",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "skillName": { "type": "string" },
+        "type": { "type": "string", "enum": ["github", "project", "certification", "assessment", "work_experience"] },
+        "title": { "type": "string" },
+        "verificationScore": { "type": "number" },
+        "verified": { "type": "boolean" }
+      },
+      "required": ["id", "studentId", "skillName", "title"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "Real-time system and application alert",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "type": { "type": "string" },
+        "read": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "title", "message", "read"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Private user account documents"
+    },
+    "/students/{studentId}": {
+      "schema": { "$ref": "#/entities/Student" },
+      "description": "Student capability profiles and readiness scores"
+    },
+    "/companies/{companyId}": {
+      "schema": { "$ref": "#/entities/Company" },
+      "description": "Employer and recruiter company profiles"
+    },
+    "/jobs/{jobId}": {
+      "schema": { "$ref": "#/entities/Job" },
+      "description": "Active job listings and skill requirements"
+    },
+    "/applications/{applicationId}": {
+      "schema": { "$ref": "#/entities/Application" },
+      "description": "Real-time application pipeline and status updates"
+    },
+    "/evidence/{evidenceId}": {
+      "schema": { "$ref": "#/entities/SkillEvidence" },
+      "description": "Verified skill proof artifacts"
+    },
+    "/notifications/{notificationId}": {
+      "schema": { "$ref": "#/entities/Notification" },
+      "description": "Real-time user notification events"
     }
   }
 }

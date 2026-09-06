@@ -1,344 +1,525 @@
-import { Application } from '../types';
+import { Application } from '../../src/types';
 
-export const DEMO_APPLICATIONS: Application[] = [
-  // Student 1 (Arjun Kumar)
+export const DEMO_APPLICATIONS: (Application & { isDemo?: boolean; demoSeedVersion?: string })[] = [
+  // 1. Scenario 1: Arjun Kumar (Student 01) - Top Candidate (Interview & Shortlisted)
   {
     id: 'app_01',
     jobId: 'job_01',
+    jobTitle: 'Software Engineer (Python & Data Systems)',
+    companyId: 'cmp_01',
+    companyName: 'Nexora Technologies — Demo',
     studentId: 'std_01',
-    status: 'interviewing',
+    studentName: 'Arjun Kumar',
+    studentEmail: 'demo.student01@nextmind.demo',
+    studentCollege: 'Chennai Institute of Technology — Demo Profile',
+    studentDegree: 'B.Tech Artificial Intelligence & Data Science',
+    status: 'interview',
     appliedAt: '2026-01-18T14:30:00.000Z',
     matchScore: 94,
-    notes: 'Exceptional deep learning and PyTorch project evidence with Tamil Whisper model. Scheduled for Technical Round 2.'
+    candidateScore: 94,
+    matchScoreAtApplication: 94,
+    assessmentScore: 92,
+    assessmentPassed: true,
+    evidenceStrength: 95,
+    notes: 'Outstanding technical assessment (92%) in Python & DSA. Scheduled for Technical Round 2 with Principal Architect.',
+    timeline: [
+      { status: 'applied', date: '2026-01-18T14:30:00.000Z', note: 'Application submitted with verified Python & DSA evidence.' },
+      { status: 'under_review', date: '2026-01-20T10:00:00.000Z', note: 'Resume and GitHub repositories verified by technical talent team.' },
+      { status: 'shortlisted', date: '2026-01-24T16:00:00.000Z', note: 'Shortlisted based on 94% algorithm match score.' },
+      { status: 'interview', date: '2026-02-02T11:00:00.000Z', note: 'Technical Round 1 cleared. Advanced to Technical Round 2.' }
+    ],
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
   {
     id: 'app_02',
-    jobId: 'job_02',
+    jobId: 'job_05',
+    jobTitle: 'Machine Learning Engineer',
+    companyId: 'cmp_02',
+    companyName: 'DataForge Analytics — Demo',
     studentId: 'std_01',
-    status: 'accepted',
+    studentName: 'Arjun Kumar',
+    studentEmail: 'demo.student01@nextmind.demo',
+    studentCollege: 'Chennai Institute of Technology — Demo Profile',
+    studentDegree: 'B.Tech Artificial Intelligence & Data Science',
+    status: 'shortlisted',
     appliedAt: '2026-01-22T09:15:00.000Z',
     matchScore: 96,
-    notes: 'Offer letter released. Joining date confirmed for June 2026.'
+    candidateScore: 96,
+    matchScoreAtApplication: 96,
+    assessmentScore: 95,
+    assessmentPassed: true,
+    evidenceStrength: 96,
+    notes: 'Top tier match for ML engineering team. Predictive modeling project and Scikit-learn evidence verified.',
+    timeline: [
+      { status: 'applied', date: '2026-01-22T09:15:00.000Z', note: 'Applied with Scikit-learn and Pandas project portfolio.' },
+      { status: 'shortlisted', date: '2026-01-27T14:20:00.000Z', note: 'HR reviewed candidate ranking #1 out of 6 applicants.' }
+    ],
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
   {
     id: 'app_03',
-    jobId: 'job_08',
+    jobId: 'job_07',
+    jobTitle: 'Machine Learning Intern',
+    companyId: 'cmp_02',
+    companyName: 'DataForge Analytics — Demo',
     studentId: 'std_01',
-    status: 'reviewing',
-    appliedAt: '2026-01-26T11:20:00.000Z',
-    matchScore: 82,
-    notes: 'Resume under review by the Advanced Analytics hiring manager.'
+    studentName: 'Arjun Kumar',
+    studentEmail: 'demo.student01@nextmind.demo',
+    studentCollege: 'Chennai Institute of Technology — Demo Profile',
+    studentDegree: 'B.Tech Artificial Intelligence & Data Science',
+    status: 'selected',
+    appliedAt: '2026-01-16T16:00:00.000Z',
+    matchScore: 98,
+    candidateScore: 98,
+    matchScoreAtApplication: 98,
+    assessmentScore: 96,
+    assessmentPassed: true,
+    evidenceStrength: 98,
+    notes: 'Offer letter released! Stipend ₹30,000/month with PPO conversion opportunity.',
+    timeline: [
+      { status: 'applied', date: '2026-01-16T16:00:00.000Z', note: 'Applied for Summer 2026 ML Internship.' },
+      { status: 'under_review', date: '2026-01-19T11:00:00.000Z', note: 'Portfolio review completed.' },
+      { status: 'interview', date: '2026-01-25T15:00:00.000Z', note: 'Interview with Lead Data Scientist completed.' },
+      { status: 'selected', date: '2026-02-05T10:00:00.000Z', note: 'Formal offer extended.' }
+    ],
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
 
-  // Student 2 (Kavin Raj)
+  // 2. Scenario 3: Rejection with Constructive Feedback & Career GPS (Student 02 - Kavin Raj)
   {
     id: 'app_04',
-    jobId: 'job_04',
+    jobId: 'job_01',
+    jobTitle: 'Software Engineer (Python & Data Systems)',
+    companyId: 'cmp_01',
+    companyName: 'Nexora Technologies — Demo',
     studentId: 'std_02',
-    status: 'interviewing',
-    appliedAt: '2026-01-14T16:00:00.000Z',
-    matchScore: 92,
-    notes: 'Live coding assessment completed with 95% score on React & TypeScript. System design interview scheduled.'
+    studentName: 'Kavin Raj',
+    studentEmail: 'demo.student02@nextmind.demo',
+    studentCollege: 'Coimbatore Institute of Engineering — Demo Profile',
+    studentDegree: 'B.E. Computer Science and Engineering',
+    status: 'rejected',
+    appliedAt: '2026-01-20T11:00:00.000Z',
+    matchScore: 78,
+    candidateScore: 78,
+    matchScoreAtApplication: 78,
+    assessmentScore: 72,
+    assessmentPassed: true,
+    evidenceStrength: 80,
+    rejectionReason: 'Insufficient REST API production experience',
+    studentFeedback: 'Strong core Java and algorithm fundamentals demonstrated in your submission. For this specific backend systems role, our team requires proven production experience designing REST API contracts, API rate-limiting, and OpenAPI schemas. We encourage you to complete practical REST API projects and re-apply in 90 days.',
+    internalHRNotes: 'Candidate demonstrated 94% DSA skills on LeetCode, but struggled with RESTful architectural trade-offs in Section 3. Recommended for re-evaluation once candidate submits REST API proof.',
+    skillGapsIdentified: ['REST API'],
+    feedbackAt: '2026-02-04T15:30:00.000Z',
+    timeline: [
+      { status: 'applied', date: '2026-01-20T11:00:00.000Z', note: 'Applied for Software Engineer role.' },
+      { status: 'under_review', date: '2026-01-23T14:00:00.000Z', note: 'Initial profile screening.' },
+      { status: 'rejected', date: '2026-02-04T15:30:00.000Z', note: 'Decision recorded: Insufficient REST API production experience.' }
+    ],
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
+
+  // Student 02 (Kavin Raj) Strong Match: Java Backend Developer (Interview Stage)
   {
     id: 'app_05',
-    jobId: 'job_05',
+    jobId: 'job_04',
+    jobTitle: 'Java Backend Developer',
+    companyId: 'cmp_01',
+    companyName: 'Nexora Technologies — Demo',
     studentId: 'std_02',
-    status: 'shortlisted',
-    appliedAt: '2026-01-19T10:45:00.000Z',
-    matchScore: 90,
-    notes: 'Selected for initial hiring manager conversation.'
+    studentName: 'Kavin Raj',
+    studentEmail: 'demo.student02@nextmind.demo',
+    studentCollege: 'Coimbatore Institute of Engineering — Demo Profile',
+    studentDegree: 'B.E. Computer Science and Engineering',
+    status: 'interview',
+    appliedAt: '2026-01-22T14:00:00.000Z',
+    matchScore: 94,
+    candidateScore: 94,
+    matchScoreAtApplication: 94,
+    assessmentScore: 94,
+    assessmentPassed: true,
+    evidenceStrength: 95,
+    notes: 'Exceptional banking microservices project and 320 LeetCode solved problems. System design interview scheduled.',
+    timeline: [
+      { status: 'applied', date: '2026-01-22T14:00:00.000Z', note: 'Applied with Spring Boot and Java evidence.' },
+      { status: 'shortlisted', date: '2026-01-26T11:30:00.000Z', note: 'Shortlisted for technical interviews.' },
+      { status: 'interview', date: '2026-02-03T16:00:00.000Z', note: 'System design round scheduled with Senior Engineering Lead.' }
+    ],
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
+
+  // Student 03 (Priya Dharshini) - Full Stack Developer (Interview & Selected)
   {
     id: 'app_06',
-    jobId: 'job_06',
-    studentId: 'std_02',
-    status: 'applied',
-    appliedAt: '2026-01-24T18:10:00.000Z',
-    matchScore: 84
+    jobId: 'job_15',
+    jobTitle: 'Full Stack Developer',
+    companyId: 'cmp_05',
+    companyName: 'AppNova Digital — Demo',
+    studentId: 'std_03',
+    studentName: 'Priya Dharshini',
+    studentEmail: 'demo.student03@nextmind.demo',
+    studentCollege: 'Tamil Nadu Institute of Technology — Demo Profile',
+    studentDegree: 'B.Tech Information Technology',
+    status: 'interview',
+    appliedAt: '2026-01-14T10:15:00.000Z',
+    matchScore: 95,
+    candidateScore: 95,
+    matchScoreAtApplication: 95,
+    assessmentScore: 94,
+    assessmentPassed: true,
+    evidenceStrength: 96,
+    notes: 'Full stack recruitment portal project is exemplary. Live coding completed with 100% test pass rate.',
+    timeline: [
+      { status: 'applied', date: '2026-01-14T10:15:00.000Z', note: 'Applied with MERN stack portfolio.' },
+      { status: 'under_review', date: '2026-01-17T09:00:00.000Z', note: 'Code portfolio reviewed.' },
+      { status: 'interview', date: '2026-01-28T14:00:00.000Z', note: 'Technical interview Round 2 scheduled.' }
+    ],
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
-
-  // Student 3 (Sanjay Kumar)
   {
     id: 'app_07',
-    jobId: 'job_08',
+    jobId: 'job_17',
+    jobTitle: 'Full Stack Development Intern',
+    companyId: 'cmp_05',
+    companyName: 'AppNova Digital — Demo',
     studentId: 'std_03',
-    status: 'shortlisted',
-    appliedAt: '2026-01-21T13:30:00.000Z',
-    matchScore: 91,
-    notes: 'Strong alignment with retail demand forecasting domain. Take-home data challenge sent.'
-  },
-  {
-    id: 'app_08',
-    jobId: 'job_07',
-    studentId: 'std_03',
-    status: 'reviewing',
-    appliedAt: '2026-01-25T11:00:00.000Z',
-    matchScore: 86
-  },
-  {
-    id: 'app_09',
-    jobId: 'job_03',
-    studentId: 'std_03',
-    status: 'interviewing',
-    appliedAt: '2026-01-27T15:45:00.000Z',
-    matchScore: 88,
-    notes: 'Passed initial screening. Screening call with Lead Data Scientist scheduled.'
+    studentName: 'Priya Dharshini',
+    studentEmail: 'demo.student03@nextmind.demo',
+    studentCollege: 'Tamil Nadu Institute of Technology — Demo Profile',
+    studentDegree: 'B.Tech Information Technology',
+    status: 'selected',
+    appliedAt: '2026-01-19T11:00:00.000Z',
+    matchScore: 97,
+    candidateScore: 97,
+    matchScoreAtApplication: 97,
+    assessmentScore: 96,
+    assessmentPassed: true,
+    evidenceStrength: 98,
+    notes: 'Internship offer extended. Candidate has accepted joining starting June 2026.',
+    timeline: [
+      { status: 'applied', date: '2026-01-19T11:00:00.000Z', note: 'Applied for Summer Internship.' },
+      { status: 'shortlisted', date: '2026-01-23T15:00:00.000Z', note: 'Shortlisted.' },
+      { status: 'selected', date: '2026-02-06T12:00:00.000Z', note: 'Offer accepted.' }
+    ],
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
 
-  // Student 4 (Vignesh S)
+  // 3. Scenario 2: Weak Candidate / Failed Assessment / Gaps (Student 04 - Vignesh Sundaram)
+  {
+    id: 'app_08',
+    jobId: 'job_02',
+    jobTitle: 'Systems Software Engineer (C++)',
+    companyId: 'cmp_01',
+    companyName: 'Nexora Technologies — Demo',
+    studentId: 'std_04',
+    studentName: 'Vignesh Sundaram',
+    studentEmail: 'demo.student04@nextmind.demo',
+    studentCollege: 'Madurai Institute of Engineering & Technology — Demo Profile',
+    studentDegree: 'B.Tech Data Science',
+    status: 'rejected',
+    appliedAt: '2026-01-24T16:30:00.000Z',
+    matchScore: 48,
+    candidateScore: 48,
+    matchScoreAtApplication: 48,
+    assessmentScore: 42,
+    assessmentPassed: false,
+    evidenceStrength: 50,
+    rejectionReason: 'Mandatory C++ & Systems Assessment Below Required 70% Cutoff',
+    studentFeedback: 'Thank you for your application. This position requires deep hands-on expertise in C++20 concurrency, low-level memory allocators, and Linux system calls. Your assessment score of 42% was below the required 70% threshold. We recommend focusing on C++ systems courses and retaking the assessment.',
+    internalHRNotes: 'Candidate background is focused in Data Analytics / Power BI. Not aligned with low-level systems C++ requirements.',
+    skillGapsIdentified: ['C++', 'DSA', 'Linux'],
+    feedbackAt: '2026-01-28T10:00:00.000Z',
+    timeline: [
+      { status: 'applied', date: '2026-01-24T16:30:00.000Z', note: 'Applied for C++ Systems role.' },
+      { status: 'rejected', date: '2026-01-28T10:00:00.000Z', note: 'Assessment score (42%) below minimum 70% requirement.' }
+    ],
+    isDemo: true,
+    demoSeedVersion: 'v1'
+  },
+
+  // Student 04 (Vignesh Sundaram) Strong Match: Data Analyst at DataForge (Under Review)
+  {
+    id: 'app_09',
+    jobId: 'job_06',
+    jobTitle: 'Data Analyst',
+    companyId: 'cmp_02',
+    companyName: 'DataForge Analytics — Demo',
+    studentId: 'std_04',
+    studentName: 'Vignesh Sundaram',
+    studentEmail: 'demo.student04@nextmind.demo',
+    studentCollege: 'Madurai Institute of Engineering & Technology — Demo Profile',
+    studentDegree: 'B.Tech Data Science',
+    status: 'shortlisted',
+    appliedAt: '2026-01-21T13:30:00.000Z',
+    matchScore: 92,
+    candidateScore: 92,
+    matchScoreAtApplication: 92,
+    assessmentScore: 88,
+    assessmentPassed: true,
+    evidenceStrength: 91,
+    notes: 'Power BI portfolio and healthcare analytics dashboard are directly aligned with our client needs.',
+    timeline: [
+      { status: 'applied', date: '2026-01-21T13:30:00.000Z', note: 'Applied with Power BI project.' },
+      { status: 'shortlisted', date: '2026-01-27T16:00:00.000Z', note: 'Shortlisted for team screening.' }
+    ],
+    isDemo: true,
+    demoSeedVersion: 'v1'
+  },
+
+  // Student 05 (Dharshan Pandian) - Cybersecurity Analyst (Interview Stage)
   {
     id: 'app_10',
-    jobId: 'job_06',
-    studentId: 'std_04',
-    status: 'interviewing',
+    jobId: 'job_12',
+    jobTitle: 'Cybersecurity Analyst',
+    companyId: 'cmp_04',
+    companyName: 'SecureStack Labs — Demo',
+    studentId: 'std_05',
+    studentName: 'Dharshan Pandian',
+    studentEmail: 'demo.student05@nextmind.demo',
+    studentCollege: 'South Tamil Nadu Engineering College — Demo Profile',
+    studentDegree: 'B.E. Computer Science (Cybersecurity Specialization)',
+    status: 'interview',
     appliedAt: '2026-01-23T09:00:00.000Z',
-    matchScore: 89,
-    notes: 'Impressive backend order processing pipeline demonstration. Round 1 technical completed.'
+    matchScore: 91,
+    candidateScore: 91,
+    matchScoreAtApplication: 91,
+    assessmentScore: 90,
+    assessmentPassed: true,
+    evidenceStrength: 92,
+    notes: 'CompTIA Security+ verified credential and SSH honeypot project demonstrated strong threat analysis fundamentals.',
+    timeline: [
+      { status: 'applied', date: '2026-01-23T09:00:00.000Z', note: 'Applied with Security+ certification.' },
+      { status: 'under_review', date: '2026-01-26T11:00:00.000Z', note: 'SOC Lead reviewed honeypot logs.' },
+      { status: 'interview', date: '2026-02-04T14:00:00.000Z', note: 'SOC scenario live interview scheduled.' }
+    ],
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
   {
     id: 'app_11',
-    jobId: 'job_12',
-    studentId: 'std_04',
-    status: 'shortlisted',
-    appliedAt: '2026-01-28T14:15:00.000Z',
-    matchScore: 85
+    jobId: 'job_13',
+    jobTitle: 'SOC Security Intern',
+    companyId: 'cmp_04',
+    companyName: 'SecureStack Labs — Demo',
+    studentId: 'std_05',
+    studentName: 'Dharshan Pandian',
+    studentEmail: 'demo.student05@nextmind.demo',
+    studentCollege: 'South Tamil Nadu Engineering College — Demo Profile',
+    studentDegree: 'B.E. Computer Science (Cybersecurity Specialization)',
+    status: 'under_review',
+    appliedAt: '2026-01-25T14:30:00.000Z',
+    matchScore: 93,
+    candidateScore: 93,
+    matchScoreAtApplication: 93,
+    assessmentScore: 88,
+    assessmentPassed: true,
+    evidenceStrength: 92,
+    notes: 'SOC team reviewing candidate availability for Chennai on-site shift rotations.',
+    timeline: [
+      { status: 'applied', date: '2026-01-25T14:30:00.000Z', note: 'Applied for SOC Internship.' },
+      { status: 'under_review', date: '2026-01-29T10:00:00.000Z', note: 'Shift scheduling review underway.' }
+    ],
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
 
-  // Student 5 (Dharshan P)
+  // Student 06 (Sneha Ramachandran) - Android Mobile Developer (Under Review)
   {
     id: 'app_12',
-    jobId: 'job_13',
-    studentId: 'std_05',
-    status: 'interviewing',
-    appliedAt: '2026-01-16T12:00:00.000Z',
-    matchScore: 95,
-    notes: 'Top candidate in SOC packet triage and OWASP Top 10 remediation. VP Security interview next.'
-  },
-  {
-    id: 'app_13',
-    jobId: 'job_14',
-    studentId: 'std_05',
-    status: 'accepted',
-    appliedAt: '2026-01-18T16:30:00.000Z',
-    matchScore: 98,
-    notes: 'Direct internship offer issued with ₹30,000 stipend. Student accepted.'
-  },
-  {
-    id: 'app_14',
-    jobId: 'job_15',
-    studentId: 'std_05',
-    status: 'shortlisted',
-    appliedAt: '2026-01-24T17:00:00.000Z',
-    matchScore: 93
+    jobId: 'job_16',
+    jobTitle: 'Android Mobile Developer',
+    companyId: 'cmp_05',
+    companyName: 'AppNova Digital — Demo',
+    studentId: 'std_06',
+    studentName: 'Sneha Ramachandran',
+    studentEmail: 'demo.student06@nextmind.demo',
+    studentCollege: 'Salem College of Engineering & Technology — Demo Profile',
+    studentDegree: 'B.Tech Information Technology',
+    status: 'under_review',
+    appliedAt: '2026-01-26T10:00:00.000Z',
+    matchScore: 91,
+    candidateScore: 91,
+    matchScoreAtApplication: 91,
+    assessmentScore: 89,
+    assessmentPassed: true,
+    evidenceStrength: 92,
+    notes: 'Telehealth app and transit tracking app verified on GitHub. Mobile lead reviewing UI architecture.',
+    timeline: [
+      { status: 'applied', date: '2026-01-26T10:00:00.000Z', note: 'Applied with Android APK and GitHub source.' },
+      { status: 'under_review', date: '2026-01-30T15:00:00.000Z', note: 'Mobile engineering lead review.' }
+    ],
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
 
-  // Student 6 (Rahul M)
+  // Student 07 (Hari Prasad) - Systems Software Engineer (Interview Stage)
+  {
+    id: 'app_13',
+    jobId: 'job_02',
+    jobTitle: 'Systems Software Engineer (C++)',
+    companyId: 'cmp_01',
+    companyName: 'Nexora Technologies — Demo',
+    studentId: 'std_07',
+    studentName: 'Hari Prasad',
+    studentEmail: 'demo.student07@nextmind.demo',
+    studentCollege: 'Government College of Technology — Demo Profile',
+    studentDegree: 'B.E. Computer Science',
+    status: 'interview',
+    appliedAt: '2026-01-20T15:00:00.000Z',
+    matchScore: 98,
+    candidateScore: 98,
+    matchScoreAtApplication: 98,
+    assessmentScore: 98,
+    assessmentPassed: true,
+    evidenceStrength: 99,
+    notes: 'Phenomenal candidate. 540 solved LeetCode problems (Guardian 2150) and C++ cache engine benchmarked at 1.8M ops/sec. Final interview scheduled.',
+    timeline: [
+      { status: 'applied', date: '2026-01-20T15:00:00.000Z', note: 'Applied with C++ in-memory cache project.' },
+      { status: 'shortlisted', date: '2026-01-22T12:00:00.000Z', note: 'Shortlisted as candidate #1.' },
+      { status: 'interview', date: '2026-02-01T16:00:00.000Z', note: 'Executive interview with VP of Systems Engineering.' }
+    ],
+    isDemo: true,
+    demoSeedVersion: 'v1'
+  },
+
+  // Student 08 (Ananya Subramanian) - NLP Research Associate (Shortlisted)
+  {
+    id: 'app_14',
+    jobId: 'job_08',
+    jobTitle: 'NLP Research Associate',
+    companyId: 'cmp_02',
+    companyName: 'DataForge Analytics — Demo',
+    studentId: 'std_08',
+    studentName: 'Ananya Subramanian',
+    studentEmail: 'demo.student08@nextmind.demo',
+    studentCollege: 'Vellore Technical Institute — Demo Profile',
+    studentDegree: 'B.Tech AI & Data Science',
+    status: 'shortlisted',
+    appliedAt: '2026-01-24T12:00:00.000Z',
+    matchScore: 94,
+    candidateScore: 94,
+    matchScoreAtApplication: 94,
+    assessmentScore: 92,
+    assessmentPassed: true,
+    evidenceStrength: 95,
+    notes: 'IndicBERT fine-tuning research and multilingual Tamil sentiment analysis are directly applicable to our Indic LLM project.',
+    timeline: [
+      { status: 'applied', date: '2026-01-24T12:00:00.000Z', note: 'Applied with IndicBERT research paper draft.' },
+      { status: 'shortlisted', date: '2026-01-29T11:00:00.000Z', note: 'Shortlisted by AI Research VP.' }
+    ],
+    isDemo: true,
+    demoSeedVersion: 'v1'
+  },
+
+  // Student 09 (Pranav Ravichandran) - Cloud & DevOps Engineer (Applied & Under Review)
   {
     id: 'app_15',
-    jobId: 'job_10',
-    studentId: 'std_06',
-    status: 'interviewing',
-    appliedAt: '2026-01-18T10:15:00.000Z',
+    jobId: 'job_09',
+    jobTitle: 'Cloud & DevOps Engineer',
+    companyId: 'cmp_03',
+    companyName: 'CloudAxis Systems — Demo',
+    studentId: 'std_09',
+    studentName: 'Pranav Ravichandran',
+    studentEmail: 'demo.student09@nextmind.demo',
+    studentCollege: 'Erode Sengunthar Engineering College — Demo Profile',
+    studentDegree: 'B.E. Computer Science',
+    status: 'under_review',
+    appliedAt: '2026-01-26T16:00:00.000Z',
     matchScore: 90,
-    notes: 'AWS Certified Solutions Architect verification confirmed. Cloud architecture panel interview scheduled.'
+    candidateScore: 90,
+    matchScoreAtApplication: 90,
+    assessmentScore: 88,
+    assessmentPassed: true,
+    evidenceStrength: 91,
+    notes: 'GitOps pipeline and AWS architecture verification underway.',
+    timeline: [
+      { status: 'applied', date: '2026-01-26T16:00:00.000Z', note: 'Applied for DevOps Engineer.' },
+      { status: 'under_review', date: '2026-01-31T14:00:00.000Z', note: 'Under technical review.' }
+    ],
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
   {
     id: 'app_16',
     jobId: 'job_11',
-    studentId: 'std_06',
+    jobTitle: 'Cloud Operations Intern',
+    companyId: 'cmp_03',
+    companyName: 'CloudAxis Systems — Demo',
+    studentId: 'std_09',
+    studentName: 'Pranav Ravichandran',
+    studentEmail: 'demo.student09@nextmind.demo',
+    studentCollege: 'Erode Sengunthar Engineering College — Demo Profile',
+    studentDegree: 'B.E. Computer Science',
     status: 'applied',
-    appliedAt: '2026-01-23T11:45:00.000Z',
-    matchScore: 82
+    appliedAt: '2026-02-01T09:30:00.000Z',
+    matchScore: 92,
+    candidateScore: 92,
+    matchScoreAtApplication: 92,
+    assessmentScore: 90,
+    assessmentPassed: true,
+    evidenceStrength: 93,
+    timeline: [
+      { status: 'applied', date: '2026-02-01T09:30:00.000Z', note: 'Applied for Cloud Operations Internship.' }
+    ],
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
 
-  // Student 7 (Hari Prasad)
+  // Student 10 (Rahul Manikandan) - Full Stack Developer (Applied & Interview)
   {
     id: 'app_17',
-    jobId: 'job_11',
-    studentId: 'std_07',
-    status: 'accepted',
-    appliedAt: '2026-01-22T14:00:00.000Z',
-    matchScore: 94,
-    notes: 'Hands-on ArgoCD GitOps project highly rated. Offer letter signed.'
+    jobId: 'job_15',
+    jobTitle: 'Full Stack Developer',
+    companyId: 'cmp_05',
+    companyName: 'AppNova Digital — Demo',
+    studentId: 'std_10',
+    studentName: 'Rahul Manikandan',
+    studentEmail: 'demo.student10@nextmind.demo',
+    studentCollege: 'Thanjavur Institute of Technology — Demo Profile',
+    studentDegree: 'B.Tech Computer Science',
+    status: 'applied',
+    appliedAt: '2026-02-02T11:45:00.000Z',
+    matchScore: 91,
+    candidateScore: 91,
+    matchScoreAtApplication: 91,
+    assessmentScore: 89,
+    assessmentPassed: true,
+    evidenceStrength: 91,
+    timeline: [
+      { status: 'applied', date: '2026-02-02T11:45:00.000Z', note: 'Applied with SaaS invoicing project.' }
+    ],
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
   {
     id: 'app_18',
-    jobId: 'job_10',
-    studentId: 'std_07',
-    status: 'reviewing',
-    appliedAt: '2026-01-25T16:20:00.000Z',
-    matchScore: 85
-  },
-
-  // Student 8 (Ajay Kumar)
-  {
-    id: 'app_19',
-    jobId: 'job_05',
-    studentId: 'std_08',
-    status: 'interviewing',
-    appliedAt: '2026-01-20T11:10:00.000Z',
-    matchScore: 94,
-    notes: 'Clean Tailwind CSS code styling and responsive design skills. Portfolio review completed.'
-  },
-  {
-    id: 'app_20',
-    jobId: 'job_04',
-    studentId: 'std_08',
-    status: 'applied',
-    appliedAt: '2026-01-26T15:30:00.000Z',
-    matchScore: 76
-  },
-
-  // Student 9 (Pranav R)
-  {
-    id: 'app_21',
-    jobId: 'job_01',
-    studentId: 'std_09',
-    status: 'shortlisted',
-    appliedAt: '2026-01-17T09:45:00.000Z',
-    matchScore: 89,
-    notes: 'Strong edge video inference background. Shortlisted for technical round.'
-  },
-  {
-    id: 'app_22',
-    jobId: 'job_02',
-    studentId: 'std_09',
-    status: 'interviewing',
-    appliedAt: '2026-01-22T12:00:00.000Z',
-    matchScore: 93,
-    notes: 'Completed live coding round. Final interview scheduled with Lead ML Architect.'
-  },
-
-  // Student 10 (Sathish K)
-  {
-    id: 'app_23',
-    jobId: 'job_07',
-    studentId: 'std_10',
-    status: 'accepted',
-    appliedAt: '2026-01-16T15:00:00.000Z',
-    matchScore: 94,
-    notes: 'Power BI portfolio and DAX proficiency evaluated. Selected for Full-time Data Analyst role.'
-  },
-  {
-    id: 'app_24',
     jobId: 'job_03',
+    jobTitle: 'Python Development Intern',
+    companyId: 'cmp_01',
+    companyName: 'Nexora Technologies — Demo',
     studentId: 'std_10',
-    status: 'reviewing',
-    appliedAt: '2026-01-27T10:30:00.000Z',
-    matchScore: 80
-  },
-
-  // Student 11 (Mohanraj V)
-  {
-    id: 'app_25',
-    jobId: 'job_04',
-    studentId: 'std_11',
+    studentName: 'Rahul Manikandan',
+    studentEmail: 'demo.student10@nextmind.demo',
+    studentCollege: 'Thanjavur Institute of Technology — Demo Profile',
+    studentDegree: 'B.Tech Computer Science',
     status: 'applied',
-    appliedAt: '2026-01-28T16:00:00.000Z',
-    matchScore: 68
-  },
-
-  // Student 12 (Ashwin T)
-  {
-    id: 'app_26',
-    jobId: 'job_02',
-    studentId: 'std_12',
-    status: 'shortlisted',
-    appliedAt: '2026-01-23T14:40:00.000Z',
-    matchScore: 88,
-    notes: 'RAG pipeline project well-aligned with enterprise customer support AI initiative.'
-  },
-  {
-    id: 'app_27',
-    jobId: 'job_09',
-    studentId: 'std_12',
-    status: 'reviewing',
-    appliedAt: '2026-01-27T11:15:00.000Z',
-    matchScore: 87
-  },
-
-  // Student 13 (Gokul S)
-  {
-    id: 'app_28',
-    jobId: 'job_06',
-    studentId: 'std_13',
-    status: 'applied',
-    appliedAt: '2026-01-25T13:00:00.000Z',
-    matchScore: 81
-  },
-  {
-    id: 'app_29',
-    jobId: 'job_12',
-    studentId: 'std_13',
-    status: 'shortlisted',
-    appliedAt: '2026-01-28T15:20:00.000Z',
-    matchScore: 80,
-    notes: 'Strong multithreading and database transactional integrity skills.'
-  },
-
-  // Student 14 (Manoj R)
-  {
-    id: 'app_30',
-    jobId: 'job_05',
-    studentId: 'std_14',
-    status: 'interviewing',
-    appliedAt: '2026-01-20T10:30:00.000Z',
-    matchScore: 89,
-    notes: 'Excellent design systems craft in Figma. Prototype walkthrough scheduled.'
-  },
-
-  // Student 15 (Vijay S)
-  {
-    id: 'app_31',
-    jobId: 'job_10',
-    studentId: 'std_15',
-    status: 'reviewing',
-    appliedAt: '2026-01-22T09:30:00.000Z',
-    matchScore: 86
-  },
-  {
-    id: 'app_32',
-    jobId: 'job_12',
-    studentId: 'std_15',
-    status: 'shortlisted',
-    appliedAt: '2026-01-27T14:10:00.000Z',
-    matchScore: 88,
-    notes: 'Docker containerization and telemetry experience matches platform requirements.'
-  },
-
-  // Additional cross-applications
-  {
-    id: 'app_33',
-    jobId: 'job_09',
-    studentId: 'std_01',
-    status: 'applied',
-    appliedAt: '2026-01-29T16:45:00.000Z',
-    matchScore: 92
-  },
-  {
-    id: 'app_34',
-    jobId: 'job_03',
-    studentId: 'std_09',
-    status: 'applied',
-    appliedAt: '2026-01-29T17:15:00.000Z',
-    matchScore: 90
-  },
-  {
-    id: 'app_35',
-    jobId: 'job_14',
-    studentId: 'std_04',
-    status: 'rejected',
-    appliedAt: '2026-01-20T11:00:00.000Z',
-    matchScore: 62,
-    notes: 'Candidate profile oriented around backend development rather than security operations.'
-  },
-  {
-    id: 'app_36',
-    jobId: 'job_05',
-    studentId: 'std_11',
-    status: 'applied',
-    appliedAt: '2026-01-29T18:00:00.000Z',
-    matchScore: 71
+    appliedAt: '2026-02-03T15:20:00.000Z',
+    matchScore: 82,
+    candidateScore: 82,
+    matchScoreAtApplication: 82,
+    assessmentScore: 80,
+    assessmentPassed: true,
+    evidenceStrength: 82,
+    timeline: [
+      { status: 'applied', date: '2026-02-03T15:20:00.000Z', note: 'Applied for Python intern.' }
+    ],
+    isDemo: true,
+    demoSeedVersion: 'v1'
   }
 ];

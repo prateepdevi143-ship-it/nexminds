@@ -1,4 +1,4 @@
-export type UserRole = 'student' | 'company' | 'admin';
+export type UserRole = 'student' | 'company' | 'admin' | 'industry';
 
 export interface User {
   id: string;
@@ -36,7 +36,8 @@ export interface Education {
 
 export interface Project {
   id: string;
-  name: string;
+  name?: string;
+  title?: string;
   description: string;
   technologies: string[];
   githubUrl?: string;
@@ -58,19 +59,75 @@ export interface Experience {
 export interface Certification {
   id: string;
   name: string;
-  provider: string;
-  issueDate: string;
+  provider?: string;
+  issuer?: string;
+  issueDate?: string;
+  date?: string;
   credentialUrl?: string;
+  verificationUrl?: string;
 }
 
 export interface StudentSkill {
-  skillId: string;
+  id?: string;
+  skillId?: string;
   name: string;
-  level: number; // 0 - 100
+  level?: number; // 0 - 100
   confidence: number; // 0.0 - 1.0
+  verified?: boolean;
   lastDemonstrated: string; // ISO date
   evidenceCount: number;
-  freshness: 'recent' | 'needs_refresh' | 'stale';
+  freshness?: 'recent' | 'needs_refresh' | 'stale';
+}
+
+export interface Hackathon {
+  id: string;
+  name: string;
+  project: string;
+  rank?: string;
+  technologies: string[];
+  date: string;
+  credentialUrl?: string;
+  description?: string;
+}
+
+export interface FreelanceWork {
+  id: string;
+  clientOrProjectType: string;
+  workPerformed: string;
+  technologies: string[];
+  duration: string;
+  resultMetrics?: string;
+  evidenceUrl?: string;
+}
+
+export interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  category: 'Competition' | 'Academic' | 'Open Source' | 'Leadership' | 'Other';
+  date: string;
+  credentialUrl?: string;
+}
+
+export interface ExternalProfiles {
+  githubUsername?: string;
+  leetcodeUsername?: string;
+  linkedinUrl?: string;
+  portfolioUrl?: string;
+  githubData?: {
+    publicRepos: number;
+    topLanguages: Array<{ language: string; count: number; percentage: number }>;
+    totalStars: number;
+    contributionLevel: 'Active' | 'Consistent' | 'High Impact';
+  };
+  leetcodeData?: {
+    totalSolved: number;
+    easySolved: number;
+    mediumSolved: number;
+    hardSolved: number;
+    ranking?: number;
+    contestRating?: number;
+  };
 }
 
 export interface Student {
@@ -88,20 +145,26 @@ export interface Student {
   photoUrl?: string;
   linkedinUrl?: string;
   githubUrl?: string;
+  linkedin?: string;
+  github?: string;
   portfolioUrl?: string;
-  careerGoal: string; // e.g. "AI Engineer"
+  careerGoal?: string; // e.g. "AI Engineer"
   targetCareerId?: string;
-  profileCompletion: number; // 0 - 100
-  careerReadinessScore: number; // 0 - 100
-  skills: StudentSkill[];
-  education: Education[];
-  projects: Project[];
-  experience: Experience[];
-  certifications: Certification[];
+  profileCompletion?: number; // 0 - 100
+  careerReadinessScore?: number; // 0 - 100
+  skills?: StudentSkill[];
+  education?: Education[];
+  projects?: Project[];
+  experience?: Experience[];
+  certifications?: Certification[];
+  hackathons?: Hackathon[];
+  freelanceWork?: FreelanceWork[];
+  achievements?: Achievement[];
+  externalProfiles?: ExternalProfiles;
   resumeUrl?: string;
   resumeFileName?: string;
   resumeScore?: number;
-  updatedAt: string;
+  updatedAt?: string;
 }
 
 export interface Company {
@@ -112,34 +175,53 @@ export interface Company {
   industry: string;
   location: string;
   website: string;
-  size: string;
+  size?: string;
+  employeeCount?: number | string;
   description: string;
+  logo?: string;
   logoUrl?: string;
   verified: boolean;
-  createdAt: string;
+  createdAt?: string;
 }
 
 export interface Job {
   id: string;
   companyId: string;
-  companyName: string;
+  companyName?: string;
   companyLogo?: string;
   title: string;
+  department?: string;
   description: string;
-  employmentType: 'Full-time' | 'Part-time' | 'Internship' | 'Contract';
+  type?: string;
+  opportunityType?: 'job' | 'internship';
+  employmentType?: 'Full-time' | 'Part-time' | 'Internship' | 'Contract' | string;
   location: string;
-  workMode: 'Remote' | 'Hybrid' | 'On-site';
-  salaryRange: string;
-  experienceLevel: 'Entry Level' | 'Mid Level' | 'Senior' | 'Lead';
-  educationRequirement: string;
+  workMode?: 'Remote' | 'Hybrid' | 'On-site' | string;
+  salary?: string;
+  salaryRange?: string;
+  stipend?: string;
+  duration?: string; // For internships e.g. "3 months", "6 months"
+  internshipType?: 'Summer' | 'Winter' | 'Part-time' | 'Full-time';
+  conversionPossibility?: boolean; // PPO available
+  openings?: number;
+  experienceLevel: 'Entry Level' | 'Mid Level' | 'Senior' | 'Lead' | string;
+  educationRequirement?: string;
   requiredSkills: string[];
-  preferredSkills: string[];
+  preferredSkills?: string[];
   skillWeights?: Record<string, number>;
-  deadline: string;
-  status: 'published' | 'draft' | 'closed';
-  applicantCount: number;
+  deadline?: string;
+  // Assessment requirements
+  assessmentRequired?: boolean;
+  assessmentSkills?: string[];
+  minimumAssessmentScore?: number;
+  allowRetake?: boolean;
+  maxAttempts?: number;
+  status: 'published' | 'draft' | 'closed' | 'open' | string;
+  applicantCount?: number;
   createdAt: string;
 }
+
+export type Opportunity = Job;
 
 export type ApplicationStatus =
   | 'applied'
@@ -148,7 +230,11 @@ export type ApplicationStatus =
   | 'interview'
   | 'selected'
   | 'rejected'
-  | 'withdrawn';
+  | 'withdrawn'
+  | 'interviewing'
+  | 'accepted'
+  | 'reviewing'
+  | string;
 
 export interface ApplicationTimelineEvent {
   status: ApplicationStatus;
@@ -159,34 +245,145 @@ export interface ApplicationTimelineEvent {
 export interface Application {
   id: string;
   studentId: string;
-  studentName: string;
-  studentEmail: string;
-  studentCollege: string;
-  studentDegree: string;
+  studentName?: string;
+  studentEmail?: string;
+  studentCollege?: string;
+  studentDegree?: string;
   jobId: string;
-  jobTitle: string;
-  companyId: string;
-  companyName: string;
+  jobTitle?: string;
+  opportunityType?: 'job' | 'internship';
+  companyId?: string;
+  companyName?: string;
   resumeId?: string;
   resumeFileName?: string;
-  matchScoreAtApplication: number;
-  candidateScore: number;
+  matchScoreAtApplication?: number;
+  candidateScore?: number;
+  matchScore?: number;
+  assessmentScore?: number;
+  assessmentPassed?: boolean;
+  evidenceStrength?: number;
+  notes?: string;
   status: ApplicationStatus;
   appliedAt: string;
-  updatedAt: string;
-  timeline: ApplicationTimelineEvent[];
+  updatedAt?: string;
+  timeline?: ApplicationTimelineEvent[];
+  // Rejection & Feedback Fields (strictly separate student vs internal)
+  rejectionReason?: string;
+  skillGapsIdentified?: string[];
+  studentFeedback?: string;
+  internalHRNotes?: string;
+  feedbackAt?: string;
+}
+
+export interface RecruiterFeedback {
+  id: string;
+  applicationId: string;
+  studentId: string;
+  companyId?: string;
+  companyName?: string;
+  jobId?: string;
+  opportunityId?: string;
+  jobTitle?: string;
+  opportunityType?: 'job' | 'internship';
+  status: ApplicationStatus;
+  primaryReason: string;
+  skillGapsIdentified: string[];
+  studentFeedback: string;
+  internalHRNotes?: string;
+  createdAt: string;
+}
+
+export interface MandatoryAssessmentAttempt {
+  id: string;
+  studentId: string;
+  opportunityId: string;
+  opportunityTitle?: string;
+  skills?: string[];
+  totalQuestions?: number;
+  correctAnswers?: number;
+  score: number;
+  passed: boolean;
+  attemptNumber?: number;
+  date?: string;
+  minimumScoreRequired?: number;
+  timeSpentSeconds?: number;
+  skillBreakdown?: Record<string, { total: number; correct: number; percentage: number }>;
+  breakdown?: any[];
+  completedAt?: string;
+}
+
+export interface TransparentMatchBreakdown {
+  overallMatch: number; // 0 - 100
+  skillMatch: number; // 35% weight
+  evidenceScore: number; // 20% weight
+  assessmentScore: number; // 15% weight
+  projectScore: number; // 10% weight
+  careerAlignment: number; // 10% weight
+  experienceScore: number; // 5% weight
+  educationScore: number; // 5% weight
+  matchedSkills: string[];
+  missingSkills: string[];
+  weakSkills: string[];
+  explanations: string[];
+}
+
+export interface PersonalizedImprovementPlan {
+  id?: string;
+  studentId?: string;
+  applicationId: string;
+  opportunityTitle?: string;
+  targetRole?: string;
+  companyName?: string;
+  rejectionReason?: string;
+  identifiedGaps?: string[];
+  studentFeedback?: string;
+  recommendedCourses?: any[];
+  recommendedProjects?: any[];
+  practiceAssessments?: any[];
+  generatedAt?: string;
+  skillGaps?: Array<{
+    skill: string;
+    priority: 'HIGH' | 'MEDIUM' | 'LOW';
+    status: 'identified' | 'in_progress' | 'verified';
+    recommendedProject: {
+      title: string;
+      description: string;
+      technologies: string[];
+      difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
+    };
+    recommendedCourse: {
+      title: string;
+      provider: string;
+      url: string;
+      duration: string;
+    };
+    assessmentSkill: string;
+  }>;
+  aiGuidance?: string;
+  createdAt?: string;
 }
 
 export interface SkillEvidence {
   id: string;
   studentId: string;
-  skill: string;
-  sourceType: 'resume' | 'project' | 'assessment' | 'course' | 'github' | 'experience';
+  skill?: string;
+  skillName?: string;
+  verified?: boolean;
+  verificationScore?: number;
+  confidenceBoost?: number;
+  dateDemonstrated?: string;
+  url?: string;
+  metadata?: any;
+  sourceType?: 'resume' | 'project' | 'assessment' | 'course' | 'github' | 'experience' | string;
+  type?: 'resume' | 'project' | 'assessment' | 'course' | 'github' | 'experience' | 'certification' | 'work_experience' | string;
+  verifiedAt?: string;
   sourceId?: string;
-  sourceTitle: string;
-  confidence: number;
-  date: string;
+  title?: string;
+  sourceTitle?: string;
+  confidence?: number;
+  date?: string;
   details?: string;
+  createdAt?: string;
 }
 
 export interface CanonicalSkill {
@@ -205,8 +402,9 @@ export interface CareerGoal {
   domain: string;
   avgSalary: string;
   growthRate: string;
+  demandLevel?: string;
   requiredSkills: string[];
-  preferredSkills: string[];
+  preferredSkills?: string[];
 }
 
 export interface Course {

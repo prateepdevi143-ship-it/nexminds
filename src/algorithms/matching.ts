@@ -1,4 +1,4 @@
-import { StudentSkill, SkillEvidence, Student, Job, SkillGapAnalysis } from '../types';
+import { StudentSkill, SkillEvidence, Student, Job, SkillGapAnalysis, TransparentMatchBreakdown } from '../types';
 
 // Canonical skill aliases lookup table
 export const CANONICAL_SKILL_MAP: Record<string, string> = {
@@ -389,5 +389,259 @@ export function calculateCandidateRank(
     evidenceConfidence: Math.round(avgConfidence),
     experienceYears,
     assessmentScore: Math.round(assessmentAverageScore)
+  };
+}
+
+// -------------------------------------------------------------
+// EVIDENCE-BASED RECRUITMENT MATCHING ENGINE
+// Dynamic 7-Factor Transparent Weighted Scoring & Explainability
+// -------------------------------------------------------------
+
+export function calculateSkillConfidenceFromEvidence(
+  skill: string,
+  student: Student,
+  evidences: SkillEvidence[] = []
+): { confidence: number; evidenceCount: number; reasons: string[] } {
+  const norm = normalizeSkill(skill).toLowerCase();
+  const reasons: string[] = [];
+  let score = 0.2; // Base baseline
+  let evidenceCount = 0;
+
+  // 1. Check Projects
+  const matchingProjects = (student.projects || []).filter(p =>
+    (p.technologies || []).some(t => normalizeSkill(t).toLowerCase() === norm)
+  );
+  if (matchingProjects.length > 0) {
+    score += Math.min(0.35, matchingProjects.length * 0.15);
+    evidenceCount += matchingProjects.length;
+    reasons.push(`${matchingProjects.length} demonstrated project(s)`);
+  }
+
+  // 2. Check Hackathons
+  const matchingHackathons = (student.hackathons || []).filter(h =>
+    (h.technologies || []).some(t => normalizeSkill(t).toLowerCase() === norm)
+  );
+  if (matchingHackathons.length > 0) {
+    score += Math.min(0.25, matchingHackathons.length * 0.15);
+    evidenceCount += matchingHackathons.length;
+    reasons.push(`${matchingHackathons.length} competitive hackathon build(s)`);
+  }
+
+  // 3. Check Freelance
+  const matchingFreelance = (student.freelanceWork || []).filter(f =>
+    (f.technologies || []).some(t => normalizeSkill(t).toLowerCase() === norm)
+  );
+  if (matchingFreelance.length > 0) {
+    score += Math.min(0.20, matchingFreelance.length * 0.10);
+    evidenceCount += matchingFreelance.length;
+    reasons.push(`${matchingFreelance.length} client freelance contract(s)`);
+  }
+
+  // 4. Check Certifications
+  const matchingCerts = (student.certifications || []).filter(c =>
+    (c.name || '').toLowerCase().includes(norm)
+  );
+  if (matchingCerts.length > 0) {
+    score += 0.20;
+    evidenceCount += matchingCerts.length;
+    reasons.push(`Verified credential: ${matchingCerts[0].name}`);
+  }
+
+  // 5. Check Evidence Collection (Assessments, GitHub repos, etc.)
+  const directEvidences = evidences.filter(e =>
+    normalizeSkill(e.skill || e.skillName || '').toLowerCase() === norm
+  );
+  directEvidences.forEach(e => {
+    evidenceCount++;
+    if (e.sourceType === 'assessment') {
+      score += 0.25;
+      reasons.push(`Passed platform skill assessment`);
+    } else if (e.sourceType === 'github') {
+      score += 0.15;
+      reasons.push(`Public GitHub repository code artifact`);
+    }
+  });
+
+  // 6. External LeetCode if DSA / Algorithms
+  if (norm.includes('algorithm') || norm.includes('dsa') || norm.includes('data structure') || norm.includes('problem solving')) {
+    const solved = student.externalProfiles?.leetcodeData?.totalSolved || 0;
+    if (solved > 0) {
+      const boost = Math.min(0.30, (solved / 200) * 0.30);
+      score += boost;
+      evidenceCount += 1;
+      reasons.push(`${solved} solved LeetCode challenges`);
+    }
+  }
+
+  // 7. External GitHub top languages
+  const topLangs = student.externalProfiles?.githubData?.topLanguages || [];
+  const gitMatch = topLangs.find(l => normalizeSkill(l.language).toLowerCase() === norm);
+  if (gitMatch) {
+    score += 0.15;
+    evidenceCount += 1;
+    reasons.push(`GitHub codebase activity (${gitMatch.percentage}% of repos)`);
+  }
+
+  const finalConfidence = Math.min(1.0, Math.max(0.1, Math.round(score * 100) / 100));
+  return { confidence: finalConfidence, evidenceCount, reasons };
+}
+
+export function calculateOpportunityMatch(
+  student: Student,
+  job: Job,
+  evidences: SkillEvidence[] = [],
+  assessmentAttempt?: { score: number; passed: boolean }
+): TransparentMatchBreakdown {
+  const explanations: string[] = [];
+  const matchedSkills: string[] = [];
+  const missingSkills: string[] = [];
+  const weakSkills: string[] = [];
+
+  // Required skills list
+  const required = normalizeSkillsList(job.requiredSkills || []);
+  const preferred = normalizeSkillsList(job.preferredSkills || []);
+  const studentSkillMap = new Map<string, StudentSkill>();
+  (student.skills || []).forEach(s => {
+    studentSkillMap.set(normalizeSkill(s.name).toLowerCase(), s);
+  });
+
+  // 1. Skill Match (35% weight)
+  let totalSkillPoints = 0;
+  let earnedSkillPoints = 0;
+
+  required.forEach(req => {
+    totalSkillPoints += 1.0;
+    const reqLower = req.toLowerCase();
+    const existing = studentSkillMap.get(reqLower);
+    const ev = calculateSkillConfidenceFromEvidence(req, student, evidences);
+
+    if (existing || ev.evidenceCount > 0) {
+      matchedSkills.push(req);
+      const conf = Math.max(existing?.confidence || 0.5, ev.confidence);
+      if (conf < 0.6) {
+        weakSkills.push(req);
+        earnedSkillPoints += 0.6; // partial
+      } else {
+        earnedSkillPoints += 1.0;
+      }
+      if (ev.reasons.length > 0) {
+        explanations.push(`Strong ${req} evidence (${ev.reasons.join(', ')})`);
+      }
+    } else {
+      missingSkills.push(req);
+    }
+  });
+
+  preferred.forEach(pref => {
+    totalSkillPoints += 0.4;
+    const prefLower = pref.toLowerCase();
+    if (studentSkillMap.has(prefLower)) {
+      earnedSkillPoints += 0.4;
+      explanations.push(`Bonus preferred skill matched: ${pref}`);
+    }
+  });
+
+  const skillMatch = totalSkillPoints > 0 ? Math.round((earnedSkillPoints / totalSkillPoints) * 100) : 100;
+
+  // 2. Evidence Strength (20% weight)
+  let evidenceScore = 50;
+  const verifiedCount = (student.skills || []).filter(s => s.confidence >= 0.75).length;
+  const projectCount = (student.projects || []).length;
+  const hackathonCount = (student.hackathons || []).length;
+  const certCount = (student.certifications || []).length;
+  evidenceScore = Math.min(100, Math.round(verifiedCount * 12 + projectCount * 10 + hackathonCount * 15 + certCount * 12));
+  if (projectCount >= 2) explanations.push(`${projectCount} projects verified against required tech stack`);
+  if (hackathonCount > 0) explanations.push(`${hackathonCount} hackathon build(s) showcasing applied execution`);
+
+  // 3. Assessment Score (15% weight)
+  let assessmentScore = 70; // baseline if no assessment required
+  if (job.assessmentRequired) {
+    if (assessmentAttempt) {
+      assessmentScore = assessmentAttempt.score;
+      if (assessmentAttempt.passed) {
+        explanations.push(`Passed required assessment with ${assessmentAttempt.score}%`);
+      } else {
+        explanations.push(`Required assessment not yet met (${assessmentAttempt.score}% vs ${job.minimumAssessmentScore || 60}% required)`);
+      }
+    } else {
+      assessmentScore = 0;
+      explanations.push(`Mandatory assessment required before applying`);
+    }
+  } else {
+    // Check if platform assessments exist
+    const platformAssessments = evidences.filter(e => e.sourceType === 'assessment');
+    if (platformAssessments.length > 0) {
+      assessmentScore = 85;
+      explanations.push(`${platformAssessments.length} verified platform technical assessment(s)`);
+    }
+  }
+
+  // 4. Project Relevance (10% weight)
+  let projectScore = 30;
+  const jobSkillTerms = [...required, ...preferred].map(s => s.toLowerCase());
+  const relevantProjects = (student.projects || []).filter(p =>
+    (p.technologies || []).some(t => jobSkillTerms.includes(t.toLowerCase()))
+  );
+  projectScore = Math.min(100, Math.max(30, relevantProjects.length * 40));
+  if (relevantProjects.length > 0) {
+    explanations.push(`Direct project relevance: ${relevantProjects.map(p => p.name || p.title || 'Project').join(', ')}`);
+  }
+
+  // 5. Career Alignment (10% weight)
+  let careerAlignment = 60;
+  if (student.careerGoal) {
+    const goalLower = student.careerGoal.toLowerCase();
+    const titleLower = job.title.toLowerCase();
+    if (titleLower.includes(goalLower) || goalLower.includes(titleLower.split(' ')[0])) {
+      careerAlignment = 95;
+      explanations.push(`High career alignment: Candidate target role aligns directly with ${job.title}`);
+    } else {
+      careerAlignment = 75;
+    }
+  }
+
+  // 6. Experience (5% weight)
+  let experienceScore = 50;
+  const expCount = (student.experience || []).length;
+  const freelanceCount = (student.freelanceWork || []).length;
+  experienceScore = Math.min(100, Math.max(40, expCount * 30 + freelanceCount * 20));
+
+  // 7. Education (5% weight)
+  let educationScore = 75;
+  if (student.cgpa) {
+    educationScore = Math.min(100, Math.round((student.cgpa / 10) * 100));
+  }
+
+  // Weighted composite score calculation:
+  // 35% Skill Match, 20% Evidence, 15% Assessment, 10% Project, 10% Career Alignment, 5% Experience, 5% Education
+  const overallMatch = Math.min(
+    100,
+    Math.max(
+      0,
+      Math.round(
+        skillMatch * 0.35 +
+        evidenceScore * 0.20 +
+        assessmentScore * 0.15 +
+        projectScore * 0.10 +
+        careerAlignment * 0.10 +
+        experienceScore * 0.05 +
+        educationScore * 0.05
+      )
+    )
+  );
+
+  return {
+    overallMatch,
+    skillMatch,
+    evidenceScore,
+    assessmentScore,
+    projectScore,
+    careerAlignment,
+    experienceScore,
+    educationScore,
+    matchedSkills,
+    missingSkills,
+    weakSkills,
+    explanations
   };
 }

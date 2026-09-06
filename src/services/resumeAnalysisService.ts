@@ -35,7 +35,7 @@ export const resumeAnalysisService = {
       strengths.push(`Rich project portfolio with ${student.projects.length} documented capstones.`);
     }
     if ((student.certifications || []).length > 0) {
-      strengths.push(`Verified credentials from ${student.certifications.map(c => c.issuer).join(', ')}.`);
+      strengths.push(`Verified credentials from ${student.certifications.map(c => c.issuer || c.provider).join(', ')}.`);
     }
 
     if (missingTargetSkills.length > 0) {

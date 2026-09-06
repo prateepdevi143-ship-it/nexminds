@@ -11,7 +11,9 @@ import {
   calculateCandidateRank,
   normalizeSkill,
   normalizeSkillsList,
-  calculateSkillFreshness
+  calculateSkillFreshness,
+  calculateOpportunityMatch,
+  calculateSkillConfidenceFromEvidence
 } from './src/algorithms/matching';
 import {
   analyzeResumeWithGemini,
@@ -20,7 +22,9 @@ import {
   chatCareerAssistant,
   generateCoverLetter
 } from './server/ai';
-import { ApplicationStatus, SkillEvidence, Student, User, Company } from './src/types';
+import { ApplicationStatus, SkillEvidence, Student, User, Company, MandatoryAssessmentAttempt, RecruiterFeedback, PersonalizedImprovementPlan } from './src/types';
+import { QUESTION_BANK } from './server/data/questionsData';
+import { COMPREHENSIVE_COURSES } from './server/data/coursesData';
 
 dotenv.config();
 
@@ -33,17 +37,33 @@ app.use(express.json({ limit: '15mb' }));
 let currentUserId = 'usr_student_01';
 
 function resolveUser(req: express.Request): User {
+  const customStudentId = (req.headers['x-student-id'] as string) || (req.query.studentId as string);
   const customUid = req.headers['x-user-id'] as string;
   const customEmail = req.headers['x-user-email'] as string;
   const customName = req.headers['x-user-name'] ? decodeURIComponent(req.headers['x-user-name'] as string) : '';
 
   const users = db.get('users');
+  const students = db.get('students');
+
+  if (customStudentId) {
+    const student = students.find(s => s.id === customStudentId || s.userId === customStudentId);
+    if (student) {
+      const u = users.find(u => u.id === student.userId);
+      if (u) return u;
+      return {
+        id: student.userId,
+        email: student.email,
+        name: student.name,
+        role: 'student',
+        createdAt: new Date().toISOString()
+      };
+    }
+  }
 
   if (customUid) {
     let user = users.find(u => u.id === customUid);
     if (!user) {
       // Check if student profile exists for this UID or create just-in-time user
-      const students = db.get('students');
       const student = students.find(s => s.userId === customUid || s.id === customUid);
       const companies = db.get('companies');
       const company = companies.find(c => c.userId === customUid || c.id === customUid);
@@ -65,10 +85,20 @@ function resolveUser(req: express.Request): User {
 }
 
 function resolveStudent(req: express.Request): Student | undefined {
-  const user = resolveUser(req);
-  if (user.role !== 'student') return undefined;
-
   const students = db.get('students');
+  const customStudentId = (req.headers['x-student-id'] as string) || (req.query.studentId as string);
+  if (customStudentId) {
+    const s = students.find(s => s.id === customStudentId || s.userId === customStudentId);
+    if (s) return s;
+  }
+
+  const user = resolveUser(req);
+
+  if (user.role !== 'student') {
+    // Return primary student profile so recruiters and admins can still preview/test student views safely
+    return students[0];
+  }
+
   let student = students.find(s => s.userId === user.id || s.id === user.id);
 
   if (!student) {
@@ -147,27 +177,43 @@ app.get('/api/auth/me', (req, res) => {
 });
 
 app.post('/api/auth/switch-demo', (req, res) => {
-  const { role, email } = req.body;
+  const { role, email, studentId } = req.body;
   const users = db.get('users');
+  const students = db.get('students');
   let targetUser: User | undefined;
+  let profile: any = null;
+
+  if (studentId) {
+    const student = students.find(s => s.id === studentId || s.userId === studentId);
+    if (student) {
+      targetUser = users.find(u => u.id === student.userId) || {
+        id: student.userId,
+        email: student.email,
+        name: student.name,
+        role: 'student',
+        createdAt: new Date().toISOString()
+      };
+      currentUserId = targetUser.id;
+      return res.json({ user: targetUser, profile: student });
+    }
+  }
 
   if (email) {
     targetUser = users.find(u => u.email.toLowerCase() === email.toLowerCase().trim());
   }
 
   if (!targetUser && role) {
-    if (role === 'student') targetUser = users.find(u => u.id === 'usr_demo_student_1') || users.find(u => u.role === 'student');
-    else if (role === 'company') targetUser = users.find(u => u.id === 'usr_demo_company_1') || users.find(u => u.role === 'company');
-    else if (role === 'admin') targetUser = users.find(u => u.id === 'usr_demo_admin') || users.find(u => u.role === 'admin');
-    else if (role === 'industry') targetUser = users.find(u => u.id === 'usr_demo_industry') || users.find(u => u.role === 'industry');
+    if (role === 'student') targetUser = users.find(u => u.id === 'usr_student_01') || users.find(u => u.role === 'student');
+    else if (role === 'company') targetUser = users.find(u => u.id === 'usr_company_01') || users.find(u => u.role === 'company');
+    else if (role === 'admin') targetUser = users.find(u => u.id === 'usr_admin') || users.find(u => u.role === 'admin');
+    else if (role === 'industry') targetUser = users.find(u => u.id === 'usr_industry_01') || users.find(u => u.role === 'industry');
     else targetUser = users.find(u => u.role === role);
   }
 
   if (targetUser) {
     currentUserId = targetUser.id;
-    let profile: any = null;
     if (targetUser.role === 'student') {
-      profile = db.get('students').find(s => s.userId === targetUser!.id);
+      profile = students.find(s => s.userId === targetUser!.id) || students[0];
     } else if (targetUser.role === 'company') {
       profile = db.get('companies').find(c => c.userId === targetUser!.id);
     }
@@ -179,17 +225,53 @@ app.post('/api/auth/switch-demo', (req, res) => {
 
 app.post('/api/auth/login', (req, res) => {
   const { email } = req.body;
+  const cleanEmail = (email || '').toLowerCase().trim();
   const users = db.get('users');
-  const user = users.find(u => u.email.toLowerCase() === (email || '').toLowerCase().trim());
+  const students = db.get('students');
+  let user = users.find(u => u.email.toLowerCase() === cleanEmail);
+
+  if (!user) {
+    const stdNumMatch = cleanEmail.match(/student0?(\d+)/i) || cleanEmail.match(/std_?0?(\d+)/i);
+    if (stdNumMatch) {
+      const idx = parseInt(stdNumMatch[1], 10);
+      const padded = idx < 10 ? `0${idx}` : `${idx}`;
+      user = users.find(u => u.id === `usr_student_${padded}` || u.email.includes(`student${padded}`));
+      if (!user) {
+        const matchingStudent = students.find(s => s.id === `std_${padded}` || s.userId === `usr_student_${padded}`);
+        if (matchingStudent) {
+          user = users.find(u => u.id === matchingStudent.userId) || {
+            id: matchingStudent.userId,
+            email: matchingStudent.email,
+            name: matchingStudent.name,
+            role: 'student',
+            createdAt: new Date().toISOString()
+          };
+        }
+      }
+    } else if (cleanEmail.includes('admin')) {
+      user = users.find(u => u.role === 'admin') || users.find(u => u.id === 'usr_admin');
+    } else if (cleanEmail.includes('company') || cleanEmail.includes('recruiter')) {
+      const compMatch = cleanEmail.match(/company0?(\d+)/i);
+      if (compMatch) {
+        const cidx = parseInt(compMatch[1], 10);
+        const cpadded = cidx < 10 ? `0${cidx}` : `${cidx}`;
+        user = users.find(u => u.id === `usr_company_${cpadded}` || u.email.includes(`company${cpadded}`));
+      }
+      if (!user) user = users.find(u => u.role === 'company');
+    } else if (cleanEmail.includes('student')) {
+      user = users.find(u => u.role === 'student');
+    }
+  }
+
   if (!user) {
     return res.status(404).json({ error: 'User with this email not found in demo environment' });
   }
   currentUserId = user.id;
   let profile: any = null;
   if (user.role === 'student') {
-    profile = db.get('students').find(s => s.userId === user.id);
+    profile = db.get('students').find(s => s.userId === user.id) || db.get('students')[0];
   } else if (user.role === 'company') {
-    profile = db.get('companies').find(c => c.userId === user.id);
+    profile = db.get('companies').find(c => c.userId === user.id) || db.get('companies')[0];
   }
   res.json({ user, profile });
 });
@@ -261,8 +343,24 @@ app.post('/api/auth/register', (req, res) => {
 });
 
 // Student Profile Endpoints
+app.get('/api/students', (req, res) => {
+  const students = db.get('students');
+  res.json(students);
+});
+
+app.get('/api/students/:id', (req, res) => {
+  const students = db.get('students');
+  const student = students.find(s => s.id === req.params.id || s.userId === req.params.id);
+  if (!student) return res.status(404).json({ error: 'Student not found' });
+
+  const evidences = db.get('evidences').filter(e => e.studentId === student.id);
+  const careers = db.get('careers');
+  const targetCareer = careers.find(c => c.id === student.targetCareerId || c.title.toLowerCase() === student.careerGoal.toLowerCase()) || careers[0];
+  res.json({ student, evidences, targetCareer });
+});
+
 app.get('/api/students/profile', (req, res) => {
-  const student = resolveStudent(req);
+  const student = resolveStudent(req) || db.get('students')[0];
   if (!student) return res.status(404).json({ error: 'No active student' });
 
   const evidences = db.get('evidences').filter(e => e.studentId === student.id);
@@ -519,42 +617,76 @@ app.post('/api/students/evidence/add', (req, res) => {
   res.json({ success: true, evidence: newEv });
 });
 
-// Jobs API
-app.get('/api/jobs', (req, res) => {
+// Jobs & Opportunities API
+app.get(['/api/jobs', '/api/opportunities'], (req, res) => {
   const jobs = db.get('jobs');
+  const typeFilter = req.query.type as string; // 'all' | 'job' | 'internship'
   const student = resolveStudent(req);
+  const evidences = student ? db.get('evidences').filter(e => e.studentId === student.id) : [];
+  const attempts = db.get('assessmentAttempts') || [];
 
-  const enriched = jobs.map(job => {
+  let filteredJobs = jobs;
+  if (typeFilter && typeFilter !== 'all') {
+    filteredJobs = jobs.filter(j => {
+      const oppType = j.opportunityType || (j.type === 'Internship' ? 'internship' : 'job');
+      return oppType.toLowerCase() === typeFilter.toLowerCase();
+    });
+  }
+
+  const enriched = filteredJobs.map(job => {
     let matchResult = null;
+    let opportunityMatch = null;
+    let assessmentAttempt = null;
+
     if (student) {
       matchResult = calculateSkillMatch(student.skills || [], job.requiredSkills, job.preferredSkills, job.skillWeights);
+      assessmentAttempt = attempts.find(a => a.studentId === student.id && a.opportunityId === job.id);
+      opportunityMatch = calculateOpportunityMatch(student, job, evidences, assessmentAttempt);
     }
     return {
       ...job,
-      matchResult
+      opportunityType: job.opportunityType || (job.type === 'Internship' ? 'internship' : 'job'),
+      matchResult,
+      opportunityMatch,
+      assessmentAttempt
     };
   });
 
   res.json(enriched);
 });
 
-app.get('/api/jobs/:id', (req, res) => {
+app.get(['/api/jobs/:id', '/api/opportunities/:id'], (req, res) => {
   const job = db.get('jobs').find(j => j.id === req.params.id);
-  if (!job) return res.status(404).json({ error: 'Job not found' });
+  if (!job) return res.status(404).json({ error: 'Opportunity not found' });
 
   const student = resolveStudent(req);
   let matchResult = null;
+  let opportunityMatch = null;
+  let assessmentAttempt = null;
+
   if (student) {
+    const evidences = db.get('evidences').filter(e => e.studentId === student.id);
+    const attempts = db.get('assessmentAttempts') || [];
+    assessmentAttempt = attempts.find(a => a.studentId === student.id && a.opportunityId === job.id);
     matchResult = calculateSkillMatch(student.skills || [], job.requiredSkills, job.preferredSkills, job.skillWeights);
+    opportunityMatch = calculateOpportunityMatch(student, job, evidences, assessmentAttempt);
   }
 
-  res.json({ job, matchResult });
+  res.json({
+    job: {
+      ...job,
+      opportunityType: job.opportunityType || (job.type === 'Internship' ? 'internship' : 'job'),
+      assessmentAttempt
+    },
+    matchResult,
+    opportunityMatch
+  });
 });
 
-app.post('/api/jobs/create', (req, res) => {
+app.post(['/api/jobs/create', '/api/opportunities/create'], (req, res) => {
   const user = resolveUser(req);
   if (user.role !== 'company' && user.role !== 'admin') {
-    return res.status(403).json({ error: 'Only companies can post jobs' });
+    return res.status(403).json({ error: 'Only companies and administrators can post opportunities' });
   }
 
   const company = resolveCompany(req) || db.get('companies')[0];
@@ -562,13 +694,25 @@ app.post('/api/jobs/create', (req, res) => {
     title,
     description,
     employmentType,
+    opportunityType,
     location,
     workMode,
     salaryRange,
+    salary,
+    stipend,
+    duration,
+    internshipType,
+    conversionPossibility,
+    openings,
     experienceLevel,
     educationRequirement,
     requiredSkills,
     preferredSkills,
+    assessmentRequired,
+    assessmentSkills,
+    minimumAssessmentScore,
+    allowRetake,
+    maxAttempts,
     deadline
   } = req.body;
 
@@ -576,20 +720,35 @@ app.post('/api/jobs/create', (req, res) => {
     return res.status(400).json({ error: 'Job title, description, and required skills are required' });
   }
 
-  const newJob = {
+  const resolvedOppType = opportunityType || (employmentType === 'Internship' ? 'internship' : 'job');
+
+  const newJob: any = {
     id: `job_${Date.now()}`,
     companyId: company.id,
     companyName: company.name,
     title,
     description,
-    employmentType: employmentType || 'Full-time',
+    type: employmentType || (resolvedOppType === 'internship' ? 'Internship' : 'Full-time'),
+    employmentType: employmentType || (resolvedOppType === 'internship' ? 'Internship' : 'Full-time'),
+    opportunityType: resolvedOppType,
     location: location || 'Remote',
     workMode: workMode || 'Remote',
-    salaryRange: salaryRange || '$90,000 - $130,000 / yr',
-    experienceLevel: experienceLevel || 'Entry Level',
-    educationRequirement: educationRequirement || "Bachelor's degree in CS, Engineering, or relevant field",
+    salaryRange: salaryRange || salary || (resolvedOppType === 'internship' ? (stipend || '₹25,000 / month') : '₹8,00,000 - ₹12,00,000 / yr'),
+    salary: salary || salaryRange || (resolvedOppType === 'internship' ? (stipend || '₹25,000 / month') : '₹8,00,000 - ₹12,00,000 / yr'),
+    stipend: resolvedOppType === 'internship' ? (stipend || '₹25,000 / month') : undefined,
+    duration: resolvedOppType === 'internship' ? (duration || '3-6 months') : undefined,
+    internshipType: resolvedOppType === 'internship' ? (internshipType || 'Summer') : undefined,
+    conversionPossibility: resolvedOppType === 'internship' ? Boolean(conversionPossibility) : undefined,
+    openings: openings ? Number(openings) : (resolvedOppType === 'internship' ? 3 : 1),
+    experienceLevel: experienceLevel || (resolvedOppType === 'internship' ? 'Student / Intern' : 'Entry Level'),
+    educationRequirement: educationRequirement || "Bachelor's degree in Engineering, Computer Science, or relevant field",
     requiredSkills: normalizeSkillsList(requiredSkills),
     preferredSkills: normalizeSkillsList(preferredSkills || []),
+    assessmentRequired: Boolean(assessmentRequired),
+    assessmentSkills: assessmentRequired ? normalizeSkillsList(assessmentSkills || requiredSkills) : [],
+    minimumAssessmentScore: assessmentRequired ? (Number(minimumAssessmentScore) || 60) : undefined,
+    allowRetake: allowRetake !== false,
+    maxAttempts: Number(maxAttempts) || 3,
     deadline: deadline || new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
     status: 'published' as const,
     applicantCount: 0,
@@ -600,24 +759,242 @@ app.post('/api/jobs/create', (req, res) => {
   res.json(newJob);
 });
 
-// Apply to Job
-app.post('/api/jobs/:id/apply', (req, res) => {
+// Opportunity Mandatory Skill Assessment API
+app.get('/api/opportunities/:id/assessment', (req, res) => {
+  const job = db.get('jobs').find(j => j.id === req.params.id);
+  if (!job) return res.status(404).json({ error: 'Opportunity not found' });
+
+  const targetSkills = (job.assessmentSkills && job.assessmentSkills.length > 0)
+    ? job.assessmentSkills
+    : job.requiredSkills;
+
+  const targetLower = targetSkills.map(s => s.toLowerCase());
+
+  // Match questions from QUESTION_BANK for these target skills
+  const matched = QUESTION_BANK.filter(q => {
+    const qSkill = q.skill.toLowerCase();
+    return targetLower.some(ts => ts.includes(qSkill) || qSkill.includes(ts));
+  });
+
+  let selectedQuestions = matched.slice(0, 10);
+
+  // Fallback if question bank has fewer than 5 questions
+  if (selectedQuestions.length < 5) {
+    const fallbackBank = QUESTION_BANK.slice(0, 5);
+    selectedQuestions = [...selectedQuestions, ...fallbackBank.slice(0, 5 - selectedQuestions.length)];
+  }
+
+  // Sanitize questions so correctIndex and explanation are NOT leaked to candidate
+  const sanitizedQuestions = selectedQuestions.map((q, idx) => ({
+    id: q.id,
+    questionNumber: idx + 1,
+    skill: q.skill,
+    question: q.question,
+    options: q.options
+  }));
+
+  res.json({
+    opportunityId: job.id,
+    opportunityTitle: job.title,
+    opportunityType: job.opportunityType || (job.type === 'Internship' ? 'internship' : 'job'),
+    companyName: job.companyName,
+    requiredSkills: targetSkills,
+    passingScore: job.minimumAssessmentScore || 60,
+    durationMinutes: 15,
+    totalQuestions: sanitizedQuestions.length,
+    questions: sanitizedQuestions
+  });
+});
+
+// Submit Opportunity Mandatory Assessment Attempt
+app.post('/api/opportunities/:id/assessment-attempt', (req, res) => {
   const student = resolveStudent(req);
-  if (!student) return res.status(403).json({ error: 'Only students can apply to jobs' });
+  if (!student) return res.status(403).json({ error: 'Only registered students can take assessments' });
 
   const job = db.get('jobs').find(j => j.id === req.params.id);
-  if (!job) return res.status(404).json({ error: 'Job not found' });
+  if (!job) return res.status(404).json({ error: 'Opportunity not found' });
+
+  const { answers } = req.body; // map of questionId -> chosenIndex
+  if (!answers || typeof answers !== 'object') {
+    return res.status(400).json({ error: 'Assessment answers object required' });
+  }
+
+  const targetSkills = (job.assessmentSkills && job.assessmentSkills.length > 0)
+    ? job.assessmentSkills
+    : job.requiredSkills;
+  const targetLower = targetSkills.map(s => s.toLowerCase());
+
+  // Find all matched questions
+  const allCandidateQuestions = QUESTION_BANK.filter(q => {
+    const qSkill = q.skill.toLowerCase();
+    return targetLower.some(ts => ts.includes(qSkill) || qSkill.includes(ts));
+  });
+  const questionsMap = new Map(QUESTION_BANK.map(q => [q.id, q]));
+
+  let correctCount = 0;
+  let totalAnswered = 0;
+  const skillBreakdown: Record<string, { total: number; correct: number }> = {};
+
+  Object.entries(answers).forEach(([qId, chosenIndex]) => {
+    const q = questionsMap.get(qId);
+    if (q) {
+      totalAnswered++;
+      const isCorrect = chosenIndex === q.correctIndex;
+      if (isCorrect) correctCount++;
+
+      const sk = q.skill;
+      if (!skillBreakdown[sk]) skillBreakdown[sk] = { total: 0, correct: 0 };
+      skillBreakdown[sk].total++;
+      if (isCorrect) skillBreakdown[sk].correct++;
+    }
+  });
+
+  const totalQuestions = Math.max(1, totalAnswered);
+  const scorePercentage = Math.round((correctCount / totalQuestions) * 100);
+  const passingScore = job.minimumAssessmentScore || 60;
+  const passed = scorePercentage >= passingScore;
+
+  // Record attempt
+  const attempt: MandatoryAssessmentAttempt = {
+    id: `att_${Date.now()}`,
+    opportunityId: job.id,
+    studentId: student.id,
+    score: scorePercentage,
+    passed,
+    attemptNumber: ((db.get('assessmentAttempts') || []).filter(a => a.studentId === student.id && a.opportunityId === job.id).length) + 1,
+    date: new Date().toISOString(),
+    breakdown: Object.entries(skillBreakdown).map(([skill, stats]) => ({
+      skill,
+      score: Math.round((stats.correct / Math.max(1, stats.total)) * 100),
+      passed: (stats.correct / Math.max(1, stats.total)) >= 0.6
+    }))
+  };
+
+  db.update('assessmentAttempts', attempts => [attempt, ...(attempts || [])]);
+
+  // If passed: inject high-confidence verified skill evidence into platform
+  if (passed) {
+    targetSkills.forEach(skillName => {
+      const evidence: SkillEvidence = {
+        id: `ev_mand_assm_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+        studentId: student.id,
+        skill: skillName,
+        sourceType: 'assessment',
+        sourceId: job.id,
+        sourceTitle: `${job.title} Assessment (${scorePercentage}%)`,
+        confidence: 0.95,
+        date: new Date().toISOString(),
+        details: `Passed mandatory role assessment for ${job.title} at ${job.companyName} scoring ${scorePercentage}%.`
+      };
+      db.update('evidences', evs => [evidence, ...evs]);
+    });
+
+    // Update student's skills
+    db.update('students', students => {
+      return students.map(s => {
+        if (s.id === student.id) {
+          const currentSkills = [...(s.skills || [])];
+          targetSkills.forEach(targetSkill => {
+            const norm = normalizeSkill(targetSkill);
+            const existingIdx = currentSkills.findIndex(sk => sk.name.toLowerCase() === norm.toLowerCase());
+            if (existingIdx >= 0) {
+              currentSkills[existingIdx] = {
+                ...currentSkills[existingIdx],
+                level: Math.max(currentSkills[existingIdx].level, scorePercentage),
+                confidence: 0.95,
+                verified: true,
+                evidenceCount: (currentSkills[existingIdx].evidenceCount || 1) + 1,
+                lastDemonstrated: new Date().toISOString(),
+                freshness: 'recent'
+              };
+            } else {
+              currentSkills.push({
+                skillId: `sk_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+                name: norm,
+                level: scorePercentage,
+                confidence: 0.95,
+                verified: true,
+                lastDemonstrated: new Date().toISOString(),
+                evidenceCount: 1,
+                freshness: 'recent'
+              });
+            }
+          });
+
+          return {
+            ...s,
+            skills: currentSkills,
+            careerReadinessScore: Math.min(100, (s.careerReadinessScore || 70) + 3),
+            updatedAt: new Date().toISOString()
+          };
+        }
+        return s;
+      });
+    });
+
+    // In-app Notification for student
+    const notif = {
+      id: `notif_${Date.now()}`,
+      userId: student.userId,
+      title: `Mandatory Assessment Passed! 🎯`,
+      message: `You passed the assessment for ${job.title} (${scorePercentage}%). You are now eligible to submit your application.`,
+      type: 'assessment' as const,
+      read: false,
+      createdAt: new Date().toISOString(),
+      link: `/jobs`
+    };
+    db.update('notifications', n => [notif, ...n]);
+  }
+
+  res.json({
+    success: true,
+    attempt,
+    passed,
+    score: scorePercentage,
+    passingScore,
+    message: passed
+      ? `Assessment passed! You achieved ${scorePercentage}%. Application is now unlocked.`
+      : `Assessment not passed. You scored ${scorePercentage}% (required: ${passingScore}%). Please review your skills and retake.`
+  });
+});
+
+// Apply to Job / Opportunity
+app.post(['/api/jobs/:id/apply', '/api/opportunities/:id/apply'], (req, res) => {
+  const student = resolveStudent(req);
+  if (!student) return res.status(403).json({ error: 'Only students can apply to opportunities' });
+
+  const job = db.get('jobs').find(j => j.id === req.params.id);
+  if (!job) return res.status(404).json({ error: 'Opportunity not found' });
 
   const existingApp = db.get('applications').find(a => a.studentId === student.id && a.jobId === job.id);
   if (existingApp) {
-    return res.status(400).json({ error: 'You have already applied to this job' });
+    return res.status(400).json({ error: 'You have already applied to this opportunity' });
+  }
+
+  const attempts = db.get('assessmentAttempts') || [];
+  const latestAttempt = attempts.find(a => a.studentId === student.id && a.opportunityId === job.id);
+
+  // Mandatory Assessment Gate
+  if (job.assessmentRequired) {
+    const passedAttempt = attempts.find(a => a.studentId === student.id && a.opportunityId === job.id && a.passed);
+    if (!passedAttempt) {
+      return res.status(403).json({
+        error: 'Mandatory technical skill assessment must be passed before submitting this application.',
+        assessmentRequired: true,
+        minimumScore: job.minimumAssessmentScore || 60,
+        opportunityId: job.id
+      });
+    }
   }
 
   const evidences = db.get('evidences').filter(e => e.studentId === student.id);
   const matchResult = calculateSkillMatch(student.skills || [], job.requiredSkills, job.preferredSkills);
   const candidateRank = calculateCandidateRank(student, job, evidences);
+  const opportunityMatch = calculateOpportunityMatch(student, job, evidences, latestAttempt);
 
-  const newApp = {
+  const resolvedOppType = job.opportunityType || (job.type === 'Internship' ? 'internship' : 'job');
+
+  const newApp: any = {
     id: `app_${Date.now()}`,
     studentId: student.id,
     studentName: student.name,
@@ -628,8 +1005,11 @@ app.post('/api/jobs/:id/apply', (req, res) => {
     jobTitle: job.title,
     companyId: job.companyId,
     companyName: job.companyName,
+    opportunityType: resolvedOppType,
+    assessmentScore: latestAttempt?.score,
+    assessmentPassed: !!(latestAttempt?.passed),
     resumeFileName: student.resumeFileName || 'Profile_Resume.pdf',
-    matchScoreAtApplication: matchResult.matchScore,
+    matchScoreAtApplication: opportunityMatch.overallMatch,
     candidateScore: candidateRank.overallScore,
     status: 'applied' as ApplicationStatus,
     appliedAt: new Date().toISOString(),
@@ -638,7 +1018,7 @@ app.post('/api/jobs/:id/apply', (req, res) => {
       {
         status: 'applied' as ApplicationStatus,
         date: new Date().toISOString(),
-        note: 'Application verified and submitted through CareerAI'
+        note: `Application submitted with verified evidence and ${opportunityMatch.overallMatch}% match score`
       }
     ]
   };
@@ -646,14 +1026,14 @@ app.post('/api/jobs/:id/apply', (req, res) => {
   db.update('applications', apps => [newApp, ...apps]);
 
   // Increment applicant count
-  db.update('jobs', jobs => jobs.map(j => j.id === job.id ? { ...j, applicantCount: j.applicantCount + 1 } : j));
+  db.update('jobs', jobs => jobs.map(j => j.id === job.id ? { ...j, applicantCount: (j.applicantCount || 0) + 1 } : j));
 
   // Notification for student
   const notif = {
     id: `notif_${Date.now()}`,
     userId: student.userId,
     title: `Application Submitted to ${job.companyName}`,
-    message: `Your application for ${job.title} was submitted with a ${matchResult.matchScore}% capability match score.`,
+    message: `Your application for ${job.title} was submitted with a ${opportunityMatch.overallMatch}% match score based on your verified skills and portfolio.`,
     type: 'application' as const,
     read: false,
     createdAt: new Date().toISOString(),
@@ -672,7 +1052,14 @@ app.get('/api/applications', (req, res) => {
   if (user.role === 'student') {
     const student = resolveStudent(req);
     if (!student) return res.json([]);
-    return res.json(allApps.filter(a => a.studentId === student.id));
+    // CRITICAL: Students must NEVER see internalHRNotes
+    const safeApps = allApps
+      .filter(a => a.studentId === student.id)
+      .map(app => {
+        const { internalHRNotes, ...sanitized } = app as any;
+        return sanitized;
+      });
+    return res.json(safeApps);
   } else if (user.role === 'company') {
     const company = resolveCompany(req) || db.get('companies')[0];
     return res.json(allApps.filter(a => a.companyId === company.id));
@@ -682,9 +1069,123 @@ app.get('/api/applications', (req, res) => {
   res.json(allApps);
 });
 
-// Update Application Status (for company review pipeline)
+// Company Candidate Ranking for a Job/Opportunity
+app.get(['/api/company/jobs/:id/candidates', '/api/companies/jobs/:id/candidates'], (req, res) => {
+  const job = db.get('jobs').find(j => j.id === req.params.id);
+  if (!job) return res.status(404).json({ error: 'Opportunity not found' });
+
+  const students = db.get('students');
+  const allEvidences = db.get('evidences');
+
+  const rankedCandidates = students.map(std => {
+    const studentEvidences = allEvidences.filter(e => e.studentId === std.id);
+    return calculateCandidateRank(std, job, studentEvidences);
+  }).sort((a, b) => b.overallScore - a.overallScore);
+
+  res.json(rankedCandidates);
+});
+
+// HR Evaluation, Decision & Feedback Loop
+app.post('/api/applications/:id/feedback', (req, res) => {
+  const user = resolveUser(req);
+  if (user.role !== 'company' && user.role !== 'admin') {
+    return res.status(403).json({ error: 'Only companies or admins can submit feedback' });
+  }
+
+  const appId = req.params.id;
+  const {
+    status, // 'shortlisted' | 'interview' | 'selected' | 'rejected'
+    primaryReason,
+    skillGapsIdentified,
+    internalHRNotes,
+    studentFeedback
+  } = req.body;
+
+  if (!status) {
+    return res.status(400).json({ error: 'Status is required' });
+  }
+
+  let targetApp: any = null;
+  db.update('applications', apps => {
+    return apps.map(app => {
+      if (app.id === appId) {
+        const newTimeline = [
+          ...app.timeline,
+          {
+            status: status as ApplicationStatus,
+            date: new Date().toISOString(),
+            note: status === 'rejected'
+              ? `Application rejected: ${primaryReason || 'Feedback provided'}`
+              : `Status updated to ${status.toUpperCase()} by recruiter`
+          }
+        ];
+        targetApp = {
+          ...app,
+          status: status as ApplicationStatus,
+          rejectionReason: status === 'rejected' ? primaryReason : undefined,
+          skillGapsIdentified: skillGapsIdentified || [],
+          studentFeedback: studentFeedback || undefined,
+          internalHRNotes: internalHRNotes || undefined,
+          feedbackAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          timeline: newTimeline
+        };
+        return targetApp;
+      }
+      return app;
+    });
+  });
+
+  if (!targetApp) {
+    return res.status(404).json({ error: 'Application not found' });
+  }
+
+  // Record RecruiterFeedback
+  const feedbackRecord: RecruiterFeedback = {
+    id: `fb_${Date.now()}`,
+    applicationId: targetApp.id,
+    studentId: targetApp.studentId,
+    opportunityId: targetApp.jobId,
+    companyId: targetApp.companyId,
+    status: status as 'rejected' | 'shortlisted' | 'interview' | 'selected',
+    primaryReason: primaryReason || (status === 'rejected' ? 'Skills gap identified' : 'Candidate meets requirements'),
+    skillGapsIdentified: skillGapsIdentified || [],
+    internalHRNotes: internalHRNotes || '',
+    studentFeedback: studentFeedback || '',
+    createdAt: new Date().toISOString()
+  };
+  db.update('recruiterFeedbacks', fbs => [feedbackRecord, ...(fbs || [])]);
+
+  // Create real in-app Notification for candidate
+  const student = db.get('students').find(s => s.id === targetApp.studentId);
+  if (student) {
+    const isRejection = status === 'rejected';
+    const notifTitle = isRejection
+      ? `Application Update: ${targetApp.jobTitle}`
+      : `Good News! Progress for ${targetApp.jobTitle} 🚀`;
+    const notifMessage = isRejection
+      ? `${targetApp.companyName} reviewed your application and provided actionable feedback. Review your personalized improvement plan to bridge identified gaps.`
+      : `${targetApp.companyName} updated your application status to ${status.toUpperCase().replace('_', ' ')}. ${studentFeedback ? `Note: "${studentFeedback}"` : ''}`;
+
+    const notif = {
+      id: `notif_${Date.now()}`,
+      userId: student.userId,
+      title: notifTitle,
+      message: notifMessage,
+      type: 'application' as const,
+      read: false,
+      createdAt: new Date().toISOString(),
+      link: '/applications'
+    };
+    db.update('notifications', n => [notif, ...n]);
+  }
+
+  res.json({ success: true, application: targetApp });
+});
+
+// Update Application Status (legacy/quick status change)
 app.put('/api/applications/:id/status', (req, res) => {
-  const { status, note } = req.body;
+  const { status, note, internalHRNotes, studentFeedback, primaryReason, skillGapsIdentified } = req.body;
   const appId = req.params.id;
 
   let updatedApp: any = null;
@@ -702,6 +1203,10 @@ app.put('/api/applications/:id/status', (req, res) => {
         updatedApp = {
           ...app,
           status: status as ApplicationStatus,
+          rejectionReason: status === 'rejected' ? (primaryReason || app.rejectionReason) : undefined,
+          skillGapsIdentified: skillGapsIdentified || app.skillGapsIdentified,
+          studentFeedback: studentFeedback || app.studentFeedback,
+          internalHRNotes: internalHRNotes !== undefined ? internalHRNotes : app.internalHRNotes,
           updatedAt: new Date().toISOString(),
           timeline: newTimeline
         };
@@ -712,7 +1217,6 @@ app.put('/api/applications/:id/status', (req, res) => {
   });
 
   if (updatedApp) {
-    // Notify student
     const student = db.get('students').find(s => s.id === updatedApp.studentId);
     if (student) {
       const notif = {
@@ -733,6 +1237,231 @@ app.put('/api/applications/:id/status', (req, res) => {
   res.status(404).json({ error: 'Application not found' });
 });
 
+// Personalized Improvement Plan for Rejected or Skill-Gapped Applications
+app.get('/api/applications/:id/improvement-plan', (req, res) => {
+  const appId = req.params.id;
+  const application = db.get('applications').find(a => a.id === appId);
+  if (!application) return res.status(404).json({ error: 'Application not found' });
+
+  const job = db.get('jobs').find(j => j.id === application.jobId);
+  const student = db.get('students').find(s => s.id === application.studentId);
+  const gaps = (application.skillGapsIdentified && application.skillGapsIdentified.length > 0)
+    ? application.skillGapsIdentified
+    : (job ? job.requiredSkills.filter(reqSkill => !(student?.skills || []).some(s => s.name.toLowerCase() === reqSkill.toLowerCase())) : ['Core Engineering Foundations']);
+
+  // Match courses from COMPREHENSIVE_COURSES
+  const courses = db.get('courses');
+  const recommendedCourses = gaps.flatMap(gap => {
+    const matched = courses.filter(c => c.skills.some(cs => cs.toLowerCase().includes(gap.toLowerCase()) || gap.toLowerCase().includes(cs.toLowerCase())));
+    return matched.length > 0 ? matched : [courses[0]];
+  }).slice(0, 3);
+
+  // Concrete suggested projects
+  const recommendedProjects = gaps.map((gap, i) => ({
+    title: `Production Portfolio Build: ${gap} Integration`,
+    description: `Design and implement an open-source GitHub portfolio repository demonstrating ${gap} in a real-world scenario with unit tests and live deployment.`,
+    technologies: [gap, 'TypeScript', 'Docker'],
+    expectedOutcome: `Verified high-confidence skill evidence for ${gap} on your CareerAI profile.`
+  }));
+
+  // Practice assessments
+  const practiceAssessments = gaps.map(gap => ({
+    skill: gap,
+    assessmentTitle: `${gap} Core Knowledge Assessment`,
+    passingScore: 65,
+    durationMinutes: 15
+  }));
+
+  const plan: PersonalizedImprovementPlan = {
+    applicationId: application.id,
+    targetRole: application.jobTitle,
+    companyName: application.companyName,
+    identifiedGaps: gaps,
+    studentFeedback: application.studentFeedback || 'Recruiter identified key areas for technical reinforcement.',
+    recommendedCourses,
+    recommendedProjects,
+    practiceAssessments,
+    generatedAt: new Date().toISOString()
+  };
+
+  res.json(plan);
+});
+
+// Student Capability Profile Update API
+app.put('/api/students/profile', (req, res) => {
+  const student = resolveStudent(req);
+  if (!student) return res.status(404).json({ error: 'No active student found' });
+
+  const {
+    bio,
+    phone,
+    location,
+    college,
+    degree,
+    graduationYear,
+    cgpa,
+    targetCareerId,
+    education,
+    projects,
+    hackathons,
+    freelanceWork,
+    achievements,
+    certifications,
+    externalProfiles,
+    skills
+  } = req.body;
+
+  let updatedStudent: any = null;
+  db.update('students', students => {
+    return students.map(s => {
+      if (s.id === student.id) {
+        const updatedCandidate: Student = {
+          ...s,
+          bio: bio !== undefined ? bio : s.bio,
+          phone: phone !== undefined ? phone : s.phone,
+          location: location !== undefined ? location : s.location,
+          college: college !== undefined ? college : s.college,
+          degree: degree !== undefined ? degree : s.degree,
+          graduationYear: graduationYear !== undefined ? Number(graduationYear) : s.graduationYear,
+          cgpa: cgpa !== undefined ? Number(cgpa) : s.cgpa,
+          targetCareerId: targetCareerId !== undefined ? targetCareerId : s.targetCareerId,
+          education: education !== undefined ? education : s.education,
+          projects: projects !== undefined ? projects : s.projects,
+          hackathons: hackathons !== undefined ? hackathons : s.hackathons,
+          freelanceWork: freelanceWork !== undefined ? freelanceWork : s.freelanceWork,
+          achievements: achievements !== undefined ? achievements : s.achievements,
+          certifications: certifications !== undefined ? certifications : s.certifications,
+          externalProfiles: externalProfiles !== undefined ? externalProfiles : s.externalProfiles,
+          updatedAt: new Date().toISOString()
+        };
+
+        // Recalculate dynamic skill confidence from evidence
+        const studentEvs = db.get('evidences').filter(e => e.studentId === s.id);
+        const incomingSkills = skills || s.skills || [];
+        const recalculatedSkills = incomingSkills.map((sk: any) => {
+          const confidenceResult = calculateSkillConfidenceFromEvidence(sk.name, updatedCandidate, studentEvs);
+          const calculatedConfidence = confidenceResult.confidence;
+          return {
+            ...sk,
+            confidence: Math.max(sk.confidence || 0.6, calculatedConfidence),
+            verified: calculatedConfidence >= 0.7
+          };
+        });
+
+        updatedCandidate.skills = recalculatedSkills;
+
+        // Recalculate career readiness
+        const careers = db.get('careers');
+        const targetCareer = careers.find(c => c.id === updatedCandidate.targetCareerId) || careers[0];
+        updatedCandidate.careerReadinessScore = calculateCareerReadiness(updatedCandidate, targetCareer.requiredSkills, studentEvs);
+
+        updatedStudent = updatedCandidate;
+        return updatedCandidate;
+      }
+      return s;
+    });
+  });
+
+  res.json({ success: true, student: updatedStudent });
+});
+
+// Admin Recruitment Analytics API
+app.get('/api/admin/recruitment-analytics', (req, res) => {
+  const jobs = db.get('jobs');
+  const applications = db.get('applications');
+  const attempts = db.get('assessmentAttempts') || [];
+  const feedbacks = db.get('recruiterFeedbacks') || [];
+
+  const totalOpportunities = jobs.length;
+  const jobsCount = jobs.filter(j => (j.opportunityType || (j.type === 'Internship' ? 'internship' : 'job')) === 'job').length;
+  const internshipsCount = jobs.filter(j => (j.opportunityType || (j.type === 'Internship' ? 'internship' : 'job')) === 'internship').length;
+
+  const totalApplications = applications.length;
+  const appliedCount = applications.filter(a => a.status === 'applied').length;
+  const reviewingCount = applications.filter(a => a.status === 'reviewing').length;
+  const shortlistedCount = applications.filter(a => a.status === 'shortlisted').length;
+  const interviewCount = applications.filter(a => a.status === 'interview').length;
+  const selectedCount = applications.filter(a => a.status === 'selected').length;
+  const rejectedCount = applications.filter(a => a.status === 'rejected').length;
+
+  const totalAttempts = attempts.length;
+  const passedAttempts = attempts.filter(a => a.passed).length;
+  const assessmentPassRate = totalAttempts > 0 ? Math.round((passedAttempts / totalAttempts) * 100) : 74;
+  const averageAssessmentScore = totalAttempts > 0
+    ? Math.round(attempts.reduce((sum, a) => sum + a.score, 0) / totalAttempts)
+    : 78;
+
+  // Aggregate top skill gaps identified across all rejections and feedbacks
+  const gapCounter: Record<string, number> = {};
+  applications.forEach(app => {
+    (app.skillGapsIdentified || []).forEach(gap => {
+      gapCounter[gap] = (gapCounter[gap] || 0) + 1;
+    });
+  });
+  feedbacks.forEach(fb => {
+    (fb.skillGapsIdentified || []).forEach(gap => {
+      gapCounter[gap] = (gapCounter[gap] || 0) + 1;
+    });
+  });
+
+  const topSkillGaps = Object.entries(gapCounter)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([skill, count]) => ({ skill, count }));
+
+  // Fallback if not many rejections logged yet
+  if (topSkillGaps.length === 0) {
+    topSkillGaps.push(
+      { skill: 'Docker & Containerization', count: 5 },
+      { skill: 'PyTorch Model Optimization', count: 4 },
+      { skill: 'PostgreSQL Query Profiling', count: 3 },
+      { skill: 'REST API Authentication', count: 3 }
+    );
+  }
+
+  // Most demanded skills across published opportunities
+  const demandCounter: Record<string, number> = {};
+  jobs.forEach(job => {
+    job.requiredSkills.forEach(s => {
+      demandCounter[s] = (demandCounter[s] || 0) + 1;
+    });
+  });
+  const topDemandedSkills = Object.entries(demandCounter)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([skill, count]) => ({ skill, count }));
+
+  res.json({
+    dataSourceLabel: 'CareerAI Platform Data',
+    totalOpportunities,
+    jobsCount,
+    internshipsCount,
+    totalApplications,
+    pipeline: {
+      applied: appliedCount,
+      reviewing: reviewingCount,
+      shortlisted: shortlistedCount,
+      interview: interviewCount,
+      selected: selectedCount,
+      rejected: rejectedCount
+    },
+    conversionFunnel: {
+      shortlistRate: totalApplications > 0 ? Math.round((shortlistedCount / totalApplications) * 100) : 0,
+      interviewRate: totalApplications > 0 ? Math.round((interviewCount / totalApplications) * 100) : 0,
+      selectionRate: totalApplications > 0 ? Math.round((selectedCount / totalApplications) * 100) : 0,
+      rejectionRate: totalApplications > 0 ? Math.round((rejectedCount / totalApplications) * 100) : 0
+    },
+    assessmentMetrics: {
+      totalAttempts,
+      passedAttempts,
+      passRate: assessmentPassRate,
+      averageScore: averageAssessmentScore
+    },
+    topSkillGaps,
+    topDemandedSkills
+  });
+});
+
 // Candidate Ranking for Companies
 app.get('/api/company/jobs/:id/candidates', (req, res) => {
   const jobId = req.params.id;
@@ -742,6 +1471,7 @@ app.get('/api/company/jobs/:id/candidates', (req, res) => {
   const applications = db.get('applications').filter(a => a.jobId === jobId);
   const students = db.get('students');
   const evidences = db.get('evidences');
+  const attempts = db.get('assessmentAttempts') || [];
 
   const rankedCandidates = applications.map(app => {
     const student = students.find(s => s.id === app.studentId) || {
@@ -755,8 +1485,10 @@ app.get('/api/company/jobs/:id/candidates', (req, res) => {
     } as any;
 
     const studentEvs = evidences.filter(e => e.studentId === student.id);
+    const candidateAttempt = attempts.find(a => a.studentId === student.id && a.opportunityId === job.id);
     const scoreBreakdown = calculateCandidateRank(student, job, studentEvs);
     const matchDetails = calculateSkillMatch(student.skills, job.requiredSkills, job.preferredSkills);
+    const opportunityMatch = calculateOpportunityMatch(student, job, studentEvs, candidateAttempt);
 
     return {
       application: app,
@@ -764,10 +1496,21 @@ app.get('/api/company/jobs/:id/candidates', (req, res) => {
       skillMatch: scoreBreakdown.skillMatch,
       evidenceConfidence: scoreBreakdown.evidenceConfidence,
       experienceYears: scoreBreakdown.experienceYears,
-      assessmentScore: scoreBreakdown.assessmentScore,
-      overallCandidateScore: scoreBreakdown.overallScore,
+      assessmentScore: candidateAttempt ? candidateAttempt.score : scoreBreakdown.assessmentScore,
+      assessmentPassed: candidateAttempt ? candidateAttempt.passed : (app.assessmentPassed ?? true),
+      overallCandidateScore: opportunityMatch.overallMatch || scoreBreakdown.overallScore,
       matchedSkills: matchDetails.matchedSkills,
-      missingSkills: matchDetails.missingSkills
+      missingSkills: matchDetails.missingSkills,
+      opportunityMatch,
+      evidenceSummary: {
+        projectsCount: (student.projects || []).length,
+        hackathonsCount: (student.hackathons || []).length,
+        freelanceCount: (student.freelanceWork || []).length,
+        certificationsCount: (student.certifications || []).length,
+        achievementsCount: (student.achievements || []).length,
+        githubRepos: student.externalProfiles?.github?.publicRepos || 0,
+        leetcodeSolved: student.externalProfiles?.leetcode?.problemsSolved || 0
+      }
     };
   });
 

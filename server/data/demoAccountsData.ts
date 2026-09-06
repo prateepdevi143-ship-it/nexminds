@@ -1,1242 +1,1638 @@
-import { User, Student, Company, Job, SkillEvidence, CareerGoal } from '../types';
+import {
+  User,
+  Student,
+  Company,
+  Job,
+  SkillEvidence,
+  CareerGoal
+} from '../../src/types';
 
-export const DEMO_PASSWORD = 'CareerAI@2026';
+export interface AdminIndustryData {
+  id: string;
+  name: string;
+  category: string;
+  activeHiringPartners: number;
+  openOpportunities: number;
+  avgStartingCtc: string;
+  topDemandedSkills: string[];
+}
 
-// 1. Users list: 15 Students, 5 Companies, 1 Admin (ONLY 3 ROLES: student, company, admin)
+// 1. All Platform Users (10 Students + 5 Companies + 1 Admin)
 export const DEMO_USERS: User[] = [
-  // 15 Students
-  { id: 'usr_student_01', email: 'student01@careerai.demo', role: 'student', name: 'Arjun Kumar', createdAt: '2026-01-10T08:00:00.000Z' },
-  { id: 'usr_student_02', email: 'student02@careerai.demo', role: 'student', name: 'Kavin Raj', createdAt: '2026-01-12T08:00:00.000Z' },
-  { id: 'usr_student_03', email: 'student03@careerai.demo', role: 'student', name: 'Sanjay Kumar', createdAt: '2026-01-14T08:00:00.000Z' },
-  { id: 'usr_student_04', email: 'student04@careerai.demo', role: 'student', name: 'Vignesh S', createdAt: '2026-01-15T08:00:00.000Z' },
-  { id: 'usr_student_05', email: 'student05@careerai.demo', role: 'student', name: 'Dharshan P', createdAt: '2026-01-16T08:00:00.000Z' },
-  { id: 'usr_student_06', email: 'student06@careerai.demo', role: 'student', name: 'Rahul M', createdAt: '2026-01-18T08:00:00.000Z' },
-  { id: 'usr_student_07', email: 'student07@careerai.demo', role: 'student', name: 'Hari Prasad', createdAt: '2026-01-20T08:00:00.000Z' },
-  { id: 'usr_student_08', email: 'student08@careerai.demo', role: 'student', name: 'Ajay Kumar', createdAt: '2026-01-22T08:00:00.000Z' },
-  { id: 'usr_student_09', email: 'student09@careerai.demo', role: 'student', name: 'Pranav R', createdAt: '2026-01-24T08:00:00.000Z' },
-  { id: 'usr_student_10', email: 'student10@careerai.demo', role: 'student', name: 'Sathish K', createdAt: '2026-01-25T08:00:00.000Z' },
-  { id: 'usr_student_11', email: 'student11@careerai.demo', role: 'student', name: 'Mohanraj V', createdAt: '2026-01-26T08:00:00.000Z' },
-  { id: 'usr_student_12', email: 'student12@careerai.demo', role: 'student', name: 'Ashwin T', createdAt: '2026-01-27T08:00:00.000Z' },
-  { id: 'usr_student_13', email: 'student13@careerai.demo', role: 'student', name: 'Gokul S', createdAt: '2026-01-28T08:00:00.000Z' },
-  { id: 'usr_student_14', email: 'student14@careerai.demo', role: 'student', name: 'Manoj R', createdAt: '2026-01-29T08:00:00.000Z' },
-  { id: 'usr_student_15', email: 'student15@careerai.demo', role: 'student', name: 'Vijay S', createdAt: '2026-01-30T08:00:00.000Z' },
+  // 10 Students
+  { id: 'usr_student_01', email: 'demo.student01@nextmind.demo', name: 'Arjun Kumar', role: 'student', createdAt: '2026-01-01T00:00:00.000Z' },
+  { id: 'usr_student_02', email: 'demo.student02@nextmind.demo', name: 'Kavin Raj', role: 'student', createdAt: '2026-01-01T00:00:00.000Z' },
+  { id: 'usr_student_03', email: 'demo.student03@nextmind.demo', name: 'Priya Dharshini', role: 'student', createdAt: '2026-01-01T00:00:00.000Z' },
+  { id: 'usr_student_04', email: 'demo.student04@nextmind.demo', name: 'Vignesh Sundaram', role: 'student', createdAt: '2026-01-01T00:00:00.000Z' },
+  { id: 'usr_student_05', email: 'demo.student05@nextmind.demo', name: 'Dharshan Pandian', role: 'student', createdAt: '2026-01-01T00:00:00.000Z' },
+  { id: 'usr_student_06', email: 'demo.student06@nextmind.demo', name: 'Sneha Ramachandran', role: 'student', createdAt: '2026-01-01T00:00:00.000Z' },
+  { id: 'usr_student_07', email: 'demo.student07@nextmind.demo', name: 'Hari Prasad', role: 'student', createdAt: '2026-01-01T00:00:00.000Z' },
+  { id: 'usr_student_08', email: 'demo.student08@nextmind.demo', name: 'Ananya Subramanian', role: 'student', createdAt: '2026-01-01T00:00:00.000Z' },
+  { id: 'usr_student_09', email: 'demo.student09@nextmind.demo', name: 'Pranav Ravichandran', role: 'student', createdAt: '2026-01-01T00:00:00.000Z' },
+  { id: 'usr_student_10', email: 'demo.student10@nextmind.demo', name: 'Rahul Manikandan', role: 'student', createdAt: '2026-01-01T00:00:00.000Z' },
 
   // 5 Companies
-  { id: 'usr_company_01', email: 'company01@careerai.demo', role: 'company', name: 'Chennai AI Labs', createdAt: '2025-12-01T08:00:00.000Z' },
-  { id: 'usr_company_02', email: 'company02@careerai.demo', role: 'company', name: 'Coimbatore TechWorks', createdAt: '2025-12-05T08:00:00.000Z' },
-  { id: 'usr_company_03', email: 'company03@careerai.demo', role: 'company', name: 'Madurai Data Systems', createdAt: '2025-12-10T08:00:00.000Z' },
-  { id: 'usr_company_04', email: 'company04@careerai.demo', role: 'company', name: 'Tamil Cloud Technologies', createdAt: '2025-12-12T08:00:00.000Z' },
-  { id: 'usr_company_05', email: 'company05@careerai.demo', role: 'company', name: 'South India Cyber Labs', createdAt: '2025-12-15T08:00:00.000Z' },
+  { id: 'usr_company_01', email: 'demo.company01@nextmind.demo', name: 'Nexora Technologies — Demo', role: 'company', createdAt: '2026-01-01T00:00:00.000Z' },
+  { id: 'usr_company_02', email: 'demo.company02@nextmind.demo', name: 'DataForge Analytics — Demo', role: 'company', createdAt: '2026-01-01T00:00:00.000Z' },
+  { id: 'usr_company_03', email: 'demo.company03@nextmind.demo', name: 'CloudAxis Systems — Demo', role: 'company', createdAt: '2026-01-01T00:00:00.000Z' },
+  { id: 'usr_company_04', email: 'demo.company04@nextmind.demo', name: 'SecureStack Labs — Demo', role: 'company', createdAt: '2026-01-01T00:00:00.000Z' },
+  { id: 'usr_company_05', email: 'demo.company05@nextmind.demo', name: 'AppNova Digital — Demo', role: 'company', createdAt: '2026-01-01T00:00:00.000Z' },
 
-  // 1 Admin
-  { id: 'usr_admin', email: 'admin@careerai.demo', role: 'admin', name: 'CareerAI System Administrator', createdAt: '2025-11-01T08:00:00.000Z' }
+  // Admin
+  { id: 'usr_admin', email: 'demo.admin@nextmind.demo', name: 'NextMind Platform Administrator', role: 'admin', createdAt: '2026-01-01T00:00:00.000Z' }
 ];
 
-// 2. Career Goals Definitions
+// Career Goals Catalog
 export const CAREER_GOALS: CareerGoal[] = [
   {
     id: 'cg_ai_eng',
-    title: 'AI Engineer',
+    title: 'AI / Machine Learning Engineer',
     domain: 'Artificial Intelligence',
-    avgSalary: '₹14,50,000 / yr',
-    growthRate: '+34% YoY',
+    avgSalary: '₹14,00,000 / yr',
+    growthRate: '+38% YoY',
     demandLevel: 'High',
-    requiredSkills: ['Python', 'Machine Learning', 'Deep Learning', 'PyTorch', 'SQL', 'FastAPI'],
-    description: 'Design and deploy production-grade machine learning and deep learning pipelines and inference services.'
-  },
-  {
-    id: 'cg_fullstack',
-    title: 'Full Stack Developer',
-    domain: 'Software Engineering',
-    avgSalary: '₹11,80,000 / yr',
-    growthRate: '+26% YoY',
-    demandLevel: 'High',
-    requiredSkills: ['React', 'JavaScript', 'TypeScript', 'Node.js', 'PostgreSQL', 'Tailwind CSS', 'Git'],
-    description: 'Architect and develop responsive user interfaces coupled with scalable backend microservices and databases.'
-  },
-  {
-    id: 'cg_data_scientist',
-    title: 'Data Scientist',
-    domain: 'Data Science & Analytics',
-    avgSalary: '₹13,20,000 / yr',
-    growthRate: '+29% YoY',
-    demandLevel: 'High',
-    requiredSkills: ['Python', 'Data Science', 'Pandas', 'NumPy', 'Machine Learning', 'SQL', 'Statistics'],
-    description: 'Transform enterprise data into actionable statistical insights, predictive models, and executive dashboards.'
+    requiredSkills: ['Python', 'Machine Learning', 'Deep Learning', 'PyTorch', 'Data Science'],
+    description: 'Design and deploy deep learning models, transformer fine-tuning, and scalable ML inference pipelines.'
   },
   {
     id: 'cg_backend',
-    title: 'Backend Developer',
-    domain: 'Systems & Backend',
-    avgSalary: '₹11,00,000 / yr',
-    growthRate: '+22% YoY',
+    title: 'Backend Software Developer',
+    domain: 'Software Engineering',
+    avgSalary: '₹11,50,000 / yr',
+    growthRate: '+28% YoY',
     demandLevel: 'High',
-    requiredSkills: ['Node.js', 'Express.js', 'Python', 'SQL', 'PostgreSQL', 'Redis', 'Docker'],
-    description: 'Build high-throughput, low-latency APIs, event-driven message architectures, and database persistence layers.'
+    requiredSkills: ['Java', 'Spring Boot', 'SQL', 'REST API', 'DSA'],
+    description: 'Build enterprise microservices, transactional database systems, and low-latency APIs.'
+  },
+  {
+    id: 'cg_fullstack',
+    title: 'Full Stack Web Developer',
+    domain: 'Web Development',
+    avgSalary: '₹12,00,000 / yr',
+    growthRate: '+30% YoY',
+    demandLevel: 'High',
+    requiredSkills: ['React', 'JavaScript', 'Node.js', 'MongoDB', 'REST API'],
+    description: 'Architect modern responsive interfaces and scalable Node.js/Express server backends.'
+  },
+  {
+    id: 'cg_data_analyst',
+    title: 'Data Analyst & BI Specialist',
+    domain: 'Business Analytics',
+    avgSalary: '₹9,00,000 / yr',
+    growthRate: '+24% YoY',
+    demandLevel: 'High',
+    requiredSkills: ['Python', 'Data Science', 'SQL', 'Power BI', 'Pandas'],
+    description: 'Transform complex datasets into actionable business intelligence dashboards and KPI models.'
   },
   {
     id: 'cg_cybersecurity',
     title: 'Cybersecurity Analyst',
-    domain: 'Security & Defense',
-    avgSalary: '₹12,40,000 / yr',
-    growthRate: '+38% YoY',
+    domain: 'Information Security',
+    avgSalary: '₹11,00,000 / yr',
+    growthRate: '+34% YoY',
     demandLevel: 'High',
-    requiredSkills: ['Cybersecurity', 'Networking', 'Linux', 'OWASP', 'Bash/Shell', 'Python'],
-    description: 'Monitor enterprise attack surfaces, hunt threats, audit application vulnerabilities, and lead incident triage.'
+    requiredSkills: ['Cybersecurity', 'Networking', 'Linux', 'Python', 'OWASP'],
+    description: 'Defend organizational attack surfaces, conduct penetration testing, and manage SOC workflows.'
   },
   {
-    id: 'cg_cloud',
-    title: 'Cloud Engineer',
+    id: 'cg_cloud_devops',
+    title: 'Cloud & DevOps Engineer',
     domain: 'Cloud Architecture',
-    avgSalary: '₹13,00,000 / yr',
-    growthRate: '+31% YoY',
+    avgSalary: '₹13,50,000 / yr',
+    growthRate: '+36% YoY',
     demandLevel: 'High',
-    requiredSkills: ['AWS', 'Google Cloud', 'Cloud Computing', 'Docker', 'Linux', 'DevOps'],
-    description: 'Architect, configure, and maintain resilient multi-zone cloud infrastructure and automated deployment pipelines.'
-  },
-  {
-    id: 'cg_devops',
-    title: 'DevOps Engineer',
-    domain: 'DevOps & Site Reliability',
-    avgSalary: '₹13,80,000 / yr',
-    growthRate: '+32% YoY',
-    demandLevel: 'High',
-    requiredSkills: ['CI/CD', 'Docker', 'Kubernetes', 'Linux', 'Git', 'AWS', 'Bash/Shell'],
-    description: 'Empower continuous delivery via automated release pipelines, container orchestration, and real-time observability.'
-  },
-  {
-    id: 'cg_frontend',
-    title: 'Frontend Developer',
-    domain: 'Web & UI Engineering',
-    avgSalary: '₹9,80,000 / yr',
-    growthRate: '+21% YoY',
-    demandLevel: 'Medium',
-    requiredSkills: ['React', 'JavaScript', 'TypeScript', 'Tailwind CSS', 'HTML', 'CSS', 'Git'],
-    description: 'Craft high-performance, accessible, and responsive user experiences with modern component architectures.'
-  },
-  {
-    id: 'cg_ml_eng',
-    title: 'Machine Learning Engineer',
-    domain: 'Machine Learning',
-    avgSalary: '₹14,00,000 / yr',
-    growthRate: '+35% YoY',
-    demandLevel: 'High',
-    requiredSkills: ['Python', 'Machine Learning', 'Deep Learning', 'PyTorch', 'Docker', 'FastAPI'],
-    description: 'Optimize, containerize, and serve ML models at scale with continuous retraining and monitoring pipelines.'
-  },
-  {
-    id: 'cg_data_analyst',
-    title: 'Data Analyst',
-    domain: 'Business Intelligence',
-    avgSalary: '₹8,50,000 / yr',
-    growthRate: '+19% YoY',
-    demandLevel: 'Medium',
-    requiredSkills: ['SQL', 'Data Science', 'Power BI', 'Excel', 'Statistics', 'Python'],
-    description: 'Perform exploratory data analysis, data storytelling, and build business intelligence KPI dashboards.'
+    requiredSkills: ['Linux', 'Docker', 'AWS', 'Kubernetes', 'CI/CD', 'Git'],
+    description: 'Automate release pipelines, configure container clusters, and manage resilient cloud infrastructure.'
   },
   {
     id: 'cg_mobile',
-    title: 'Mobile App Developer',
+    title: 'Mobile Application Developer',
     domain: 'Mobile Engineering',
     avgSalary: '₹10,50,000 / yr',
-    growthRate: '+24% YoY',
+    growthRate: '+22% YoY',
     demandLevel: 'Medium',
-    requiredSkills: ['Flutter', 'Dart', 'JavaScript', 'REST API', 'Git'],
-    description: 'Build native-speed, responsive cross-platform mobile apps for iOS and Android devices.'
+    requiredSkills: ['Java', 'Android', 'Firebase', 'REST API', 'JavaScript'],
+    description: 'Build native and responsive mobile applications with cloud syncing and push notifications.'
   },
   {
-    id: 'cg_uiux',
-    title: 'UI/UX Developer',
-    domain: 'Design Engineering',
-    avgSalary: '₹10,00,000 / yr',
-    growthRate: '+25% YoY',
-    demandLevel: 'Medium',
-    requiredSkills: ['UI Design', 'Figma', 'CSS', 'Tailwind CSS', 'React', 'JavaScript'],
-    description: 'Bridge the gap between design tokens and production React components with accessible interaction design.'
+    id: 'cg_systems',
+    title: 'Systems & Core Software Engineer',
+    domain: 'Low-Level Systems',
+    avgSalary: '₹15,00,000 / yr',
+    growthRate: '+26% YoY',
+    demandLevel: 'High',
+    requiredSkills: ['C++', 'DSA', 'Linux', 'SQL', 'Git'],
+    description: 'Engineer high-throughput systems, custom memory allocators, and concurrency engines.'
   }
 ];
 
-// 3. 15 Real Tamil Nadu Students
-export const DEMO_STUDENTS: Student[] = [
-  // Student 1: Arjun Kumar (Chennai, AI Engineer)
+// 2. 10 Synthetic Students
+export const DEMO_STUDENTS: (Student & { isDemo?: boolean; demoSeedVersion?: string })[] = [
+  // Student 01: Arjun Kumar (Python + ML + Pandas + NumPy + Scikit-Learn)
   {
     id: 'std_01',
     userId: 'usr_student_01',
     name: 'Arjun Kumar',
-    email: 'student01@careerai.demo',
+    email: 'demo.student01@nextmind.demo',
     phone: '+91 98401 23456',
     location: 'Chennai, Tamil Nadu',
-    college: 'Anna University, CEG Campus, Chennai',
-    degree: 'B.Tech in Artificial Intelligence & Data Science',
+    college: 'Chennai Institute of Technology — Demo Profile',
+    degree: 'B.Tech Artificial Intelligence & Data Science',
     graduationYear: 2026,
-    cgpa: 8.92,
-    bio: 'Aspiring AI Engineer passionate about Deep Learning, PyTorch, and NLP architectures. Experienced in building computer vision models and generative AI systems.',
+    cgpa: 8.8,
+    bio: 'AI & Data Science student with deep hands-on expertise in Python, Scikit-learn, Pandas, and machine learning pipelines. Winner at Campus Innovation Challenge.',
+    careerGoal: 'AI / Machine Learning Engineer',
     targetCareerId: 'cg_ai_eng',
+    profileCompletion: 95,
+    careerReadinessScore: 92,
+    resumeFileName: 'Arjun_Kumar_Resume_AI.pdf',
+    resumeScore: 94,
     skills: [
-      { id: 's01_1', name: 'Python', confidence: 0.92, verified: true, lastDemonstrated: '2026-02-15', evidenceCount: 4 },
-      { id: 's01_2', name: 'Machine Learning', confidence: 0.88, verified: true, lastDemonstrated: '2026-02-10', evidenceCount: 3 },
-      { id: 's01_3', name: 'Deep Learning', confidence: 0.84, verified: true, lastDemonstrated: '2026-01-28', evidenceCount: 2 },
-      { id: 's01_4', name: 'PyTorch', confidence: 0.82, verified: true, lastDemonstrated: '2026-01-20', evidenceCount: 2 },
-      { id: 's01_5', name: 'SQL', confidence: 0.74, verified: false, lastDemonstrated: '2025-11-15', evidenceCount: 1 },
-      { id: 's01_6', name: 'FastAPI', confidence: 0.68, verified: false, lastDemonstrated: '2025-10-10', evidenceCount: 1 }
+      { id: 's01_1', name: 'Python', confidence: 0.95, verified: true, lastDemonstrated: '2026-02-20', evidenceCount: 5 },
+      { id: 's01_2', name: 'Machine Learning', confidence: 0.90, verified: true, lastDemonstrated: '2026-02-18', evidenceCount: 4 },
+      { id: 's01_3', name: 'Pandas', confidence: 0.88, verified: true, lastDemonstrated: '2026-02-15', evidenceCount: 3 },
+      { id: 's01_4', name: 'NumPy', confidence: 0.86, verified: true, lastDemonstrated: '2026-02-12', evidenceCount: 3 },
+      { id: 's01_5', name: 'Scikit-learn', confidence: 0.85, verified: true, lastDemonstrated: '2026-02-10', evidenceCount: 3 },
+      { id: 's01_6', name: 'DSA', confidence: 0.82, verified: true, lastDemonstrated: '2026-01-25', evidenceCount: 2 }
     ],
-    careerReadinessScore: 86,
     projects: [
       {
         id: 'p01_1',
-        title: 'Tamil Speech-to-Text Acoustic Model',
-        description: 'Trained a fine-tuned Whisper model on Tamil dialects, achieving 14.2% Word Error Rate (WER). Served via FastAPI backend.',
-        technologies: ['Python', 'PyTorch', 'Deep Learning', 'FastAPI'],
-        githubUrl: 'https://github.com/arjunkumar-dev/tamil-whisper-asr'
+        title: 'Student Performance & Dropout Prediction Engine',
+        description: 'Engineered an ML classification model using Pandas, NumPy, and Scikit-learn on 12,000 academic records achieving 91.4% recall.',
+        technologies: ['Python', 'Pandas', 'NumPy', 'Scikit-learn'],
+        githubUrl: 'https://github.com/arjun-ai-demo/student-performance-prediction'
       },
       {
         id: 'p01_2',
-        title: 'Healthcare Chest X-Ray Pneumonia Classifier',
-        description: 'Implemented ResNet-50 transfer learning on 5,800 medical scans with Grad-CAM visual interpretability.',
-        technologies: ['Python', 'PyTorch', 'Computer Vision'],
-        githubUrl: 'https://github.com/arjunkumar-dev/xray-pneumonia-vision'
+        title: 'Smart Resume ATS Analyzer & Skill Extractor',
+        description: 'Extracted technical skill vectors from resumes using Python text pipelines, benchmarking match scores against job descriptions.',
+        technologies: ['Python', 'Machine Learning', 'Pandas'],
+        githubUrl: 'https://github.com/arjun-ai-demo/smart-resume-analyzer'
       }
     ],
     experience: [
       {
         id: 'e01_1',
-        company: 'IIT Madras Research Park',
-        role: 'AI Research Intern',
+        company: 'Nexora Technologies (Demo)',
+        role: 'AI Developer Intern',
         startDate: '2025-06-01',
         endDate: '2025-08-31',
-        description: 'Benchmarked transformer tokenizers on South Indian languages and sped up inference latency by 32%.'
+        description: 'Optimized tabular ML pipelines and automated data preprocessing workflows for enterprise clients.'
+      }
+    ],
+    hackathons: [
+      {
+        id: 'h01_1',
+        name: 'Campus Innovation Challenge 2026',
+        project: 'Smart Campus Assistant',
+        rank: 'Winner — 1st Place',
+        technologies: ['Python', 'Machine Learning', 'Pandas'],
+        date: '2026-01-20',
+        description: 'Built an intelligent student advising engine using predictive ML models.'
       }
     ],
     certifications: [
-      { id: 'c01_1', name: 'Deep Learning Specialization (DeepLearning.AI)', issuer: 'Coursera', date: '2025-09-15', verificationUrl: 'https://coursera.org/verify/DL-ARJUN-2025' }
-    ]
+      { id: 'c01_1', name: 'Python for Data Science Professional', issuer: 'IBM / Coursera', date: '2025-09-15' },
+      { id: 'c01_2', name: 'Machine Learning Foundations Specialization', issuer: 'DeepLearning.AI', date: '2025-11-10' }
+    ],
+    externalProfiles: {
+      githubUsername: 'arjun-ai-demo',
+      leetcodeUsername: 'arjun_dev_demo',
+      githubData: {
+        publicRepos: 18,
+        topLanguages: [
+          { language: 'Python', count: 14, percentage: 78 },
+          { language: 'Jupyter', count: 3, percentage: 17 },
+          { language: 'Shell', count: 1, percentage: 5 }
+        ],
+        totalStars: 54,
+        contributionLevel: 'High Impact'
+      },
+      leetcodeData: {
+        totalSolved: 180,
+        easySolved: 80,
+        mediumSolved: 85,
+        hardSolved: 15,
+        ranking: 52000,
+        contestRating: 1680
+      }
+    },
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
 
-  // Student 2: Kavin Raj (Coimbatore, Full Stack Developer)
+  // Student 02: Kavin Raj (Java + DSA + SQL + Spring Boot)
   {
     id: 'std_02',
     userId: 'usr_student_02',
     name: 'Kavin Raj',
-    email: 'student02@careerai.demo',
-    phone: '+91 98422 34567',
+    email: 'demo.student02@nextmind.demo',
+    phone: '+91 98402 34567',
     location: 'Coimbatore, Tamil Nadu',
-    college: 'PSG College of Technology, Coimbatore',
-    degree: 'B.E. in Computer Science and Engineering',
+    college: 'Coimbatore Institute of Engineering — Demo Profile',
+    degree: 'B.E. Computer Science and Engineering',
     graduationYear: 2026,
-    cgpa: 8.78,
-    bio: 'Full Stack Engineer with strong foundations in React, TypeScript, Node.js, and PostgreSQL. Loves building clean UI/UX with solid microservice architectures.',
-    targetCareerId: 'cg_fullstack',
-    skills: [
-      { id: 's02_1', name: 'React', confidence: 0.90, verified: true, lastDemonstrated: '2026-02-18', evidenceCount: 4 },
-      { id: 's02_2', name: 'JavaScript', confidence: 0.91, verified: true, lastDemonstrated: '2026-02-20', evidenceCount: 4 },
-      { id: 's02_3', name: 'TypeScript', confidence: 0.85, verified: true, lastDemonstrated: '2026-02-05', evidenceCount: 3 },
-      { id: 's02_4', name: 'Node.js', confidence: 0.86, verified: true, lastDemonstrated: '2026-01-30', evidenceCount: 3 },
-      { id: 's02_5', name: 'PostgreSQL', confidence: 0.78, verified: true, lastDemonstrated: '2026-01-15', evidenceCount: 2 },
-      { id: 's02_6', name: 'Tailwind CSS', confidence: 0.88, verified: true, lastDemonstrated: '2026-02-14', evidenceCount: 3 },
-      { id: 's02_7', name: 'Git', confidence: 0.85, verified: true, lastDemonstrated: '2026-02-22', evidenceCount: 3 }
-    ],
+    cgpa: 8.4,
+    bio: 'Backend specialist with high proficiency in Java, Spring Boot microservices, relational database modeling, and complex algorithms (320+ LeetCode problems).',
+    careerGoal: 'Backend Software Developer',
+    targetCareerId: 'cg_backend',
+    profileCompletion: 92,
     careerReadinessScore: 89,
+    resumeFileName: 'Kavin_Raj_Java_Backend.pdf',
+    resumeScore: 91,
+    skills: [
+      { id: 's02_1', name: 'Java', confidence: 0.94, verified: true, lastDemonstrated: '2026-02-22', evidenceCount: 5 },
+      { id: 's02_2', name: 'DSA', confidence: 0.92, verified: true, lastDemonstrated: '2026-02-20', evidenceCount: 4 },
+      { id: 's02_3', name: 'SQL', confidence: 0.88, verified: true, lastDemonstrated: '2026-02-14', evidenceCount: 3 },
+      { id: 's02_4', name: 'Spring Boot', confidence: 0.86, verified: true, lastDemonstrated: '2026-02-10', evidenceCount: 3 }
+    ],
     projects: [
       {
         id: 'p02_1',
-        title: 'AgriCommerce - Direct Farmer Marketplace',
-        description: 'Engineered a real-time marketplace enabling farmers in western Tamil Nadu to sell directly to wholesale buyers without middlemen.',
-        technologies: ['React', 'TypeScript', 'Node.js', 'PostgreSQL', 'Tailwind CSS'],
-        githubUrl: 'https://github.com/kavinraj-dev/agri-commerce-portal'
+        title: 'Enterprise Banking Microservices Core',
+        description: 'Architected a distributed ledger and transaction processing service in Java 21, Spring Boot, and PostgreSQL with ACID compliance.',
+        technologies: ['Java', 'Spring Boot', 'SQL', 'PostgreSQL'],
+        githubUrl: 'https://github.com/kavin-java-demo/banking-microservices'
+      },
+      {
+        id: 'p02_2',
+        title: 'AgriSupply Chain Order Tracker',
+        description: 'Built high-throughput REST API endpoints for agricultural supply chain logistics with Redis caching.',
+        technologies: ['Java', 'SQL', 'REST API'],
+        githubUrl: 'https://github.com/kavin-java-demo/agri-supply-chain'
       }
     ],
     experience: [
       {
         id: 'e02_1',
-        company: 'Kovai Software Systems',
-        role: 'Full Stack Web Intern',
+        company: 'DataForge Analytics (Demo)',
+        role: 'Java Backend Intern',
         startDate: '2025-05-15',
         endDate: '2025-07-31',
-        description: 'Developed responsive client portals and optimized PostgreSQL query execution times by 40%.'
+        description: 'Developed backend ingestion services handling 50k transaction events per minute.'
+      }
+    ],
+    hackathons: [
+      {
+        id: 'h02_1',
+        name: 'Kovai Smart City Hackathon 2025',
+        project: 'Automated Municipal Parking Grid',
+        rank: 'Backend Lead — 2nd Place',
+        technologies: ['Java', 'Spring Boot', 'SQL'],
+        date: '2025-10-14'
       }
     ],
     certifications: [
-      { id: 'c02_1', name: 'Meta Front-End Developer Professional Certificate', issuer: 'Coursera', date: '2025-08-20' }
-    ]
+      { id: 'c02_1', name: 'Oracle Certified Associate Java Programmer', issuer: 'Oracle', date: '2025-08-10' }
+    ],
+    externalProfiles: {
+      githubUsername: 'kavin-java-demo',
+      leetcodeUsername: 'kavin_dsa_demo',
+      githubData: {
+        publicRepos: 22,
+        topLanguages: [{ language: 'Java', count: 18, percentage: 82 }, { language: 'SQL', count: 4, percentage: 18 }],
+        totalStars: 42,
+        contributionLevel: 'High Impact'
+      },
+      leetcodeData: {
+        totalSolved: 320,
+        easySolved: 110,
+        mediumSolved: 175,
+        hardSolved: 35,
+        ranking: 24100,
+        contestRating: 1845
+      }
+    },
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
 
-  // Student 3: Sanjay Kumar (Madurai, Data Scientist)
+  // Student 03: Priya Dharshini (React + JavaScript + Node.js + MongoDB)
   {
     id: 'std_03',
     userId: 'usr_student_03',
-    name: 'Sanjay Kumar',
-    email: 'student03@careerai.demo',
-    phone: '+91 94433 45678',
-    location: 'Madurai, Tamil Nadu',
-    college: 'Thiagarajar College of Engineering, Madurai',
-    degree: 'B.Tech in Information Technology',
+    name: 'Priya Dharshini',
+    email: 'demo.student03@nextmind.demo',
+    phone: '+91 98403 45678',
+    location: 'Tiruchirappalli, Tamil Nadu',
+    college: 'Tamil Nadu Institute of Technology — Demo Profile',
+    degree: 'B.Tech Information Technology',
     graduationYear: 2026,
-    cgpa: 8.65,
-    bio: 'Data Scientist focused on predictive analytics, statistical hypothesis testing, and machine learning models in Python and SQL.',
-    targetCareerId: 'cg_data_scientist',
+    cgpa: 8.9,
+    bio: 'Full Stack MERN engineer specializing in accessible frontend architectures with React, scalable Node.js microservices, and MongoDB document schemas.',
+    careerGoal: 'Full Stack Web Developer',
+    targetCareerId: 'cg_fullstack',
+    profileCompletion: 94,
+    careerReadinessScore: 91,
+    resumeFileName: 'Priya_Dharshini_FullStack.pdf',
+    resumeScore: 93,
     skills: [
-      { id: 's03_1', name: 'Python', confidence: 0.89, verified: true, lastDemonstrated: '2026-02-12', evidenceCount: 3 },
-      { id: 's03_2', name: 'Data Science', confidence: 0.86, verified: true, lastDemonstrated: '2026-02-08', evidenceCount: 3 },
-      { id: 's03_3', name: 'Pandas', confidence: 0.90, verified: true, lastDemonstrated: '2026-02-15', evidenceCount: 3 },
-      { id: 's03_4', name: 'SQL', confidence: 0.85, verified: true, lastDemonstrated: '2026-01-25', evidenceCount: 2 },
-      { id: 's03_5', name: 'Machine Learning', confidence: 0.80, verified: true, lastDemonstrated: '2026-01-20', evidenceCount: 2 },
-      { id: 's03_6', name: 'Statistics', confidence: 0.82, verified: true, lastDemonstrated: '2026-01-10', evidenceCount: 2 }
+      { id: 's03_1', name: 'React', confidence: 0.94, verified: true, lastDemonstrated: '2026-02-24', evidenceCount: 5 },
+      { id: 's03_2', name: 'JavaScript', confidence: 0.92, verified: true, lastDemonstrated: '2026-02-20', evidenceCount: 4 },
+      { id: 's03_3', name: 'Node.js', confidence: 0.88, verified: true, lastDemonstrated: '2026-02-15', evidenceCount: 3 },
+      { id: 's03_4', name: 'MongoDB', confidence: 0.86, verified: true, lastDemonstrated: '2026-02-12', evidenceCount: 3 },
+      { id: 's03_5', name: 'REST API', confidence: 0.87, verified: true, lastDemonstrated: '2026-02-10', evidenceCount: 3 }
     ],
-    careerReadinessScore: 85,
     projects: [
       {
         id: 'p03_1',
-        title: 'Retail Demand Forecasting Engine',
-        description: 'Analyzed 2 years of retail sales across 15 Tamil Nadu districts, utilizing ARIMA and XGBoost for inventory optimization.',
-        technologies: ['Python', 'Pandas', 'Machine Learning', 'SQL'],
-        githubUrl: 'https://github.com/sanjaykumar-ds/retail-demand-forecast'
+        title: 'Campus Recruitment & Interview Portal',
+        description: 'Built a full-stack portal with React 19, Node.js, and MongoDB featuring real-time interview room scheduling.',
+        technologies: ['React', 'JavaScript', 'Node.js', 'MongoDB'],
+        githubUrl: 'https://github.com/priya-fullstack-demo/recruitment-portal'
+      },
+      {
+        id: 'p03_2',
+        title: 'Collaborative Kanban Sprint Board',
+        description: 'Real-time drag-and-drop task board with responsive design, optimistic UI updates, and MongoDB persistence.',
+        technologies: ['React', 'Node.js', 'REST API'],
+        githubUrl: 'https://github.com/priya-fullstack-demo/kanban-board'
       }
     ],
-    experience: [],
+    experience: [
+      {
+        id: 'e03_1',
+        company: 'AppNova Digital (Demo)',
+        role: 'Full Stack Intern',
+        startDate: '2025-06-01',
+        endDate: '2025-08-15',
+        description: 'Contributed to client web applications using React component libraries and REST APIs.'
+      }
+    ],
+    hackathons: [
+      {
+        id: 'h03_1',
+        name: 'HackTrichy 2025',
+        project: 'Citizen Grievance Resolution Hub',
+        rank: '1st Runner Up — Full Stack Lead',
+        technologies: ['React', 'Node.js', 'MongoDB'],
+        date: '2025-09-22'
+      }
+    ],
     certifications: [
-      { id: 'c03_1', name: 'IBM Data Science Professional Certificate', issuer: 'Coursera', date: '2025-10-10' }
-    ]
+      { id: 'c03_1', name: 'Meta Front-End Developer Certificate', issuer: 'Meta', date: '2025-07-20' }
+    ],
+    externalProfiles: {
+      githubUsername: 'priya-fullstack-demo',
+      leetcodeUsername: 'priya_web_demo',
+      githubData: {
+        publicRepos: 25,
+        topLanguages: [{ language: 'JavaScript', count: 16, percentage: 64 }, { language: 'TypeScript', count: 7, percentage: 28 }],
+        totalStars: 48,
+        contributionLevel: 'High Impact'
+      },
+      leetcodeData: {
+        totalSolved: 140,
+        easySolved: 85,
+        mediumSolved: 50,
+        hardSolved: 5,
+        ranking: 85000,
+        contestRating: 1520
+      }
+    },
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
 
-  // Student 4: Vignesh S (Salem, Backend Developer)
+  // Student 04: Vignesh Sundaram (Python + Data Science + SQL + Power BI)
   {
     id: 'std_04',
     userId: 'usr_student_04',
-    name: 'Vignesh S',
-    email: 'student04@careerai.demo',
-    phone: '+91 97894 56789',
-    location: 'Salem, Tamil Nadu',
-    college: 'Government College of Engineering, Salem',
-    degree: 'B.E. in Computer Science and Engineering',
+    name: 'Vignesh Sundaram',
+    email: 'demo.student04@nextmind.demo',
+    phone: '+91 98404 56789',
+    location: 'Madurai, Tamil Nadu',
+    college: 'Madurai Institute of Engineering & Technology — Demo Profile',
+    degree: 'B.Tech Data Science',
     graduationYear: 2026,
-    cgpa: 8.45,
-    bio: 'Backend enthusiast specializing in Node.js microservices, Express, PostgreSQL, Redis caching, and containerized Docker environments.',
-    targetCareerId: 'cg_backend',
+    cgpa: 8.1,
+    bio: 'Data Analyst passionate about finding stories in numbers. Expert in SQL querying, Python analytics, Pandas data wrangling, and Power BI executive dashboards.',
+    careerGoal: 'Data Analyst & BI Specialist',
+    targetCareerId: 'cg_data_analyst',
+    profileCompletion: 90,
+    careerReadinessScore: 87,
+    resumeFileName: 'Vignesh_Sundaram_Data_Analyst.pdf',
+    resumeScore: 88,
     skills: [
-      { id: 's04_1', name: 'Node.js', confidence: 0.88, verified: true, lastDemonstrated: '2026-02-14', evidenceCount: 3 },
-      { id: 's04_2', name: 'Express.js', confidence: 0.86, verified: true, lastDemonstrated: '2026-02-14', evidenceCount: 3 },
-      { id: 's04_3', name: 'SQL', confidence: 0.82, verified: true, lastDemonstrated: '2026-01-22', evidenceCount: 2 },
-      { id: 's04_4', name: 'PostgreSQL', confidence: 0.80, verified: true, lastDemonstrated: '2026-01-20', evidenceCount: 2 },
-      { id: 's04_5', name: 'Redis', confidence: 0.72, verified: false, lastDemonstrated: '2025-12-10', evidenceCount: 1 },
-      { id: 's04_6', name: 'Docker', confidence: 0.70, verified: false, lastDemonstrated: '2025-11-20', evidenceCount: 1 }
+      { id: 's04_1', name: 'Python', confidence: 0.88, verified: true, lastDemonstrated: '2026-02-18', evidenceCount: 4 },
+      { id: 's04_2', name: 'Data Science', confidence: 0.86, verified: true, lastDemonstrated: '2026-02-15', evidenceCount: 3 },
+      { id: 's04_3', name: 'SQL', confidence: 0.90, verified: true, lastDemonstrated: '2026-02-22', evidenceCount: 4 },
+      { id: 's04_4', name: 'Power BI', confidence: 0.89, verified: true, lastDemonstrated: '2026-02-10', evidenceCount: 3 },
+      { id: 's04_5', name: 'Pandas', confidence: 0.85, verified: true, lastDemonstrated: '2026-02-08', evidenceCount: 3 }
     ],
-    careerReadinessScore: 81,
     projects: [
       {
         id: 'p04_1',
-        title: 'High-Throughput Order Processing API',
-        description: 'Architected an asynchronous checkout pipeline capable of processing 1,200 orders/sec with Redis queue concurrency.',
-        technologies: ['Node.js', 'Express.js', 'PostgreSQL', 'Redis'],
-        githubUrl: 'https://github.com/vignesh-backend/order-pipeline-engine'
+        title: 'Healthcare Patient Analytics & KPI Dashboard',
+        description: 'Processed 50,000 anonymized hospital records using SQL & Python, generating interactive Power BI visual dashboards for bed occupancy.',
+        technologies: ['Python', 'SQL', 'Power BI', 'Pandas'],
+        githubUrl: 'https://github.com/vignesh-data-demo/healthcare-analytics'
+      },
+      {
+        id: 'p04_2',
+        title: 'Retail Demand Forecasting & Inventory Optimization',
+        description: 'Analyzed weekly supermarket sales with Pandas and SQL window functions to model seasonal inventory reorders.',
+        technologies: ['Python', 'Data Science', 'SQL'],
+        githubUrl: 'https://github.com/vignesh-data-demo/retail-demand-forecasting'
       }
     ],
-    experience: [],
-    certifications: []
+    experience: [
+      {
+        id: 'e04_1',
+        company: 'DataForge Analytics (Demo)',
+        role: 'Data Analytics Intern',
+        startDate: '2025-06-15',
+        endDate: '2025-08-15',
+        description: 'Wrote automated SQL extraction scripts and designed client reporting dashboards in Power BI.'
+      }
+    ],
+    hackathons: [
+      {
+        id: 'h04_1',
+        name: 'Madurai DataThon 2025',
+        project: 'Public Transit Passenger Flow Visualizer',
+        rank: 'Best Data Visualization Award',
+        technologies: ['Python', 'Power BI', 'SQL'],
+        date: '2025-11-05'
+      }
+    ],
+    certifications: [
+      { id: 'c04_1', name: 'Google Data Analytics Professional', issuer: 'Google / Coursera', date: '2025-08-30' }
+    ],
+    externalProfiles: {
+      githubUsername: 'vignesh-data-demo',
+      leetcodeUsername: 'vignesh_sql_demo',
+      githubData: {
+        publicRepos: 15,
+        topLanguages: [{ language: 'Python', count: 9, percentage: 60 }, { language: 'SQL', count: 6, percentage: 40 }],
+        totalStars: 28,
+        contributionLevel: 'Active'
+      },
+      leetcodeData: {
+        totalSolved: 90,
+        easySolved: 50,
+        mediumSolved: 38,
+        hardSolved: 2,
+        ranking: 120000
+      }
+    },
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
 
-  // Student 5: Dharshan P (Tiruchirappalli, Cybersecurity Analyst)
+  // Student 05: Dharshan Pandian (Cybersecurity + Networking + Linux + Python)
   {
     id: 'std_05',
     userId: 'usr_student_05',
-    name: 'Dharshan P',
-    email: 'student05@careerai.demo',
-    phone: '+91 94885 67890',
-    location: 'Tiruchirappalli, Tamil Nadu',
-    college: 'National Institute of Technology, Tiruchirappalli (NITT)',
-    degree: 'B.Tech in Computer Science and Engineering',
+    name: 'Dharshan Pandian',
+    email: 'demo.student05@nextmind.demo',
+    phone: '+91 98405 67890',
+    location: 'Tirunelveli, Tamil Nadu',
+    college: 'South Tamil Nadu Engineering College — Demo Profile',
+    degree: 'B.E. Computer Science (Cybersecurity Specialization)',
     graduationYear: 2026,
-    cgpa: 9.10,
-    bio: 'Security researcher with expertise in vulnerability assessment, OWASP Top 10 mitigation, Wireshark packet analysis, and Linux hardening.',
+    cgpa: 7.9,
+    bio: 'Security researcher focused on offensive and defensive security operations, Linux kernel hardening, TCP/IP network packet analysis, and OWASP mitigation.',
+    careerGoal: 'Cybersecurity Analyst',
     targetCareerId: 'cg_cybersecurity',
+    profileCompletion: 88,
+    careerReadinessScore: 84,
+    resumeFileName: 'Dharshan_Pandian_Cybersecurity.pdf',
+    resumeScore: 86,
     skills: [
-      { id: 's05_1', name: 'Cybersecurity', confidence: 0.94, verified: true, lastDemonstrated: '2026-02-18', evidenceCount: 4 },
-      { id: 's05_2', name: 'Networking', confidence: 0.90, verified: true, lastDemonstrated: '2026-02-10', evidenceCount: 3 },
-      { id: 's05_3', name: 'Linux', confidence: 0.92, verified: true, lastDemonstrated: '2026-02-15', evidenceCount: 3 },
-      { id: 's05_4', name: 'OWASP', confidence: 0.88, verified: true, lastDemonstrated: '2026-01-30', evidenceCount: 3 },
-      { id: 's05_5', name: 'Bash/Shell', confidence: 0.85, verified: true, lastDemonstrated: '2026-01-20', evidenceCount: 2 },
-      { id: 's05_6', name: 'Python', confidence: 0.80, verified: true, lastDemonstrated: '2026-01-15', evidenceCount: 2 }
+      { id: 's05_1', name: 'Cybersecurity', confidence: 0.90, verified: true, lastDemonstrated: '2026-02-21', evidenceCount: 4 },
+      { id: 's05_2', name: 'Networking', confidence: 0.88, verified: true, lastDemonstrated: '2026-02-18', evidenceCount: 3 },
+      { id: 's05_3', name: 'Linux', confidence: 0.92, verified: true, lastDemonstrated: '2026-02-23', evidenceCount: 4 },
+      { id: 's05_4', name: 'Python', confidence: 0.82, verified: true, lastDemonstrated: '2026-02-10', evidenceCount: 3 },
+      { id: 's05_5', name: 'OWASP', confidence: 0.84, verified: true, lastDemonstrated: '2026-02-12', evidenceCount: 2 }
     ],
-    careerReadinessScore: 92,
     projects: [
       {
         id: 'p05_1',
-        title: 'Automated Web Vulnerability Scanner',
-        description: 'Developed an asynchronous scanner in Python testing for SQLi, XSS, CSRF, and SSL configuration weaknesses.',
-        technologies: ['Python', 'Cybersecurity', 'OWASP', 'Linux'],
-        githubUrl: 'https://github.com/dharshan-sec/auto-vuln-scanner'
+        title: 'Automated Network Vulnerability & Port Scanner',
+        description: 'Multi-threaded Python network scanner with banner grabbing, CVE cross-referencing, and HTML audit report generator.',
+        technologies: ['Python', 'Networking', 'Linux'],
+        githubUrl: 'https://github.com/dharshan-sec-demo/network-vulnerability-scanner'
+      },
+      {
+        id: 'p05_2',
+        title: 'SSH Honeypot Intrusion Detection System',
+        description: 'Deployed a decoy Linux server capturing attacker keystrokes, IP origins, and brute-force wordlists.',
+        technologies: ['Linux', 'Cybersecurity', 'Python'],
+        githubUrl: 'https://github.com/dharshan-sec-demo/ssh-honeypot'
       }
     ],
     experience: [
       {
         id: 'e05_1',
-        company: 'Trichy Cyber Defense Cell',
-        role: 'SOC Analyst Trainee',
-        startDate: '2025-05-01',
-        endDate: '2025-07-15',
-        description: 'Triaged 140+ network security alerts, mapped indicators of compromise (IoC), and audited server firewalls.'
+        company: 'SecureStack Labs (Demo)',
+        role: 'Security Intern',
+        startDate: '2025-06-01',
+        endDate: '2025-07-31',
+        description: 'Assisted in triage of firewall events and conducted OWASP Top 10 vulnerability checks on staging web apps.'
+      }
+    ],
+    hackathons: [
+      {
+        id: 'h05_1',
+        name: 'CyberDefense Challenge 2025',
+        project: 'Blue Team Network Defense',
+        rank: 'Top 5 Finalist',
+        technologies: ['Linux', 'Networking', 'Cybersecurity'],
+        date: '2025-10-28'
       }
     ],
     certifications: [
-      { id: 'c05_1', name: 'CompTIA Security+ (SY0-701)', issuer: 'CompTIA', date: '2025-09-01' }
-    ]
+      { id: 'c05_1', name: 'CompTIA Security+ (Demo Verified)', issuer: 'CompTIA', date: '2025-09-12' }
+    ],
+    externalProfiles: {
+      githubUsername: 'dharshan-sec-demo',
+      leetcodeUsername: 'dharshan_net_demo',
+      githubData: {
+        publicRepos: 12,
+        topLanguages: [{ language: 'Python', count: 8, percentage: 66 }, { language: 'Shell', count: 4, percentage: 34 }],
+        totalStars: 31,
+        contributionLevel: 'Active'
+      },
+      leetcodeData: {
+        totalSolved: 65,
+        easySolved: 45,
+        mediumSolved: 20,
+        hardSolved: 0,
+        ranking: 160000
+      }
+    },
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
 
-  // Student 6: Rahul M (Tirunelveli, Cloud Engineer)
+  // Student 06: Sneha Ramachandran (Java + Android + Firebase + Kotlin)
   {
     id: 'std_06',
     userId: 'usr_student_06',
-    name: 'Rahul M',
-    email: 'student06@careerai.demo',
-    phone: '+91 98946 78901',
-    location: 'Tirunelveli, Tamil Nadu',
-    college: 'Government College of Engineering, Tirunelveli',
-    degree: 'B.E. in Electronics & Communication Engineering',
+    name: 'Sneha Ramachandran',
+    email: 'demo.student06@nextmind.demo',
+    phone: '+91 98406 78901',
+    location: 'Salem, Tamil Nadu',
+    college: 'Salem College of Engineering & Technology — Demo Profile',
+    degree: 'B.Tech Information Technology',
     graduationYear: 2026,
-    cgpa: 8.32,
-    bio: 'Cloud architecture enthusiast focusing on AWS, Google Cloud, Docker, and infrastructure automation.',
-    targetCareerId: 'cg_cloud',
+    cgpa: 8.6,
+    bio: 'Mobile software developer dedicated to crafting responsive Android applications in Java and Kotlin, backed by Firebase real-time databases and REST APIs.',
+    careerGoal: 'Mobile Application Developer',
+    targetCareerId: 'cg_mobile',
+    profileCompletion: 91,
+    careerReadinessScore: 88,
+    resumeFileName: 'Sneha_Ramachandran_Android.pdf',
+    resumeScore: 90,
     skills: [
-      { id: 's06_1', name: 'AWS', confidence: 0.84, verified: true, lastDemonstrated: '2026-02-11', evidenceCount: 3 },
-      { id: 's06_2', name: 'Google Cloud', confidence: 0.80, verified: true, lastDemonstrated: '2026-02-05', evidenceCount: 2 },
-      { id: 's06_3', name: 'Cloud Computing', confidence: 0.86, verified: true, lastDemonstrated: '2026-02-12', evidenceCount: 3 },
-      { id: 's06_4', name: 'Docker', confidence: 0.78, verified: true, lastDemonstrated: '2026-01-20', evidenceCount: 2 },
-      { id: 's06_5', name: 'Linux', confidence: 0.82, verified: true, lastDemonstrated: '2026-01-25', evidenceCount: 2 }
+      { id: 's06_1', name: 'Java', confidence: 0.90, verified: true, lastDemonstrated: '2026-02-20', evidenceCount: 4 },
+      { id: 's06_2', name: 'Android', confidence: 0.92, verified: true, lastDemonstrated: '2026-02-23', evidenceCount: 4 },
+      { id: 's06_3', name: 'Firebase', confidence: 0.88, verified: true, lastDemonstrated: '2026-02-15', evidenceCount: 3 },
+      { id: 's06_4', name: 'REST API', confidence: 0.84, verified: true, lastDemonstrated: '2026-02-12', evidenceCount: 3 }
     ],
-    careerReadinessScore: 82,
     projects: [
       {
         id: 'p06_1',
-        title: 'Multi-Region Serverless Microservices on AWS',
-        description: 'Configured AWS Lambda, API Gateway, and DynamoDB Global Tables with CloudFront CDN integration.',
-        technologies: ['AWS', 'Docker', 'Cloud Computing'],
-        githubUrl: 'https://github.com/rahulm-cloud/aws-serverless-architecture'
+        title: 'MediConnect Patient Telehealth App',
+        description: 'Native Android application linking rural clinics with specialist doctors using Firebase Authentication, Firestore, and video API.',
+        technologies: ['Android', 'Java', 'Firebase'],
+        githubUrl: 'https://github.com/sneha-android-demo/mediconnect-app'
+      },
+      {
+        id: 'p06_2',
+        title: 'Tamil Nadu Regional Bus Transit Tracker',
+        description: 'Real-time GPS bus location tracking app using Google Maps API and Firestore live listeners.',
+        technologies: ['Android', 'Java', 'REST API'],
+        githubUrl: 'https://github.com/sneha-android-demo/transit-bus-tracker'
       }
     ],
-    experience: [],
+    experience: [
+      {
+        id: 'e06_1',
+        company: 'AppNova Digital (Demo)',
+        role: 'Mobile Developer Intern',
+        startDate: '2025-05-15',
+        endDate: '2025-07-15',
+        description: 'Built customer-facing UI screens and integrated push notification handlers in Android.'
+      }
+    ],
+    hackathons: [
+      {
+        id: 'h06_1',
+        name: 'Salem AppCon 2025',
+        project: 'Farmer Direct Produce Marketplace App',
+        rank: 'Winner — Best Mobile UX',
+        technologies: ['Android', 'Java', 'Firebase'],
+        date: '2025-10-18'
+      }
+    ],
     certifications: [
-      { id: 'c06_1', name: 'AWS Certified Solutions Architect – Associate', issuer: 'Amazon Web Services', date: '2025-11-20' }
-    ]
+      { id: 'c06_1', name: 'Associate Android Developer (Demo Preparation)', issuer: 'Google Developers', date: '2025-09-01' }
+    ],
+    externalProfiles: {
+      githubUsername: 'sneha-android-demo',
+      leetcodeUsername: 'sneha_mobile_demo',
+      githubData: {
+        publicRepos: 16,
+        topLanguages: [{ language: 'Java', count: 12, percentage: 75 }, { language: 'Kotlin', count: 4, percentage: 25 }],
+        totalStars: 39,
+        contributionLevel: 'Active'
+      },
+      leetcodeData: {
+        totalSolved: 120,
+        easySolved: 75,
+        mediumSolved: 42,
+        hardSolved: 3,
+        ranking: 98000
+      }
+    },
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
 
-  // Student 7: Hari Prasad (Hosur, DevOps Engineer)
+  // Student 07: Hari Prasad (C++ + DSA + Competitive Programming + Low-level Systems)
   {
     id: 'std_07',
     userId: 'usr_student_07',
     name: 'Hari Prasad',
-    email: 'student07@careerai.demo',
-    phone: '+91 94447 89012',
-    location: 'Hosur, Tamil Nadu',
-    college: 'Adhiyamaan College of Engineering, Hosur',
-    degree: 'B.Tech in Information Technology',
+    email: 'demo.student07@nextmind.demo',
+    phone: '+91 98407 89012',
+    location: 'Coimbatore, Tamil Nadu',
+    college: 'Government College of Technology — Demo Profile',
+    degree: 'B.E. Computer Science',
     graduationYear: 2026,
-    cgpa: 8.50,
-    bio: 'DevOps practitioner automating build pipelines, Kubernetes clusters, Docker containers, and GitHub Actions workflows.',
-    targetCareerId: 'cg_devops',
+    cgpa: 9.2,
+    bio: 'Competitive programmer (540+ LeetCode problems, rating 2150) and low-level systems enthusiast with strong mastery of C++, multithreading, and cache memory models.',
+    careerGoal: 'Systems & Core Software Engineer',
+    targetCareerId: 'cg_systems',
+    profileCompletion: 96,
+    careerReadinessScore: 95,
+    resumeFileName: 'Hari_Prasad_Systems_Cpp.pdf',
+    resumeScore: 96,
     skills: [
-      { id: 's07_1', name: 'CI/CD', confidence: 0.88, verified: true, lastDemonstrated: '2026-02-16', evidenceCount: 3 },
-      { id: 's07_2', name: 'Docker', confidence: 0.90, verified: true, lastDemonstrated: '2026-02-14', evidenceCount: 3 },
-      { id: 's07_3', name: 'Kubernetes', confidence: 0.80, verified: true, lastDemonstrated: '2026-01-25', evidenceCount: 2 },
-      { id: 's07_4', name: 'Linux', confidence: 0.86, verified: true, lastDemonstrated: '2026-02-02', evidenceCount: 3 },
-      { id: 's07_5', name: 'Git', confidence: 0.92, verified: true, lastDemonstrated: '2026-02-20', evidenceCount: 4 }
+      { id: 's07_1', name: 'C++', confidence: 0.96, verified: true, lastDemonstrated: '2026-02-25', evidenceCount: 5 },
+      { id: 's07_2', name: 'DSA', confidence: 0.98, verified: true, lastDemonstrated: '2026-02-25', evidenceCount: 5 },
+      { id: 's07_3', name: 'Linux', confidence: 0.88, verified: true, lastDemonstrated: '2026-02-18', evidenceCount: 3 },
+      { id: 's07_4', name: 'SQL', confidence: 0.84, verified: true, lastDemonstrated: '2026-02-12', evidenceCount: 3 },
+      { id: 's07_5', name: 'Git', confidence: 0.90, verified: true, lastDemonstrated: '2026-02-15', evidenceCount: 3 }
     ],
-    careerReadinessScore: 87,
     projects: [
       {
         id: 'p07_1',
-        title: 'GitOps Continuous Delivery Pipeline',
-        description: 'Built an ArgoCD GitOps pipeline deploying microservices to an EKS Kubernetes cluster with automated rollback.',
-        technologies: ['Kubernetes', 'Docker', 'CI/CD', 'Git'],
-        githubUrl: 'https://github.com/hariprasad-devops/gitops-k8s-delivery'
+        title: 'High Performance Thread-Safe In-Memory Cache Engine',
+        description: 'Implemented LRU/LFU cache policies in modern C++20 with atomic locks, zero heap fragmentation, and 1.8 million ops/sec benchmark.',
+        technologies: ['C++', 'DSA', 'Linux'],
+        githubUrl: 'https://github.com/hariprasad-cpp-demo/fast-cache-engine'
+      },
+      {
+        id: 'p07_2',
+        title: 'User-Space Memory Allocator & Garbage Tracker',
+        description: 'Designed custom buddy memory allocation engine overriding malloc/free with buffer overflow boundary protection.',
+        technologies: ['C++', 'Linux'],
+        githubUrl: 'https://github.com/hariprasad-cpp-demo/custom-allocator'
       }
     ],
-    experience: [],
-    certifications: []
+    experience: [
+      {
+        id: 'e07_1',
+        company: 'Nexora Technologies (Demo)',
+        role: 'Systems Engineering Intern',
+        startDate: '2025-06-01',
+        endDate: '2025-08-31',
+        description: 'Benchmarked memory bottlenecks in telemetry processing engine and reduced latency by 28%.'
+      }
+    ],
+    hackathons: [
+      {
+        id: 'h07_1',
+        name: 'CodeSprint Tamil Nadu 2025',
+        project: 'Distributed Lock Free Queue',
+        rank: 'Rank 3 (Statewide)',
+        technologies: ['C++', 'DSA'],
+        date: '2025-11-15'
+      }
+    ],
+    certifications: [
+      { id: 'c07_1', name: 'Advanced C++ Concurrency & Architecture', issuer: 'Udemy / Professional', date: '2025-08-20' }
+    ],
+    externalProfiles: {
+      githubUsername: 'hariprasad-cpp-demo',
+      leetcodeUsername: 'hari_cp_demo',
+      githubData: {
+        publicRepos: 20,
+        topLanguages: [{ language: 'C++', count: 18, percentage: 90 }, { language: 'C', count: 2, percentage: 10 }],
+        totalStars: 68,
+        contributionLevel: 'High Impact'
+      },
+      leetcodeData: {
+        totalSolved: 540,
+        easySolved: 160,
+        mediumSolved: 280,
+        hardSolved: 100,
+        ranking: 4200,
+        contestRating: 2150
+      }
+    },
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
 
-  // Student 8: Ajay Kumar (Erode, Frontend Developer)
+  // Student 08: Ananya Subramanian (Machine Learning + NLP + Python + Transformers)
   {
     id: 'std_08',
     userId: 'usr_student_08',
-    name: 'Ajay Kumar',
-    email: 'student08@careerai.demo',
-    phone: '+91 97888 90123',
-    location: 'Erode, Tamil Nadu',
-    college: 'Kongu Engineering College, Perundurai, Erode',
-    degree: 'B.E. in Computer Science and Engineering',
+    name: 'Ananya Subramanian',
+    email: 'demo.student08@nextmind.demo',
+    phone: '+91 98408 90123',
+    location: 'Vellore, Tamil Nadu',
+    college: 'Vellore Technical Institute — Demo Profile',
+    degree: 'B.Tech AI & Data Science',
     graduationYear: 2026,
-    cgpa: 8.40,
-    bio: 'Frontend developer dedicated to creating accessible web apps using React, Tailwind CSS, TypeScript, and responsive modern layouts.',
-    targetCareerId: 'cg_frontend',
+    cgpa: 8.7,
+    bio: 'AI researcher and NLP practitioner passionate about transformer architectures, multilingual sentiment analysis (Tamil-English code-switching), and PyTorch models.',
+    careerGoal: 'AI / Machine Learning Engineer',
+    targetCareerId: 'cg_ai_eng',
+    profileCompletion: 93,
+    careerReadinessScore: 90,
+    resumeFileName: 'Ananya_Subramanian_NLP_AI.pdf',
+    resumeScore: 92,
     skills: [
-      { id: 's08_1', name: 'React', confidence: 0.88, verified: true, lastDemonstrated: '2026-02-17', evidenceCount: 3 },
-      { id: 's08_2', name: 'JavaScript', confidence: 0.87, verified: true, lastDemonstrated: '2026-02-19', evidenceCount: 3 },
-      { id: 's08_3', name: 'Tailwind CSS', confidence: 0.92, verified: true, lastDemonstrated: '2026-02-21', evidenceCount: 4 },
-      { id: 's08_4', name: 'TypeScript', confidence: 0.78, verified: true, lastDemonstrated: '2026-01-28', evidenceCount: 2 },
-      { id: 's08_5', name: 'HTML', confidence: 0.95, verified: true, lastDemonstrated: '2026-02-20', evidenceCount: 4 },
-      { id: 's08_6', name: 'CSS', confidence: 0.94, verified: true, lastDemonstrated: '2026-02-20', evidenceCount: 4 }
+      { id: 's08_1', name: 'Python', confidence: 0.94, verified: true, lastDemonstrated: '2026-02-23', evidenceCount: 5 },
+      { id: 's08_2', name: 'Machine Learning', confidence: 0.90, verified: true, lastDemonstrated: '2026-02-20', evidenceCount: 4 },
+      { id: 's08_3', name: 'NLP', confidence: 0.92, verified: true, lastDemonstrated: '2026-02-22', evidenceCount: 4 },
+      { id: 's08_4', name: 'Pandas', confidence: 0.86, verified: true, lastDemonstrated: '2026-02-12', evidenceCount: 3 },
+      { id: 's08_5', name: 'Deep Learning', confidence: 0.85, verified: true, lastDemonstrated: '2026-02-15', evidenceCount: 3 }
     ],
-    careerReadinessScore: 88,
     projects: [
       {
         id: 'p08_1',
-        title: 'Textile Artisan Showcase & Catalog',
-        description: 'Responsive e-commerce showcase highlighting handloom weavers of Erode with instant search filtering.',
-        technologies: ['React', 'Tailwind CSS', 'TypeScript'],
-        githubUrl: 'https://github.com/ajaykumar-fe/erode-textile-showcase'
+        title: 'Multilingual Sentiment Analyzer for Tamil & English Code-Mixing',
+        description: 'Fine-tuned IndicBERT transformer model on 25,000 social media comments achieving 89.2% F1-score.',
+        technologies: ['Python', 'NLP', 'Machine Learning'],
+        githubUrl: 'https://github.com/ananya-nlp-demo/indic-sentiment'
+      },
+      {
+        id: 'p08_2',
+        title: 'Clinical Case Summarizer with Open Source LLM',
+        description: 'Built an abstractive medical clinical notes summarizer with hallucination reduction guardrails.',
+        technologies: ['Python', 'Machine Learning', 'NLP'],
+        githubUrl: 'https://github.com/ananya-nlp-demo/clinical-summarizer'
       }
     ],
-    experience: [],
-    certifications: []
+    experience: [
+      {
+        id: 'e08_1',
+        company: 'DataForge Analytics (Demo)',
+        role: 'NLP Research Intern',
+        startDate: '2025-06-01',
+        endDate: '2025-08-31',
+        description: 'Implemented automated document classification pipelines reducing manual review time by 60%.'
+      }
+    ],
+    hackathons: [
+      {
+        id: 'h08_1',
+        name: 'AI for Indic Languages 2025',
+        project: 'Tamil Voice Translation Pipeline',
+        rank: 'Special Recognition Award',
+        technologies: ['Python', 'NLP', 'Machine Learning'],
+        date: '2025-10-05'
+      }
+    ],
+    certifications: [
+      { id: 'c08_1', name: 'Natural Language Processing Specialization', issuer: 'DeepLearning.AI', date: '2025-09-18' }
+    ],
+    externalProfiles: {
+      githubUsername: 'ananya-nlp-demo',
+      leetcodeUsername: 'ananya_ai_demo',
+      githubData: {
+        publicRepos: 17,
+        topLanguages: [{ language: 'Python', count: 15, percentage: 88 }, { language: 'Jupyter', count: 2, percentage: 12 }],
+        totalStars: 44,
+        contributionLevel: 'High Impact'
+      },
+      leetcodeData: {
+        totalSolved: 150,
+        easySolved: 80,
+        mediumSolved: 62,
+        hardSolved: 8,
+        ranking: 72000
+      }
+    },
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
 
-  // Student 9: Pranav R (Vellore, Machine Learning Engineer)
+  // Student 09: Pranav Ravichandran (Cloud + DevOps + Linux + Docker + Kubernetes + CI/CD)
   {
     id: 'std_09',
     userId: 'usr_student_09',
-    name: 'Pranav R',
-    email: 'student09@careerai.demo',
-    phone: '+91 94459 01234',
-    location: 'Vellore, Tamil Nadu',
-    college: 'Vellore Institute of Technology (VIT), Vellore',
-    degree: 'B.Tech in Computer Science and Engineering (Data Science)',
+    name: 'Pranav Ravichandran',
+    email: 'demo.student09@nextmind.demo',
+    phone: '+91 98409 01234',
+    location: 'Erode, Tamil Nadu',
+    college: 'Erode Sengunthar Engineering College — Demo Profile',
+    degree: 'B.E. Computer Science',
     graduationYear: 2026,
-    cgpa: 9.04,
-    bio: 'ML Engineer specializing in model training, PyTorch optimization, Docker containerization, and low-latency inference endpoints.',
-    targetCareerId: 'cg_ml_eng',
+    cgpa: 8.0,
+    bio: 'DevOps engineer focused on infrastructure-as-code, Docker containerization, Kubernetes cluster management, Linux kernel tuning, and automated CI/CD deployment pipelines.',
+    careerGoal: 'Cloud & DevOps Engineer',
+    targetCareerId: 'cg_cloud_devops',
+    profileCompletion: 89,
+    careerReadinessScore: 86,
+    resumeFileName: 'Pranav_Ravichandran_DevOps.pdf',
+    resumeScore: 88,
     skills: [
-      { id: 's09_1', name: 'Python', confidence: 0.91, verified: true, lastDemonstrated: '2026-02-14', evidenceCount: 4 },
-      { id: 's09_2', name: 'Machine Learning', confidence: 0.89, verified: true, lastDemonstrated: '2026-02-12', evidenceCount: 3 },
-      { id: 's09_3', name: 'Deep Learning', confidence: 0.86, verified: true, lastDemonstrated: '2026-01-30', evidenceCount: 3 },
-      { id: 's09_4', name: 'PyTorch', confidence: 0.85, verified: true, lastDemonstrated: '2026-02-04', evidenceCount: 3 },
-      { id: 's09_5', name: 'FastAPI', confidence: 0.80, verified: true, lastDemonstrated: '2026-01-22', evidenceCount: 2 }
+      { id: 's09_1', name: 'Linux', confidence: 0.92, verified: true, lastDemonstrated: '2026-02-24', evidenceCount: 4 },
+      { id: 's09_2', name: 'Docker', confidence: 0.90, verified: true, lastDemonstrated: '2026-02-21', evidenceCount: 4 },
+      { id: 's09_3', name: 'AWS', confidence: 0.84, verified: true, lastDemonstrated: '2026-02-15', evidenceCount: 3 },
+      { id: 's09_4', name: 'Kubernetes', confidence: 0.82, verified: true, lastDemonstrated: '2026-02-14', evidenceCount: 3 },
+      { id: 's09_5', name: 'CI/CD', confidence: 0.88, verified: true, lastDemonstrated: '2026-02-18', evidenceCount: 3 }
     ],
-    careerReadinessScore: 89,
     projects: [
       {
         id: 'p09_1',
-        title: 'Real-Time Edge Traffic Density Estimation',
-        description: 'Deployed a quantized YOLO model on edge video streams, counting vehicles with sub-30ms latency.',
-        technologies: ['Python', 'PyTorch', 'FastAPI', 'Docker'],
-        githubUrl: 'https://github.com/pranavr-ml/edge-traffic-vision'
+        title: 'Automated Microservices GitOps Pipeline',
+        description: 'Built continuous delivery workflow with GitHub Actions, Docker multi-stage builds, and automated blue-green Kubernetes deployments.',
+        technologies: ['Docker', 'Kubernetes', 'CI/CD', 'Linux'],
+        githubUrl: 'https://github.com/pranav-devops-demo/gitops-pipeline'
+      },
+      {
+        id: 'p09_2',
+        title: 'Multi-Tier Cloud Infrastructure Automation',
+        description: 'Automated VPC, EC2 autoscaling, and RDS provisioning on AWS with Terraform and Bash scripts.',
+        technologies: ['AWS', 'Linux', 'Docker'],
+        githubUrl: 'https://github.com/pranav-devops-demo/aws-infra-automation'
       }
     ],
     experience: [
       {
         id: 'e09_1',
-        company: 'VIT AI Research Lab',
-        role: 'Student ML Fellow',
-        startDate: '2025-07-01',
-        endDate: '2025-12-15',
-        description: 'Assisted in training self-supervised medical image representations.'
+        company: 'CloudAxis Systems (Demo)',
+        role: 'Cloud Operations Intern',
+        startDate: '2025-06-01',
+        endDate: '2025-08-31',
+        description: 'Maintained staging Docker environments and configured Prometheus/Grafana monitoring alerts.'
       }
     ],
-    certifications: []
+    hackathons: [
+      {
+        id: 'h09_1',
+        name: 'DevOps Days Chennai 2025',
+        project: 'Self-Healing Kubernetes Node Operator',
+        rank: 'Student Track Winner',
+        technologies: ['Kubernetes', 'Docker', 'Linux'],
+        date: '2025-11-25'
+      }
+    ],
+    certifications: [
+      { id: 'c09_1', name: 'AWS Certified Solutions Architect Associate (Demo)', issuer: 'Amazon Web Services', date: '2025-08-14' }
+    ],
+    externalProfiles: {
+      githubUsername: 'pranav-devops-demo',
+      leetcodeUsername: 'pranav_cloud_demo',
+      githubData: {
+        publicRepos: 19,
+        topLanguages: [{ language: 'Shell', count: 9, percentage: 48 }, { language: 'Dockerfile', count: 6, percentage: 32 }, { language: 'HCL', count: 4, percentage: 20 }],
+        totalStars: 35,
+        contributionLevel: 'Active'
+      },
+      leetcodeData: {
+        totalSolved: 75,
+        easySolved: 50,
+        mediumSolved: 23,
+        hardSolved: 2,
+        ranking: 155000
+      }
+    },
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
 
-  // Student 10: Sathish K (Thanjavur, Data Analyst)
+  // Student 10: Rahul Manikandan (Full Stack Development + React + Node.js + PostgreSQL + Tailwind CSS)
   {
     id: 'std_10',
     userId: 'usr_student_10',
-    name: 'Sathish K',
-    email: 'student10@careerai.demo',
+    name: 'Rahul Manikandan',
+    email: 'demo.student10@nextmind.demo',
     phone: '+91 98410 12345',
     location: 'Thanjavur, Tamil Nadu',
-    college: 'SASTRA Deemed University, Thanjavur',
-    degree: 'B.Tech in Information and Communication Technology',
+    college: 'Thanjavur Institute of Technology — Demo Profile',
+    degree: 'B.Tech Computer Science',
     graduationYear: 2026,
-    cgpa: 8.55,
-    bio: 'Data Analyst adept at SQL data extraction, Power BI dashboard design, statistical reporting, and exploratory Python analysis.',
-    targetCareerId: 'cg_data_analyst',
+    cgpa: 8.3,
+    bio: 'Full Stack engineer skilled in TypeScript, React, Tailwind CSS, Node.js, and relational database schemas with PostgreSQL. Passionate about clean code and modern developer tooling.',
+    careerGoal: 'Full Stack Web Developer',
+    targetCareerId: 'cg_fullstack',
+    profileCompletion: 92,
+    careerReadinessScore: 89,
+    resumeFileName: 'Rahul_Manikandan_FullStack.pdf',
+    resumeScore: 91,
     skills: [
-      { id: 's10_1', name: 'SQL', confidence: 0.90, verified: true, lastDemonstrated: '2026-02-18', evidenceCount: 3 },
-      { id: 's10_2', name: 'Power BI', confidence: 0.88, verified: true, lastDemonstrated: '2026-02-15', evidenceCount: 3 },
-      { id: 's10_3', name: 'Data Science', confidence: 0.82, verified: true, lastDemonstrated: '2026-02-08', evidenceCount: 2 },
-      { id: 's10_4', name: 'Excel', confidence: 0.92, verified: true, lastDemonstrated: '2026-02-20', evidenceCount: 4 },
-      { id: 's10_5', name: 'Statistics', confidence: 0.84, verified: true, lastDemonstrated: '2026-01-25', evidenceCount: 2 }
+      { id: 's10_1', name: 'React', confidence: 0.92, verified: true, lastDemonstrated: '2026-02-23', evidenceCount: 5 },
+      { id: 's10_2', name: 'Node.js', confidence: 0.89, verified: true, lastDemonstrated: '2026-02-20', evidenceCount: 4 },
+      { id: 's10_3', name: 'SQL', confidence: 0.88, verified: true, lastDemonstrated: '2026-02-18', evidenceCount: 3 },
+      { id: 's10_4', name: 'JavaScript', confidence: 0.90, verified: true, lastDemonstrated: '2026-02-15', evidenceCount: 4 },
+      { id: 's10_5', name: 'REST API', confidence: 0.88, verified: true, lastDemonstrated: '2026-02-14', evidenceCount: 3 }
     ],
-    careerReadinessScore: 87,
     projects: [
       {
         id: 'p10_1',
-        title: 'Cauvery Delta Agriculture Yield Analytics',
-        description: 'Aggregated 5 years of rainfall, soil moisture, and crop yield data into an interactive Power BI dashboard for delta farmers.',
-        technologies: ['SQL', 'Power BI', 'Excel', 'Statistics'],
-        githubUrl: 'https://github.com/sathishk-analytics/cauvery-crop-bi'
+        title: 'Multi-Tenant SaaS Invoicing & Billing Engine',
+        description: 'Complete billing software with React frontend, Node.js backend, and PostgreSQL relational database with Stripe webhook reconciliation.',
+        technologies: ['React', 'Node.js', 'SQL', 'REST API'],
+        githubUrl: 'https://github.com/rahul-fs-demo/saas-invoicing'
+      },
+      {
+        id: 'p10_2',
+        title: 'Real-Time Collaborative Classroom Whiteboard',
+        description: 'Interactive canvas whiteboard using React, HTML5 Canvas, WebSockets, and Node.js.',
+        technologies: ['React', 'JavaScript', 'Node.js'],
+        githubUrl: 'https://github.com/rahul-fs-demo/classroom-whiteboard'
       }
     ],
-    experience: [],
+    experience: [
+      {
+        id: 'e10_1',
+        company: 'AppNova Digital (Demo)',
+        role: 'Full Stack Intern',
+        startDate: '2025-06-01',
+        endDate: '2025-08-31',
+        description: 'Developed responsive dashboard modules and wrote PostgreSQL migration scripts.'
+      }
+    ],
+    hackathons: [
+      {
+        id: 'h10_1',
+        name: 'DeltaHacks South 2025',
+        project: 'Campus Carbon Footprint Tracker',
+        rank: 'Top 10 Finalist',
+        technologies: ['React', 'Node.js', 'SQL'],
+        date: '2025-10-12'
+      }
+    ],
     certifications: [
-      { id: 'c10_1', name: 'Microsoft Certified: Power BI Data Analyst Associate', issuer: 'Microsoft', date: '2025-10-30' }
-    ]
-  },
-
-  // Student 11: Mohanraj V (Tiruppur, Mobile App Developer)
-  {
-    id: 'std_11',
-    userId: 'usr_student_11',
-    name: 'Mohanraj V',
-    email: 'student11@careerai.demo',
-    phone: '+91 97911 23456',
-    location: 'Tiruppur, Tamil Nadu',
-    college: 'Bannari Amman Institute of Technology, Sathyamangalam',
-    degree: 'B.E. in Computer Science and Engineering',
-    graduationYear: 2026,
-    cgpa: 8.35,
-    bio: 'Mobile App Developer experienced in Flutter and Dart, building clean cross-platform apps with offline SQLite sync and REST APIs.',
-    targetCareerId: 'cg_mobile',
-    skills: [
-      { id: 's11_1', name: 'Flutter', confidence: 0.91, verified: true, lastDemonstrated: '2026-02-17', evidenceCount: 4 },
-      { id: 's11_2', name: 'Dart', confidence: 0.90, verified: true, lastDemonstrated: '2026-02-17', evidenceCount: 3 },
-      { id: 's11_3', name: 'JavaScript', confidence: 0.80, verified: true, lastDemonstrated: '2026-01-20', evidenceCount: 2 },
-      { id: 's11_4', name: 'REST API', confidence: 0.85, verified: true, lastDemonstrated: '2026-02-10', evidenceCount: 3 },
-      { id: 's11_5', name: 'Git', confidence: 0.84, verified: true, lastDemonstrated: '2026-02-15', evidenceCount: 2 }
+      { id: 'c10_1', name: 'Full Stack Web Development with PostgreSQL', issuer: 'Coursera / Vanderbilt', date: '2025-07-28' }
     ],
-    careerReadinessScore: 86,
-    projects: [
-      {
-        id: 'p11_1',
-        title: 'Tiruppur Garment Logistics Mobile Suite',
-        description: 'Built a Flutter app for tracking textile shipment dispatches with barcode scanning and offline sync.',
-        technologies: ['Flutter', 'Dart', 'REST API'],
-        githubUrl: 'https://github.com/mohanraj-mobile/garment-logistics-flutter'
+    externalProfiles: {
+      githubUsername: 'rahul-fs-demo',
+      leetcodeUsername: 'rahul_fs_demo',
+      githubData: {
+        publicRepos: 21,
+        topLanguages: [{ language: 'TypeScript', count: 11, percentage: 52 }, { language: 'JavaScript', count: 7, percentage: 33 }, { language: 'SQL', count: 3, percentage: 15 }],
+        totalStars: 38,
+        contributionLevel: 'Active'
+      },
+      leetcodeData: {
+        totalSolved: 175,
+        easySolved: 95,
+        mediumSolved: 70,
+        hardSolved: 10,
+        ranking: 65000
       }
-    ],
-    experience: [],
-    certifications: []
-  },
-
-  // Student 12: Ashwin T (Kanchipuram, AI/ML Developer)
-  {
-    id: 'std_12',
-    userId: 'usr_student_12',
-    name: 'Ashwin T',
-    email: 'student12@careerai.demo',
-    phone: '+91 98402 34567',
-    location: 'Kanchipuram, Tamil Nadu',
-    college: 'SSN College of Engineering, Kalavakkam, Chennai',
-    degree: 'B.Tech in Information Technology',
-    graduationYear: 2026,
-    cgpa: 8.85,
-    bio: 'AI/ML developer focusing on NLP embeddings, Scikit-Learn pipelines, Python data processing, and conversational systems.',
-    targetCareerId: 'cg_ai_eng',
-    skills: [
-      { id: 's12_1', name: 'Python', confidence: 0.90, verified: true, lastDemonstrated: '2026-02-15', evidenceCount: 3 },
-      { id: 's12_2', name: 'Machine Learning', confidence: 0.85, verified: true, lastDemonstrated: '2026-02-08', evidenceCount: 3 },
-      { id: 's12_3', name: 'Deep Learning', confidence: 0.78, verified: true, lastDemonstrated: '2026-01-25', evidenceCount: 2 },
-      { id: 's12_4', name: 'SQL', confidence: 0.80, verified: true, lastDemonstrated: '2026-01-18', evidenceCount: 2 },
-      { id: 's12_5', name: 'FastAPI', confidence: 0.75, verified: false, lastDemonstrated: '2025-12-10', evidenceCount: 1 }
-    ],
-    careerReadinessScore: 83,
-    projects: [
-      {
-        id: 'p12_1',
-        title: 'Document Q&A RAG Pipeline',
-        description: 'Developed a Retrieval-Augmented Generation (RAG) system in Python using ChromaDB vector database and sentence transformers.',
-        technologies: ['Python', 'Machine Learning', 'FastAPI'],
-        githubUrl: 'https://github.com/ashwint-ml/doc-rag-pipeline'
-      }
-    ],
-    experience: [],
-    certifications: []
-  },
-
-  // Student 13: Gokul S (Chengalpattu, Software Developer)
-  {
-    id: 'std_13',
-    userId: 'usr_student_13',
-    name: 'Gokul S',
-    email: 'student13@careerai.demo',
-    phone: '+91 94453 45678',
-    location: 'Chengalpattu, Tamil Nadu',
-    college: 'SRM Institute of Science and Technology, Kattankulathur',
-    degree: 'B.Tech in Computer Science and Engineering',
-    graduationYear: 2026,
-    cgpa: 8.70,
-    bio: 'Software engineer with solid foundations in Java, OOP principles, Data Structures & Algorithms, and relational database systems.',
-    targetCareerId: 'cg_backend',
-    skills: [
-      { id: 's13_1', name: 'Java', confidence: 0.91, verified: true, lastDemonstrated: '2026-02-16', evidenceCount: 4 },
-      { id: 's13_2', name: 'SQL', confidence: 0.88, verified: true, lastDemonstrated: '2026-02-10', evidenceCount: 3 },
-      { id: 's13_3', name: 'OOP', confidence: 0.92, verified: true, lastDemonstrated: '2026-02-14', evidenceCount: 4 },
-      { id: 's13_4', name: 'DSA', confidence: 0.89, verified: true, lastDemonstrated: '2026-02-18', evidenceCount: 3 },
-      { id: 's13_5', name: 'Spring Boot', confidence: 0.78, verified: true, lastDemonstrated: '2026-01-25', evidenceCount: 2 }
-    ],
-    careerReadinessScore: 86,
-    projects: [
-      {
-        id: 'p13_1',
-        title: 'Banking Ledger Transaction Engine',
-        description: 'Implemented an ACID-compliant multithreaded double-entry financial ledger service in Java with HikariCP connection pooling.',
-        technologies: ['Java', 'SQL', 'OOP', 'Spring Boot'],
-        githubUrl: 'https://github.com/gokuls-dev/banking-ledger-core'
-      }
-    ],
-    experience: [],
-    certifications: []
-  },
-
-  // Student 14: Manoj R (Dindigul, UI/UX + Frontend Developer)
-  {
-    id: 'std_14',
-    userId: 'usr_student_14',
-    name: 'Manoj R',
-    email: 'student14@careerai.demo',
-    phone: '+91 97894 12345',
-    location: 'Dindigul, Tamil Nadu',
-    college: 'PSNA College of Engineering and Technology, Dindigul',
-    degree: 'B.E. in Computer Science and Engineering',
-    graduationYear: 2026,
-    cgpa: 8.42,
-    bio: 'UI/UX enthusiast combining Figma auto-layout design systems with clean React, Tailwind CSS, and micro-animations.',
-    targetCareerId: 'cg_uiux',
-    skills: [
-      { id: 's14_1', name: 'UI Design', confidence: 0.93, verified: true, lastDemonstrated: '2026-02-18', evidenceCount: 4 },
-      { id: 's14_2', name: 'Figma', confidence: 0.94, verified: true, lastDemonstrated: '2026-02-20', evidenceCount: 4 },
-      { id: 's14_3', name: 'React', confidence: 0.82, verified: true, lastDemonstrated: '2026-02-12', evidenceCount: 3 },
-      { id: 's14_4', name: 'Tailwind CSS', confidence: 0.90, verified: true, lastDemonstrated: '2026-02-16', evidenceCount: 3 },
-      { id: 's14_5', name: 'CSS', confidence: 0.92, verified: true, lastDemonstrated: '2026-02-18', evidenceCount: 3 }
-    ],
-    careerReadinessScore: 87,
-    projects: [
-      {
-        id: 'p14_1',
-        title: 'Locksmith Craft Enterprise Design System',
-        description: 'Complete Figma design system with 200+ accessible components, tokens, and React Tailwind implementation.',
-        technologies: ['UI Design', 'Figma', 'React', 'Tailwind CSS'],
-        githubUrl: 'https://github.com/manojr-ui/craft-design-system'
-      }
-    ],
-    experience: [],
-    certifications: []
-  },
-
-  // Student 15: Vijay S (Thoothukudi, Cloud + Backend Developer)
-  {
-    id: 'std_15',
-    userId: 'usr_student_15',
-    name: 'Vijay S',
-    email: 'student15@careerai.demo',
-    phone: '+91 98425 67890',
-    location: 'Thoothukudi, Tamil Nadu',
-    college: 'National Engineering College, Kovilpatti',
-    degree: 'B.Tech in Information Technology',
-    graduationYear: 2026,
-    cgpa: 8.52,
-    bio: 'Backend & Cloud engineer focused on building Docker microservices, AWS deployment, Node.js APIs, and SQL database tuning.',
-    targetCareerId: 'cg_backend',
-    skills: [
-      { id: 's15_1', name: 'Node.js', confidence: 0.87, verified: true, lastDemonstrated: '2026-02-17', evidenceCount: 3 },
-      { id: 's15_2', name: 'AWS', confidence: 0.82, verified: true, lastDemonstrated: '2026-02-10', evidenceCount: 2 },
-      { id: 's15_3', name: 'Docker', confidence: 0.85, verified: true, lastDemonstrated: '2026-02-14', evidenceCount: 3 },
-      { id: 's15_4', name: 'SQL', confidence: 0.83, verified: true, lastDemonstrated: '2026-01-26', evidenceCount: 2 },
-      { id: 's15_5', name: 'Linux', confidence: 0.84, verified: true, lastDemonstrated: '2026-02-05', evidenceCount: 2 }
-    ],
-    careerReadinessScore: 84,
-    projects: [
-      {
-        id: 'p15_1',
-        title: 'Port Cargo Dispatch Telemetry Service',
-        description: 'Containerized microservice receiving ship cargo telemetry data with AWS ECS Fargate deployment.',
-        technologies: ['Node.js', 'Docker', 'AWS', 'SQL'],
-        githubUrl: 'https://github.com/vijays-backend/port-cargo-telemetry'
-      }
-    ],
-    experience: [],
-    certifications: []
+    },
+    isDemo: true,
+    demoSeedVersion: 'v1'
   }
 ];
 
-// 4. 5 Real Tamil Nadu Companies & 15 Real Jobs
-export const DEMO_COMPANIES: Company[] = [
-  // Company 1: Chennai AI Labs
+// 3. 5 Synthetic Companies
+export const DEMO_COMPANIES: (Company & { isDemo?: boolean; demoSeedVersion?: string })[] = [
+  // Company 01: Nexora Technologies — Demo (Chennai)
   {
     id: 'cmp_01',
     userId: 'usr_company_01',
-    name: 'Chennai AI Labs',
-    email: 'company01@careerai.demo',
-    logo: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150&auto=format&fit=crop&q=80',
-    website: 'https://chennaiailabs.example.com',
+    name: 'Nexora Technologies — Demo',
+    email: 'demo.company01@nextmind.demo',
+    logo: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=150&auto=format&fit=crop&q=80',
+    website: 'https://nexora.example.com',
     location: 'Tidel Park, Taramani, Chennai, Tamil Nadu',
-    industry: 'Artificial Intelligence & Software',
-    description: 'Premier AI research and product development center building deep learning, computer vision, and NLP intelligence solutions for global enterprises.',
-    employeeCount: '50-150',
-    verified: true
+    industry: 'Software Development & Systems',
+    description: 'Tier-1 enterprise engineering partner specializing in high-throughput backend microservices, core systems engineering, Python automation, and digital transformation.',
+    employeeCount: '250-500',
+    verified: true,
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
-  // Company 2: Coimbatore TechWorks
+  // Company 02: DataForge Analytics — Demo (Coimbatore)
   {
     id: 'cmp_02',
     userId: 'usr_company_02',
-    name: 'Coimbatore TechWorks',
-    email: 'company02@careerai.demo',
-    logo: 'https://images.unsplash.com/photo-1572021335469-31706a17aaef?w=150&auto=format&fit=crop&q=80',
-    website: 'https://coimbatoretechworks.example.com',
+    name: 'DataForge Analytics — Demo',
+    email: 'demo.company02@nextmind.demo',
+    logo: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=150&auto=format&fit=crop&q=80',
+    website: 'https://dataforge.example.com',
     location: 'CHIL SEZ, Saravanampatti, Coimbatore, Tamil Nadu',
-    industry: 'Full Stack & Enterprise Software',
-    description: 'Leading digital engineering firm architecting modern cloud-native web applications, TypeScript microservices, and React design systems.',
+    industry: 'Data Science & AI',
+    description: 'Premier data engineering and applied AI consultancy delivering predictive algorithms, automated machine learning pipelines, and executive intelligence dashboards.',
     employeeCount: '150-300',
-    verified: true
+    verified: true,
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
-  // Company 3: Madurai Data Systems
+  // Company 03: CloudAxis Systems — Demo (Hosur)
   {
     id: 'cmp_03',
     userId: 'usr_company_03',
-    name: 'Madurai Data Systems',
-    email: 'company03@careerai.demo',
-    logo: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=150&auto=format&fit=crop&q=80',
-    website: 'https://maduraidatasystems.example.com',
-    location: 'ELCOT IT Park, Vadapalanji, Madurai, Tamil Nadu',
-    industry: 'Data Science & Business Analytics',
-    description: 'Specialized data science and BI engineering agency delivering predictive analytics, ETL pipelines, and machine learning models.',
-    employeeCount: '80-200',
-    verified: true
+    name: 'CloudAxis Systems — Demo',
+    email: 'demo.company03@nextmind.demo',
+    logo: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=150&auto=format&fit=crop&q=80',
+    website: 'https://cloudaxis.example.com',
+    location: 'SIPCOT Industrial Area, Hosur, Tamil Nadu',
+    industry: 'Cloud Infrastructure & DevOps',
+    description: 'Specialist cloud architecture firm providing container orchestration, automated CI/CD pipelines, site reliability engineering, and secure AWS/GCP deployments.',
+    employeeCount: '100-250',
+    verified: true,
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
-  // Company 4: Tamil Cloud Technologies
+  // Company 04: SecureStack Labs — Demo (Chennai)
   {
     id: 'cmp_04',
     userId: 'usr_company_04',
-    name: 'Tamil Cloud Technologies',
-    email: 'company04@careerai.demo',
-    logo: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=150&auto=format&fit=crop&q=80',
-    website: 'https://tamilcloudtech.example.com',
-    location: 'SIPCOT Industrial Park, Hosur, Tamil Nadu',
-    industry: 'Cloud Infrastructure & DevOps',
-    description: 'Cloud acceleration partner helping enterprises migrate, automate, and secure mission-critical workloads across AWS and Google Cloud.',
-    employeeCount: '100-250',
-    verified: true
+    name: 'SecureStack Labs — Demo',
+    email: 'demo.company04@nextmind.demo',
+    logo: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=150&auto=format&fit=crop&q=80',
+    website: 'https://securestack.example.com',
+    location: 'DLF Cybercity, Manapakkam, Chennai, Tamil Nadu',
+    industry: 'Cybersecurity & Defense Operations',
+    description: 'Cybersecurity intelligence firm providing 24/7 SOC monitoring, penetration testing, Zero Trust network audits, and application vulnerability remediation.',
+    employeeCount: '80-180',
+    verified: true,
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
-  // Company 5: South India Cyber Labs
+  // Company 05: AppNova Digital — Demo (Madurai)
   {
     id: 'cmp_05',
     userId: 'usr_company_05',
-    name: 'South India Cyber Labs',
-    email: 'company05@careerai.demo',
-    logo: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=150&auto=format&fit=crop&q=80',
-    website: 'https://southindiacyber.example.com',
-    location: 'DLF Cybercity, Manapakkam, Chennai, Tamil Nadu',
-    industry: 'Cybersecurity & Defense Operations',
-    description: 'Elite cybersecurity operations and auditing firm providing SOC defense, penetration testing, and Zero Trust identity architectures.',
-    employeeCount: '40-120',
-    verified: true
+    name: 'AppNova Digital — Demo',
+    email: 'demo.company05@nextmind.demo',
+    logo: 'https://images.unsplash.com/photo-1572021335469-31706a17aaef?w=150&auto=format&fit=crop&q=80',
+    website: 'https://appnova.example.com',
+    location: 'ELCOT IT Park, Vadapalanji, Madurai, Tamil Nadu',
+    industry: 'Web & Mobile Development',
+    description: 'Modern product studio building full-stack web platforms and native mobile apps using React, Node.js, Android, and cloud databases.',
+    employeeCount: '120-220',
+    verified: true,
+    isDemo: true,
+    demoSeedVersion: 'v1'
   }
 ];
 
-// 5. 15 Published Jobs across the 5 Companies
-export const DEMO_JOBS: Job[] = [
-  // Jobs for Chennai AI Labs
+// 4. 17 Opportunities (Jobs and Internships across 5 Companies)
+export const DEMO_JOBS: (Job & { isDemo?: boolean; demoSeedVersion?: string })[] = [
+  // Company 01: Nexora Technologies (4 opportunities)
   {
     id: 'job_01',
     companyId: 'cmp_01',
-    title: 'AI Engineer',
-    department: 'Research & Intelligence',
+    companyName: 'Nexora Technologies — Demo',
+    title: 'Software Engineer (Python & Data Systems)',
+    department: 'Software Engineering',
     location: 'Chennai, Tamil Nadu (Hybrid)',
     type: 'Full-time',
-    experienceLevel: 'Entry-Level / Graduate',
-    salary: '₹12,00,000 - ₹16,00,000 / yr',
-    description: 'Design and deploy deep learning models, transformer fine-tuning, and scalable FastAPI inference pipelines.',
-    requiredSkills: ['Python', 'Machine Learning', 'Deep Learning', 'PyTorch'],
-    preferredSkills: ['FastAPI', 'Docker', 'SQL'],
-    status: 'open',
-    createdAt: '2026-01-15T10:00:00.000Z'
+    opportunityType: 'job',
+    experienceLevel: 'Entry Level',
+    salary: '₹10,00,000 - ₹14,00,000 / yr',
+    salaryRange: '₹10,00,000 - ₹14,00,000 / yr',
+    description: 'Develop high-scale backend services in Python, write optimized SQL queries, and design robust REST APIs with automated testing.',
+    requiredSkills: ['Python', 'DSA', 'SQL', 'REST API'],
+    preferredSkills: ['FastAPI', 'Docker', 'Git'],
+    assessmentRequired: true,
+    assessmentSkills: ['Python', 'DSA'],
+    minimumAssessmentScore: 60,
+    allowRetake: true,
+    maxAttempts: 3,
+    status: 'published',
+    applicantCount: 5,
+    createdAt: '2026-01-10T10:00:00.000Z',
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
   {
     id: 'job_02',
     companyId: 'cmp_01',
-    title: 'Machine Learning Intern',
-    department: 'Machine Learning',
+    companyName: 'Nexora Technologies — Demo',
+    title: 'Systems Software Engineer (C++)',
+    department: 'Core Systems',
     location: 'Chennai, Tamil Nadu (On-site)',
-    type: 'Internship',
-    experienceLevel: 'Student / Intern',
-    salary: '₹35,000 / month',
-    description: 'Assist the core AI research team in data collection, cleaning, baseline model benchmarking, and hyperparameter tuning.',
-    requiredSkills: ['Python', 'Machine Learning', 'Pandas'],
-    preferredSkills: ['Deep Learning', 'PyTorch'],
-    status: 'open',
-    createdAt: '2026-01-20T10:00:00.000Z'
+    type: 'Full-time',
+    opportunityType: 'job',
+    experienceLevel: 'Entry Level',
+    salary: '₹14,00,000 - ₹18,00,000 / yr',
+    salaryRange: '₹14,00,000 - ₹18,00,000 / yr',
+    description: 'Architect low-latency concurrency engines, custom memory allocators, and multithreaded network queues in modern C++.',
+    requiredSkills: ['C++', 'DSA', 'Linux'],
+    preferredSkills: ['SQL', 'Git'],
+    assessmentRequired: true,
+    assessmentSkills: ['C++', 'DSA'],
+    minimumAssessmentScore: 70,
+    allowRetake: true,
+    maxAttempts: 2,
+    status: 'published',
+    applicantCount: 3,
+    createdAt: '2026-01-12T11:00:00.000Z',
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
   {
     id: 'job_03',
     companyId: 'cmp_01',
-    title: 'Data Science Intern',
-    department: 'Data Analytics',
+    companyName: 'Nexora Technologies — Demo',
+    title: 'Python Development Intern',
+    department: 'Software Engineering',
     location: 'Chennai, Tamil Nadu (Hybrid)',
     type: 'Internship',
-    experienceLevel: 'Student / Intern',
-    salary: '₹30,000 / month',
-    description: 'Perform exploratory data analysis on enterprise datasets, write statistical summaries, and build initial classification prototypes.',
-    requiredSkills: ['Python', 'Data Science', 'SQL'],
-    preferredSkills: ['Pandas', 'Statistics'],
-    status: 'open',
-    createdAt: '2026-01-25T10:00:00.000Z'
+    opportunityType: 'internship',
+    internshipType: 'Summer',
+    duration: '6 months',
+    stipend: '₹28,000 / month',
+    conversionPossibility: true,
+    experienceLevel: 'Entry Level',
+    description: 'Work directly with senior backend engineers to build automated Python data scraping and API ingestion services.',
+    requiredSkills: ['Python', 'REST API', 'SQL'],
+    preferredSkills: ['Git', 'Pandas'],
+    assessmentRequired: true,
+    assessmentSkills: ['Python'],
+    minimumAssessmentScore: 60,
+    status: 'published',
+    applicantCount: 7,
+    createdAt: '2026-01-15T09:30:00.000Z',
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
-
-  // Jobs for Coimbatore TechWorks
   {
     id: 'job_04',
-    companyId: 'cmp_02',
-    title: 'Full Stack Developer',
-    department: 'Core Product Engineering',
-    location: 'Coimbatore, Tamil Nadu (Hybrid)',
+    companyId: 'cmp_01',
+    companyName: 'Nexora Technologies — Demo',
+    title: 'Java Backend Developer',
+    department: 'Enterprise Platforms',
+    location: 'Chennai, Tamil Nadu (Hybrid)',
     type: 'Full-time',
-    experienceLevel: 'Entry-Level / 0-2 yrs',
-    salary: '₹9,00,000 - ₹13,00,000 / yr',
-    description: 'Build responsive web apps using React, TypeScript, and Node.js. Design efficient PostgreSQL schemas and REST APIs.',
-    requiredSkills: ['React', 'JavaScript', 'TypeScript', 'Node.js'],
-    preferredSkills: ['PostgreSQL', 'Tailwind CSS', 'Git'],
-    status: 'open',
-    createdAt: '2026-01-12T10:00:00.000Z'
+    opportunityType: 'job',
+    experienceLevel: 'Entry Level',
+    salary: '₹11,00,000 - ₹15,00,000 / yr',
+    salaryRange: '₹11,00,000 - ₹15,00,000 / yr',
+    description: 'Build enterprise microservices using Java 21, Spring Boot, and PostgreSQL with high throughput and data integrity.',
+    requiredSkills: ['Java', 'Spring Boot', 'SQL', 'REST API'],
+    preferredSkills: ['Docker', 'DSA'],
+    assessmentRequired: true,
+    assessmentSkills: ['Java', 'SQL'],
+    minimumAssessmentScore: 65,
+    status: 'published',
+    applicantCount: 4,
+    createdAt: '2026-01-18T14:00:00.000Z',
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
+
+  // Company 02: DataForge Analytics (4 opportunities)
   {
     id: 'job_05',
     companyId: 'cmp_02',
-    title: 'Frontend Developer',
-    department: 'UI/UX Engineering',
-    location: 'Coimbatore, Tamil Nadu (Remote)',
+    companyName: 'DataForge Analytics — Demo',
+    title: 'Machine Learning Engineer',
+    department: 'Applied AI',
+    location: 'Coimbatore, Tamil Nadu (On-site)',
     type: 'Full-time',
-    experienceLevel: 'Entry-Level',
-    salary: '₹8,00,000 - ₹11,00,000 / yr',
-    description: 'Translate Figma prototypes into accessible, responsive React components using Tailwind CSS and modern state patterns.',
-    requiredSkills: ['React', 'JavaScript', 'Tailwind CSS', 'HTML'],
-    preferredSkills: ['TypeScript', 'CSS', 'Git'],
-    status: 'open',
-    createdAt: '2026-01-18T10:00:00.000Z'
+    opportunityType: 'job',
+    experienceLevel: 'Entry Level',
+    salary: '₹13,00,000 - ₹17,00,000 / yr',
+    salaryRange: '₹13,00,000 - ₹17,00,000 / yr',
+    description: 'Train, evaluate, and containerize machine learning models in Python using Pandas, NumPy, and Scikit-learn for enterprise forecasting.',
+    requiredSkills: ['Python', 'Machine Learning', 'NumPy', 'Pandas', 'Scikit-learn'],
+    preferredSkills: ['Deep Learning', 'SQL'],
+    assessmentRequired: true,
+    assessmentSkills: ['Python', 'Machine Learning'],
+    minimumAssessmentScore: 65,
+    status: 'published',
+    applicantCount: 6,
+    createdAt: '2026-01-11T10:30:00.000Z',
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
   {
     id: 'job_06',
     companyId: 'cmp_02',
-    title: 'Backend Developer',
-    department: 'Platform Systems',
-    location: 'Coimbatore, Tamil Nadu (On-site)',
+    companyName: 'DataForge Analytics — Demo',
+    title: 'Data Analyst',
+    department: 'Analytics & BI',
+    location: 'Coimbatore, Tamil Nadu (Hybrid)',
     type: 'Full-time',
-    experienceLevel: 'Entry-Level',
-    salary: '₹8,50,000 - ₹12,00,000 / yr',
-    description: 'Develop high-throughput REST APIs with Node.js and Express. Ensure robust authentication, rate limiting, and SQL database queries.',
-    requiredSkills: ['Node.js', 'Express.js', 'SQL', 'JavaScript'],
-    preferredSkills: ['PostgreSQL', 'Docker', 'Git'],
-    status: 'open',
-    createdAt: '2026-01-22T10:00:00.000Z'
+    opportunityType: 'job',
+    experienceLevel: 'Entry Level',
+    salary: '₹8,50,000 - ₹11,50,000 / yr',
+    salaryRange: '₹8,50,000 - ₹11,50,000 / yr',
+    description: 'Design executive Power BI KPI dashboards, write complex SQL analytical queries, and present data-backed strategic insights.',
+    requiredSkills: ['Python', 'SQL', 'Pandas', 'Power BI', 'Data Science'],
+    preferredSkills: ['Excel', 'Statistics'],
+    assessmentRequired: true,
+    assessmentSkills: ['SQL', 'Data Science'],
+    minimumAssessmentScore: 60,
+    status: 'published',
+    applicantCount: 5,
+    createdAt: '2026-01-14T12:00:00.000Z',
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
-
-  // Jobs for Madurai Data Systems
   {
     id: 'job_07',
-    companyId: 'cmp_03',
-    title: 'Data Analyst',
-    department: 'Business Intelligence',
-    location: 'Madurai, Tamil Nadu (On-site)',
-    type: 'Full-time',
-    experienceLevel: 'Entry-Level',
-    salary: '₹6,50,000 - ₹9,50,000 / yr',
-    description: 'Query relational databases, build executive Power BI KPI dashboards, and deliver statistical summaries to client stakeholders.',
-    requiredSkills: ['SQL', 'Power BI', 'Excel', 'Statistics'],
-    preferredSkills: ['Python', 'Data Science'],
-    status: 'open',
-    createdAt: '2026-01-14T10:00:00.000Z'
+    companyId: 'cmp_02',
+    companyName: 'DataForge Analytics — Demo',
+    title: 'Machine Learning Intern',
+    department: 'Applied AI',
+    location: 'Coimbatore, Tamil Nadu (On-site)',
+    type: 'Internship',
+    opportunityType: 'internship',
+    internshipType: 'Summer',
+    duration: '6 months',
+    stipend: '₹30,000 / month',
+    conversionPossibility: true,
+    experienceLevel: 'Entry Level',
+    description: 'Collaborate with lead data scientists to benchmark tabular prediction models and build automated ML feature engineering pipelines.',
+    requiredSkills: ['Python', 'Pandas', 'NumPy', 'Machine Learning'],
+    preferredSkills: ['Scikit-learn'],
+    assessmentRequired: true,
+    assessmentSkills: ['Python', 'Machine Learning'],
+    minimumAssessmentScore: 60,
+    status: 'published',
+    applicantCount: 8,
+    createdAt: '2026-01-16T15:00:00.000Z',
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
   {
     id: 'job_08',
-    companyId: 'cmp_03',
-    title: 'Data Scientist',
-    department: 'Advanced Analytics',
-    location: 'Madurai, Tamil Nadu (Hybrid)',
+    companyId: 'cmp_02',
+    companyName: 'DataForge Analytics — Demo',
+    title: 'NLP Research Associate',
+    department: 'AI Research',
+    location: 'Coimbatore, Tamil Nadu (Hybrid)',
     type: 'Full-time',
-    experienceLevel: 'Entry-Level / 1-2 yrs',
-    salary: '₹10,00,000 - ₹14,00,000 / yr',
-    description: 'Develop predictive models, customer segmentation algorithms, and regression forecasting pipelines using Python and Scikit-Learn.',
-    requiredSkills: ['Python', 'Data Science', 'Pandas', 'Machine Learning'],
-    preferredSkills: ['SQL', 'Statistics', 'Deep Learning'],
-    status: 'open',
-    createdAt: '2026-01-19T10:00:00.000Z'
+    opportunityType: 'job',
+    experienceLevel: 'Entry Level',
+    salary: '₹14,00,000 - ₹18,00,000 / yr',
+    salaryRange: '₹14,00,000 - ₹18,00,000 / yr',
+    description: 'Fine-tune open-source transformer architectures for multilingual text classification and clinical medical document summarization.',
+    requiredSkills: ['Python', 'NLP', 'Machine Learning', 'Deep Learning'],
+    preferredSkills: ['PyTorch', 'Pandas'],
+    assessmentRequired: true,
+    assessmentSkills: ['Python', 'NLP'],
+    minimumAssessmentScore: 70,
+    status: 'published',
+    applicantCount: 3,
+    createdAt: '2026-01-20T11:00:00.000Z',
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
+
+  // Company 03: CloudAxis Systems (3 opportunities)
   {
     id: 'job_09',
     companyId: 'cmp_03',
-    title: 'Python Developer',
-    department: 'Data Engineering',
-    location: 'Madurai, Tamil Nadu (On-site)',
-    type: 'Full-time',
-    experienceLevel: 'Entry-Level',
-    salary: '₹7,50,000 - ₹11,00,000 / yr',
-    description: 'Write robust Python ETL data ingestion scripts, clean messy data streams, and populate PostgreSQL analytical data warehouses.',
-    requiredSkills: ['Python', 'SQL', 'Pandas'],
-    preferredSkills: ['FastAPI', 'Docker', 'Git'],
-    status: 'open',
-    createdAt: '2026-01-24T10:00:00.000Z'
-  },
-
-  // Jobs for Tamil Cloud Technologies
-  {
-    id: 'job_10',
-    companyId: 'cmp_04',
-    title: 'Cloud Engineer',
-    department: 'Cloud Infrastructure',
+    companyName: 'CloudAxis Systems — Demo',
+    title: 'Cloud & DevOps Engineer',
+    department: 'Infrastructure',
     location: 'Hosur, Tamil Nadu (Hybrid)',
     type: 'Full-time',
-    experienceLevel: 'Entry-Level',
-    salary: '₹10,00,000 - ₹14,50,000 / yr',
-    description: 'Provision and maintain multi-tier AWS infrastructure, configure VPC subnets, manage S3 storage, and automate serverless Lambda functions.',
-    requiredSkills: ['AWS', 'Cloud Computing', 'Docker', 'Linux'],
-    preferredSkills: ['CI/CD', 'Git', 'Google Cloud'],
-    status: 'open',
-    createdAt: '2026-01-16T10:00:00.000Z'
+    opportunityType: 'job',
+    experienceLevel: 'Entry Level',
+    salary: '₹12,50,000 - ₹16,50,000 / yr',
+    salaryRange: '₹12,50,000 - ₹16,50,000 / yr',
+    description: 'Automate deployment pipelines using GitHub Actions, manage Docker containers on AWS, and maintain Kubernetes cluster health.',
+    requiredSkills: ['Linux', 'Docker', 'AWS', 'CI/CD', 'Kubernetes'],
+    preferredSkills: ['Git', 'Python'],
+    assessmentRequired: true,
+    assessmentSkills: ['Linux', 'Docker'],
+    minimumAssessmentScore: 60,
+    status: 'published',
+    applicantCount: 4,
+    createdAt: '2026-01-13T10:00:00.000Z',
+    isDemo: true,
+    demoSeedVersion: 'v1'
+  },
+  {
+    id: 'job_10',
+    companyId: 'cmp_03',
+    companyName: 'CloudAxis Systems — Demo',
+    title: 'Site Reliability Engineer',
+    department: 'Reliability Engineering',
+    location: 'Hosur, Tamil Nadu (On-site)',
+    type: 'Full-time',
+    opportunityType: 'job',
+    experienceLevel: 'Entry Level',
+    salary: '₹13,00,000 - ₹17,00,000 / yr',
+    salaryRange: '₹13,00,000 - ₹17,00,000 / yr',
+    description: 'Ensure 99.99% uptime for cloud infrastructure, instrument distributed tracing, and automate incident response runbooks.',
+    requiredSkills: ['Linux', 'Python', 'Docker', 'Networking'],
+    preferredSkills: ['AWS', 'Kubernetes'],
+    assessmentRequired: true,
+    assessmentSkills: ['Linux'],
+    minimumAssessmentScore: 65,
+    status: 'published',
+    applicantCount: 2,
+    createdAt: '2026-01-17T14:30:00.000Z',
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
   {
     id: 'job_11',
-    companyId: 'cmp_04',
-    title: 'DevOps Intern',
-    department: 'Site Reliability Engineering',
-    location: 'Hosur, Tamil Nadu (On-site)',
+    companyId: 'cmp_03',
+    companyName: 'CloudAxis Systems — Demo',
+    title: 'Cloud Operations Intern',
+    department: 'Infrastructure',
+    location: 'Hosur, Tamil Nadu (Hybrid)',
     type: 'Internship',
-    experienceLevel: 'Student / Intern',
-    salary: '₹28,000 / month',
-    description: 'Assist DevOps architects in building automated GitHub Actions CI/CD pipelines, containerizing services, and tracking Prometheus alerts.',
-    requiredSkills: ['Docker', 'Linux', 'Git'],
-    preferredSkills: ['CI/CD', 'Kubernetes', 'AWS'],
-    status: 'open',
-    createdAt: '2026-01-21T10:00:00.000Z'
+    opportunityType: 'internship',
+    internshipType: 'Summer',
+    duration: '6 months',
+    stipend: '₹25,000 / month',
+    conversionPossibility: true,
+    experienceLevel: 'Entry Level',
+    description: 'Gain hands-on experience in Linux system administration, Dockerizing web services, and managing cloud security groups.',
+    requiredSkills: ['Linux', 'Docker', 'Git', 'Cloud Computing'],
+    preferredSkills: ['AWS'],
+    assessmentRequired: true,
+    assessmentSkills: ['Linux'],
+    minimumAssessmentScore: 55,
+    status: 'published',
+    applicantCount: 6,
+    createdAt: '2026-01-19T09:00:00.000Z',
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
+
+  // Company 04: SecureStack Labs (3 opportunities)
   {
     id: 'job_12',
     companyId: 'cmp_04',
-    title: 'Backend Engineer',
-    department: 'Platform Engineering',
-    location: 'Hosur, Tamil Nadu (Remote)',
-    type: 'Full-time',
-    experienceLevel: 'Entry-Level / 0-2 yrs',
-    salary: '₹9,00,000 - ₹13,00,000 / yr',
-    description: 'Engineer scalable cloud backend APIs in Node.js or Java, integrate message queues, and deploy containers cleanly to AWS ECS.',
-    requiredSkills: ['Node.js', 'SQL', 'Docker', 'Linux'],
-    preferredSkills: ['AWS', 'Redis', 'Git'],
-    status: 'open',
-    createdAt: '2026-01-26T10:00:00.000Z'
-  },
-
-  // Jobs for South India Cyber Labs
-  {
-    id: 'job_13',
-    companyId: 'cmp_05',
+    companyName: 'SecureStack Labs — Demo',
     title: 'Cybersecurity Analyst',
-    department: 'Security Operations Center',
+    department: 'Security Operations',
     location: 'Chennai, Tamil Nadu (On-site)',
     type: 'Full-time',
-    experienceLevel: 'Entry-Level / 0-2 yrs',
-    salary: '₹10,50,000 - ₹15,00,000 / yr',
-    description: 'Monitor enterprise SIEM security alerts, analyze suspicious network packet captures, and harden Linux servers against attacks.',
-    requiredSkills: ['Cybersecurity', 'Networking', 'Linux', 'OWASP'],
-    preferredSkills: ['Bash/Shell', 'Python'],
-    status: 'open',
-    createdAt: '2026-01-13T10:00:00.000Z'
+    opportunityType: 'job',
+    experienceLevel: 'Entry Level',
+    salary: '₹10,50,000 - ₹14,50,000 / yr',
+    salaryRange: '₹10,50,000 - ₹14,50,000 / yr',
+    description: 'Monitor enterprise attack surfaces, hunt threats, audit application vulnerabilities, and lead incident triage.',
+    requiredSkills: ['Cybersecurity', 'Networking', 'Linux', 'OWASP', 'Python'],
+    preferredSkills: ['Git', 'Bash/Shell'],
+    assessmentRequired: true,
+    assessmentSkills: ['Cybersecurity', 'Networking'],
+    minimumAssessmentScore: 65,
+    status: 'published',
+    applicantCount: 4,
+    createdAt: '2026-01-12T13:00:00.000Z',
+    isDemo: true,
+    demoSeedVersion: 'v1'
+  },
+  {
+    id: 'job_13',
+    companyId: 'cmp_04',
+    companyName: 'SecureStack Labs — Demo',
+    title: 'SOC Security Intern',
+    department: 'Security Operations',
+    location: 'Chennai, Tamil Nadu (On-site)',
+    type: 'Internship',
+    opportunityType: 'internship',
+    internshipType: 'Summer',
+    duration: '6 months',
+    stipend: '₹26,000 / month',
+    conversionPossibility: true,
+    experienceLevel: 'Entry Level',
+    description: 'Learn enterprise SIEM log analysis, network packet captures, and vulnerability scanning with senior analysts.',
+    requiredSkills: ['Linux', 'Networking', 'Python', 'Cybersecurity'],
+    preferredSkills: ['OWASP'],
+    assessmentRequired: true,
+    assessmentSkills: ['Cybersecurity'],
+    minimumAssessmentScore: 60,
+    status: 'published',
+    applicantCount: 5,
+    createdAt: '2026-01-15T16:00:00.000Z',
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
   {
     id: 'job_14',
-    companyId: 'cmp_05',
-    title: 'Security Intern',
-    department: 'Threat Intelligence',
-    location: 'Chennai, Tamil Nadu (On-site)',
-    type: 'Internship',
-    experienceLevel: 'Student / Intern',
-    salary: '₹30,000 / month',
-    description: 'Perform web application vulnerability scanning, test for OWASP Top 10 vulnerabilities, and write technical audit reports.',
-    requiredSkills: ['Cybersecurity', 'Networking', 'Linux'],
-    preferredSkills: ['OWASP', 'Python'],
-    status: 'open',
-    createdAt: '2026-01-17T10:00:00.000Z'
+    companyId: 'cmp_04',
+    companyName: 'SecureStack Labs — Demo',
+    title: 'Application Security Engineer',
+    department: 'AppSec',
+    location: 'Chennai, Tamil Nadu (Hybrid)',
+    type: 'Full-time',
+    opportunityType: 'job',
+    experienceLevel: 'Entry Level',
+    salary: '₹12,00,000 - ₹16,00,000 / yr',
+    salaryRange: '₹12,00,000 - ₹16,00,000 / yr',
+    description: 'Embed security into SDLC pipelines, conduct code audits for OWASP Top 10 vulnerabilities, and test REST API endpoints.',
+    requiredSkills: ['Python', 'OWASP', 'REST API', 'Linux', 'Cybersecurity'],
+    preferredSkills: ['JavaScript', 'Git'],
+    assessmentRequired: true,
+    assessmentSkills: ['Cybersecurity', 'Python'],
+    minimumAssessmentScore: 70,
+    status: 'published',
+    applicantCount: 3,
+    createdAt: '2026-01-21T10:00:00.000Z',
+    isDemo: true,
+    demoSeedVersion: 'v1'
   },
+
+  // Company 05: AppNova Digital (3 opportunities)
   {
     id: 'job_15',
     companyId: 'cmp_05',
-    title: 'SOC Analyst',
-    department: 'Incident Response',
-    location: 'Chennai, Tamil Nadu (Rotational Shifts)',
+    companyName: 'AppNova Digital — Demo',
+    title: 'Full Stack Developer',
+    department: 'Web Engineering',
+    location: 'Madurai, Tamil Nadu (Hybrid)',
     type: 'Full-time',
-    experienceLevel: 'Entry-Level',
-    salary: '₹9,50,000 - ₹13,50,000 / yr',
-    description: 'Perform 24/7 security event triage, investigate intrusion attempts, and document post-incident remediation procedures.',
-    requiredSkills: ['Cybersecurity', 'Networking', 'Linux'],
-    preferredSkills: ['OWASP', 'Bash/Shell'],
-    status: 'open',
-    createdAt: '2026-01-23T10:00:00.000Z'
+    opportunityType: 'job',
+    experienceLevel: 'Entry Level',
+    salary: '₹11,00,000 - ₹15,00,000 / yr',
+    salaryRange: '₹11,00,000 - ₹15,00,000 / yr',
+    description: 'Build modern responsive web applications using React, Node.js, and MongoDB with clean architecture and REST APIs.',
+    requiredSkills: ['React', 'Node.js', 'MongoDB', 'REST API', 'JavaScript'],
+    preferredSkills: ['TypeScript', 'SQL'],
+    assessmentRequired: true,
+    assessmentSkills: ['React', 'JavaScript'],
+    minimumAssessmentScore: 65,
+    status: 'published',
+    applicantCount: 6,
+    createdAt: '2026-01-10T12:00:00.000Z',
+    isDemo: true,
+    demoSeedVersion: 'v1'
+  },
+  {
+    id: 'job_16',
+    companyId: 'cmp_05',
+    companyName: 'AppNova Digital — Demo',
+    title: 'Android Mobile Developer',
+    department: 'Mobile Engineering',
+    location: 'Madurai, Tamil Nadu (On-site)',
+    type: 'Full-time',
+    opportunityType: 'job',
+    experienceLevel: 'Entry Level',
+    salary: '₹10,00,000 - ₹13,50,000 / yr',
+    salaryRange: '₹10,00,000 - ₹13,50,000 / yr',
+    description: 'Develop performant Android apps in Java and Kotlin integrating Firebase cloud backends and REST APIs.',
+    requiredSkills: ['Java', 'Android', 'Firebase', 'REST API'],
+    preferredSkills: ['JavaScript', 'Git'],
+    assessmentRequired: true,
+    assessmentSkills: ['Java', 'Android'],
+    minimumAssessmentScore: 60,
+    status: 'published',
+    applicantCount: 4,
+    createdAt: '2026-01-14T11:30:00.000Z',
+    isDemo: true,
+    demoSeedVersion: 'v1'
+  },
+  {
+    id: 'job_17',
+    companyId: 'cmp_05',
+    companyName: 'AppNova Digital — Demo',
+    title: 'Full Stack Development Intern',
+    department: 'Web Engineering',
+    location: 'Madurai, Tamil Nadu (Hybrid)',
+    type: 'Internship',
+    opportunityType: 'internship',
+    internshipType: 'Summer',
+    duration: '6 months',
+    stipend: '₹27,000 / month',
+    conversionPossibility: true,
+    experienceLevel: 'Entry Level',
+    description: 'Hands-on role building React UI components, integrating Node.js microservices, and writing unit tests.',
+    requiredSkills: ['React', 'Node.js', 'MongoDB', 'JavaScript'],
+    preferredSkills: ['REST API'],
+    assessmentRequired: true,
+    assessmentSkills: ['React'],
+    minimumAssessmentScore: 60,
+    status: 'published',
+    applicantCount: 7,
+    createdAt: '2026-01-18T10:00:00.000Z',
+    isDemo: true,
+    demoSeedVersion: 'v1'
   }
 ];
 
-// 6. Realistic Evidences for the Students
-export const DEMO_EVIDENCES: SkillEvidence[] = [
-  // Arjun Kumar evidences
-  {
-    id: 'evi_01_1',
-    studentId: 'std_01',
-    skillName: 'Python',
-    sourceType: 'github',
-    title: 'Tamil Speech Recognition Model',
-    verified: true,
-    verificationScore: 92,
-    confidenceBoost: 0.15,
-    dateDemonstrated: '2026-02-15',
-    url: 'https://github.com/arjunkumar-dev/tamil-whisper-asr',
-    metadata: { stars: 18, linesOfCode: 2400, commitsCount: 42 }
-  },
-  {
-    id: 'evi_01_2',
-    studentId: 'std_01',
-    skillName: 'PyTorch',
-    sourceType: 'github',
-    title: 'X-Ray ResNet-50 Classifier',
-    verified: true,
-    verificationScore: 88,
-    confidenceBoost: 0.12,
-    dateDemonstrated: '2026-01-28',
-    url: 'https://github.com/arjunkumar-dev/xray-pneumonia-vision',
-    metadata: { stars: 9, linesOfCode: 1200 }
-  },
-  {
-    id: 'evi_01_3',
-    studentId: 'std_01',
-    skillName: 'Machine Learning',
-    sourceType: 'certification',
-    title: 'Deep Learning Specialization',
-    verified: true,
-    verificationScore: 95,
-    confidenceBoost: 0.18,
-    dateDemonstrated: '2025-09-15',
-    url: 'https://coursera.org/verify/DL-ARJUN-2025'
-  },
+// 5. Skill Evidences for Students
+export const DEMO_EVIDENCES: (SkillEvidence & { isDemo?: boolean; demoSeedVersion?: string })[] = [
+  // Student 01: Arjun Kumar Evidences
+  { id: 'ev_01_1', studentId: 'std_01', skillName: 'Python', type: 'project', title: 'Student Performance Predictor', verificationScore: 95, verified: true, verifiedAt: '2026-01-15T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-15T00:00:00.000Z' },
+  { id: 'ev_01_2', studentId: 'std_01', skillName: 'Machine Learning', type: 'certification', title: 'Machine Learning Foundations', verificationScore: 92, verified: true, verifiedAt: '2025-11-10T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-11-10T00:00:00.000Z' },
+  { id: 'ev_01_3', studentId: 'std_01', skillName: 'Pandas', type: 'work_experience', title: 'AI Developer Intern at Nexora', verificationScore: 90, verified: true, verifiedAt: '2025-08-30T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-08-30T00:00:00.000Z' },
+  { id: 'ev_01_4', studentId: 'std_01', skillName: 'NumPy', type: 'github', title: 'NumPy Mathematical Vector Engine', verificationScore: 88, verified: true, verifiedAt: '2026-01-10T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-10T00:00:00.000Z' },
+  { id: 'ev_01_5', studentId: 'std_01', skillName: 'Scikit-learn', type: 'assessment', title: 'NextMind Verified ML Assessment', verificationScore: 88, verified: true, verifiedAt: '2026-02-01T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-02-01T00:00:00.000Z' },
+  { id: 'ev_01_6', studentId: 'std_01', skillName: 'PyTorch', type: 'github', title: 'Multimodal Satellite Crop Health Classifier', verificationScore: 94, verified: true, verifiedAt: '2026-01-18T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-18T00:00:00.000Z' },
 
-  // Kavin Raj evidences
-  {
-    id: 'evi_02_1',
-    studentId: 'std_02',
-    skillName: 'React',
-    sourceType: 'github',
-    title: 'AgriCommerce Direct Marketplace',
-    verified: true,
-    verificationScore: 94,
-    confidenceBoost: 0.16,
-    dateDemonstrated: '2026-02-18',
-    url: 'https://github.com/kavinraj-dev/agri-commerce-portal',
-    metadata: { stars: 24, linesOfCode: 4800 }
-  },
-  {
-    id: 'evi_02_2',
-    studentId: 'std_02',
-    skillName: 'Node.js',
-    sourceType: 'project',
-    title: 'AgriCommerce API & Order Gateway',
-    verified: true,
-    verificationScore: 89,
-    confidenceBoost: 0.14,
-    dateDemonstrated: '2026-01-30'
-  },
+  // Student 02: Kavin Raj Evidences
+  { id: 'ev_02_1', studentId: 'std_02', skillName: 'Java', type: 'certification', title: 'Oracle Certified Java Associate', verificationScore: 95, verified: true, verifiedAt: '2025-08-10T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-08-10T00:00:00.000Z' },
+  { id: 'ev_02_2', studentId: 'std_02', skillName: 'DSA', type: 'project', title: 'LeetCode 320 Solved Problems Profile', verificationScore: 94, verified: true, verifiedAt: '2026-02-15T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-02-15T00:00:00.000Z' },
+  { id: 'ev_02_3', studentId: 'std_02', skillName: 'Spring Boot', type: 'project', title: 'Enterprise Banking Microservices Core', verificationScore: 90, verified: true, verifiedAt: '2026-01-20T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-20T00:00:00.000Z' },
+  { id: 'ev_02_4', studentId: 'std_02', skillName: 'SQL', type: 'work_experience', title: 'Java Backend Intern at DataForge', verificationScore: 89, verified: true, verifiedAt: '2025-07-31T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-07-31T00:00:00.000Z' },
+  { id: 'ev_02_5', studentId: 'std_02', skillName: 'REST API', type: 'project', title: 'Payment Webhook Processing Microservice', verificationScore: 78, verified: true, verifiedAt: '2026-01-25T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-25T00:00:00.000Z' },
 
-  // Dharshan P evidences
-  {
-    id: 'evi_05_1',
-    studentId: 'std_05',
-    skillName: 'Cybersecurity',
-    sourceType: 'certification',
-    title: 'CompTIA Security+ Certification',
-    verified: true,
-    verificationScore: 96,
-    confidenceBoost: 0.20,
-    dateDemonstrated: '2025-09-01'
-  },
-  {
-    id: 'evi_05_2',
-    studentId: 'std_05',
-    skillName: 'OWASP',
-    sourceType: 'github',
-    title: 'Automated Web Vulnerability Scanner',
-    verified: true,
-    verificationScore: 90,
-    confidenceBoost: 0.15,
-    dateDemonstrated: '2026-01-30',
-    url: 'https://github.com/dharshan-sec/auto-vuln-scanner'
-  }
+  // Student 03: Priya Dharshini Evidences
+  { id: 'ev_03_1', studentId: 'std_03', skillName: 'React', type: 'project', title: 'Campus Recruitment Portal', verificationScore: 95, verified: true, verifiedAt: '2026-01-22T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-22T00:00:00.000Z' },
+  { id: 'ev_03_2', studentId: 'std_03', skillName: 'JavaScript', type: 'certification', title: 'Meta Front-End Developer Certificate', verificationScore: 93, verified: true, verifiedAt: '2025-07-20T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-07-20T00:00:00.000Z' },
+  { id: 'ev_03_3', studentId: 'std_03', skillName: 'Node.js', type: 'work_experience', title: 'Full Stack Intern at AppNova', verificationScore: 89, verified: true, verifiedAt: '2025-08-15T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-08-15T00:00:00.000Z' },
+  { id: 'ev_03_4', studentId: 'std_03', skillName: 'MongoDB', type: 'project', title: 'Collaborative Kanban Sprint Board', verificationScore: 87, verified: true, verifiedAt: '2026-02-05T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-02-05T00:00:00.000Z' },
+  { id: 'ev_03_5', studentId: 'std_03', skillName: 'TypeScript', type: 'github', title: 'Type-Safe React Design System Component Library', verificationScore: 92, verified: true, verifiedAt: '2026-01-28T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-28T00:00:00.000Z' },
+
+  // Student 04: Vignesh Sundaram Evidences
+  { id: 'ev_04_1', studentId: 'std_04', skillName: 'SQL', type: 'work_experience', title: 'Data Analytics Intern at DataForge', verificationScore: 92, verified: true, verifiedAt: '2025-08-15T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-08-15T00:00:00.000Z' },
+  { id: 'ev_04_2', studentId: 'std_04', skillName: 'Power BI', type: 'certification', title: 'Google Data Analytics Professional', verificationScore: 90, verified: true, verifiedAt: '2025-08-30T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-08-30T00:00:00.000Z' },
+  { id: 'ev_04_3', studentId: 'std_04', skillName: 'Python', type: 'project', title: 'Healthcare Patient Analytics Dashboard', verificationScore: 88, verified: true, verifiedAt: '2026-01-25T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-25T00:00:00.000Z' },
+  { id: 'ev_04_4', studentId: 'std_04', skillName: 'Data Science', type: 'assessment', title: 'Verified Data Science Assessment', verificationScore: 87, verified: true, verifiedAt: '2026-02-10T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-02-10T00:00:00.000Z' },
+  { id: 'ev_04_5', studentId: 'std_04', skillName: 'Pandas', type: 'project', title: 'Hospital Resource Utilization Forecast', verificationScore: 89, verified: true, verifiedAt: '2026-01-29T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-29T00:00:00.000Z' },
+
+  // Student 05: Dharshan Pandian Evidences
+  { id: 'ev_05_1', studentId: 'std_05', skillName: 'Linux', type: 'project', title: 'SSH Honeypot Intrusion Detection System', verificationScore: 93, verified: true, verifiedAt: '2026-01-18T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-18T00:00:00.000Z' },
+  { id: 'ev_05_2', studentId: 'std_05', skillName: 'Cybersecurity', type: 'certification', title: 'CompTIA Security+ Certified', verificationScore: 91, verified: true, verifiedAt: '2025-09-12T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-09-12T00:00:00.000Z' },
+  { id: 'ev_05_3', studentId: 'std_05', skillName: 'Networking', type: 'project', title: 'Automated Network Vulnerability Scanner', verificationScore: 89, verified: true, verifiedAt: '2026-02-05T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-02-05T00:00:00.000Z' },
+  { id: 'ev_05_4', studentId: 'std_05', skillName: 'OWASP', type: 'project', title: 'Automated OWASP Top 10 Web Vulnerability Scanner', verificationScore: 90, verified: true, verifiedAt: '2026-01-22T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-22T00:00:00.000Z' },
+  { id: 'ev_05_5', studentId: 'std_05', skillName: 'Python', type: 'github', title: 'Packet Sniffer & Flow Protocol Analyzer', verificationScore: 91, verified: true, verifiedAt: '2026-01-26T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-26T00:00:00.000Z' },
+
+  // Student 06: Sneha Ramachandran Evidences
+  { id: 'ev_06_1', studentId: 'std_06', skillName: 'Android', type: 'project', title: 'MediConnect Patient Telehealth App', verificationScore: 93, verified: true, verifiedAt: '2026-01-20T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-20T00:00:00.000Z' },
+  { id: 'ev_06_2', studentId: 'std_06', skillName: 'Java', type: 'work_experience', title: 'Mobile Developer Intern at AppNova', verificationScore: 91, verified: true, verifiedAt: '2025-07-15T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-07-15T00:00:00.000Z' },
+  { id: 'ev_06_3', studentId: 'std_06', skillName: 'Firebase', type: 'project', title: 'Transit Real-Time GPS Tracking App', verificationScore: 88, verified: true, verifiedAt: '2026-02-08T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-02-08T00:00:00.000Z' },
+  { id: 'ev_06_4', studentId: 'std_06', skillName: 'REST API', type: 'project', title: 'Clinician Patient Telehealth API Client', verificationScore: 86, verified: true, verifiedAt: '2026-01-25T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-25T00:00:00.000Z' },
+  { id: 'ev_06_5', studentId: 'std_06', skillName: 'Kotlin', type: 'certification', title: 'Android App Development with Kotlin', verificationScore: 90, verified: true, verifiedAt: '2025-08-20T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-08-20T00:00:00.000Z' },
+
+  // Student 07: Hari Prasad Evidences
+  { id: 'ev_07_1', studentId: 'std_07', skillName: 'C++', type: 'project', title: 'Thread-Safe In-Memory Cache Engine', verificationScore: 98, verified: true, verifiedAt: '2026-01-28T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-28T00:00:00.000Z' },
+  { id: 'ev_07_2', studentId: 'std_07', skillName: 'DSA', type: 'github', title: 'LeetCode 540 Problems Guardian Profile', verificationScore: 99, verified: true, verifiedAt: '2026-02-20T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-02-20T00:00:00.000Z' },
+  { id: 'ev_07_3', studentId: 'std_07', skillName: 'Linux', type: 'work_experience', title: 'Systems Engineering Intern at Nexora', verificationScore: 92, verified: true, verifiedAt: '2025-08-31T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-08-31T00:00:00.000Z' },
+  { id: 'ev_07_4', studentId: 'std_07', skillName: 'Python', type: 'project', title: 'High-Performance Profiling Scripts for Cache Engine', verificationScore: 92, verified: true, verifiedAt: '2026-02-02T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-02-02T00:00:00.000Z' },
+
+  // Student 08: Ananya Subramanian Evidences
+  { id: 'ev_08_1', studentId: 'std_08', skillName: 'NLP', type: 'project', title: 'Multilingual Sentiment Analyzer (Tamil-English)', verificationScore: 94, verified: true, verifiedAt: '2026-01-24T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-24T00:00:00.000Z' },
+  { id: 'ev_08_2', studentId: 'std_08', skillName: 'Python', type: 'certification', title: 'NLP Specialization - DeepLearning.AI', verificationScore: 93, verified: true, verifiedAt: '2025-09-18T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-09-18T00:00:00.000Z' },
+  { id: 'ev_08_3', studentId: 'std_08', skillName: 'Machine Learning', type: 'work_experience', title: 'NLP Research Intern at DataForge', verificationScore: 91, verified: true, verifiedAt: '2025-08-31T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-08-31T00:00:00.000Z' },
+  { id: 'ev_08_4', studentId: 'std_08', skillName: 'Deep Learning', type: 'project', title: 'Transformer Cross-Attention Weights Visualizer', verificationScore: 93, verified: true, verifiedAt: '2026-01-20T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-20T00:00:00.000Z' },
+  { id: 'ev_08_5', studentId: 'std_08', skillName: 'PyTorch', type: 'github', title: 'Indic Language Pretrained Model Checkpoints', verificationScore: 94, verified: true, verifiedAt: '2026-01-22T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-22T00:00:00.000Z' },
+
+  // Student 09: Pranav Ravichandran Evidences
+  { id: 'ev_09_1', studentId: 'std_09', skillName: 'Linux', type: 'work_experience', title: 'Cloud Operations Intern at CloudAxis', verificationScore: 93, verified: true, verifiedAt: '2025-08-31T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-08-31T00:00:00.000Z' },
+  { id: 'ev_09_2', studentId: 'std_09', skillName: 'Docker', type: 'project', title: 'Automated Microservices GitOps Pipeline', verificationScore: 91, verified: true, verifiedAt: '2026-01-30T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-30T00:00:00.000Z' },
+  { id: 'ev_09_3', studentId: 'std_09', skillName: 'AWS', type: 'certification', title: 'AWS Solutions Architect Associate', verificationScore: 89, verified: true, verifiedAt: '2025-08-14T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-08-14T00:00:00.000Z' },
+  { id: 'ev_09_4', studentId: 'std_09', skillName: 'CI/CD', type: 'github', title: 'Zero-Downtime Blue-Green Helm Deployment Pipeline', verificationScore: 90, verified: true, verifiedAt: '2026-02-01T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-02-01T00:00:00.000Z' },
+
+  // Student 10: Rahul Manikandan Evidences
+  { id: 'ev_10_1', studentId: 'std_10', skillName: 'React', type: 'project', title: 'Multi-Tenant SaaS Invoicing Billing Engine', verificationScore: 93, verified: true, verifiedAt: '2026-01-26T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-26T00:00:00.000Z' },
+  { id: 'ev_10_2', studentId: 'std_10', skillName: 'Node.js', type: 'work_experience', title: 'Full Stack Intern at AppNova', verificationScore: 90, verified: true, verifiedAt: '2025-08-31T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-08-31T00:00:00.000Z' },
+  { id: 'ev_10_3', studentId: 'std_10', skillName: 'SQL', type: 'certification', title: 'Full Stack Web with PostgreSQL', verificationScore: 89, verified: true, verifiedAt: '2025-07-28T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-07-28T00:00:00.000Z' },
+  { id: 'ev_10_4', studentId: 'std_10', skillName: 'MongoDB', type: 'project', title: 'Aggregated Invoicing Timeseries Database', verificationScore: 88, verified: true, verifiedAt: '2026-02-03T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-02-03T00:00:00.000Z' }
 ];
 
-// 7. Industry Data for Admin Management
-export interface AdminIndustryData {
-  id: string;
-  name: string;
-  sector: string;
-  region: string;
-  totalCompanies: number;
-  openJobsCount: number;
-  avgSalary: string;
-  growthRate: string;
-  talentDemandScore: number;
-  inDemandSkills: string[];
-  keySkillGaps: string[];
-  description: string;
-}
-
+// Admin Industry Seed
 export const ADMIN_INDUSTRIES_SEED: AdminIndustryData[] = [
   {
-    id: 'ind_ai_software',
-    name: 'Artificial Intelligence & Software',
-    sector: 'Software & Technology',
-    region: 'Chennai & Coimbatore, Tamil Nadu',
-    totalCompanies: 28,
-    openJobsCount: 142,
-    avgSalary: '₹14,20,000 / yr',
-    growthRate: '+34% YoY',
-    talentDemandScore: 96,
-    inDemandSkills: ['Python', 'PyTorch', 'Machine Learning', 'Deep Learning', 'FastAPI'],
-    keySkillGaps: ['Distributed Training', 'Quantization (ONNX)', 'Vector Databases'],
-    description: 'High-growth sector focused on deep learning model fine-tuning, computer vision, and generative intelligence APIs.'
+    id: 'ind_soft_sys',
+    name: 'Software Development & Systems',
+    category: 'Engineering & Core Tech',
+    activeHiringPartners: 42,
+    openOpportunities: 185,
+    avgStartingCtc: '₹10,50,000 / yr',
+    topDemandedSkills: ['Python', 'Java', 'C++', 'DSA', 'SQL']
   },
   {
-    id: 'ind_saas_cloud',
-    name: 'SaaS & Enterprise Cloud',
-    sector: 'Cloud Infrastructure',
-    region: 'Hosur & Chennai, Tamil Nadu',
-    totalCompanies: 35,
-    openJobsCount: 185,
-    avgSalary: '₹13,50,000 / yr',
-    growthRate: '+29% YoY',
-    talentDemandScore: 92,
-    inDemandSkills: ['AWS', 'Docker', 'Kubernetes', 'Node.js', 'CI/CD'],
-    keySkillGaps: ['Terraform IaC', 'Multi-region failover', 'Prometheus monitoring'],
-    description: 'Enterprises modernizing on-premise infrastructure into scalable AWS, GCP, and Kubernetes cloud-native architectures.'
+    id: 'ind_ai_data',
+    name: 'Artificial Intelligence & Data Science',
+    category: 'Advanced Analytics',
+    activeHiringPartners: 36,
+    openOpportunities: 140,
+    avgStartingCtc: '₹13,80,000 / yr',
+    topDemandedSkills: ['Python', 'Machine Learning', 'Pandas', 'NumPy', 'Scikit-learn']
   },
   {
-    id: 'ind_analytics_fintech',
-    name: 'Data Science & FinTech Analytics',
-    sector: 'Data & Financial Technology',
-    region: 'Madurai & Chennai, Tamil Nadu',
-    totalCompanies: 22,
-    openJobsCount: 110,
-    avgSalary: '₹12,80,000 / yr',
-    growthRate: '+27% YoY',
-    talentDemandScore: 88,
-    inDemandSkills: ['SQL', 'Python', 'Pandas', 'Power BI', 'Statistics'],
-    keySkillGaps: ['Data Warehousing (Snowflake)', 'Streaming ETL', 'Feature Stores'],
-    description: 'Financial institutions and analytics bureaus engineering real-time fraud detection and customer segmentation pipelines.'
+    id: 'ind_cloud_devops',
+    name: 'Cloud Infrastructure & DevOps',
+    category: 'Cloud Engineering',
+    activeHiringPartners: 28,
+    openOpportunities: 110,
+    avgStartingCtc: '₹12,80,000 / yr',
+    topDemandedSkills: ['Linux', 'Docker', 'AWS', 'Kubernetes', 'CI/CD']
   },
   {
     id: 'ind_cybersec',
-    name: 'Cybersecurity & Defense Operations',
-    sector: 'Information Security',
-    region: 'Chennai & Tiruchirappalli, Tamil Nadu',
-    totalCompanies: 18,
-    openJobsCount: 95,
-    avgSalary: '₹13,10,000 / yr',
-    growthRate: '+38% YoY',
-    talentDemandScore: 94,
-    inDemandSkills: ['Cybersecurity', 'Networking', 'Linux', 'OWASP', 'Wireshark'],
-    keySkillGaps: ['Threat Hunting', 'SIEM Rule Authoring', 'Cloud IAM Auditing'],
-    description: 'Critical infrastructure security, SOC defense monitoring, web application penetration testing, and zero trust protocols.'
+    name: 'Cybersecurity & Defense',
+    category: 'Information Security',
+    activeHiringPartners: 20,
+    openOpportunities: 75,
+    avgStartingCtc: '₹11,50,000 / yr',
+    topDemandedSkills: ['Cybersecurity', 'Networking', 'Linux', 'Python', 'OWASP']
   },
   {
-    id: 'ind_mobile_iot',
-    name: 'Mobile Engineering & Industrial IoT',
-    sector: 'Mobile & Hardware Integration',
-    region: 'Coimbatore, Tiruppur & Salem, Tamil Nadu',
-    totalCompanies: 20,
-    openJobsCount: 88,
-    avgSalary: '₹10,50,000 / yr',
-    growthRate: '+23% YoY',
-    talentDemandScore: 84,
-    inDemandSkills: ['Flutter', 'Dart', 'React', 'REST API', 'JavaScript'],
-    keySkillGaps: ['Offline Sync Architecture', 'Bluetooth Low Energy (BLE)', 'State Management (BLoC)'],
-    description: 'Industrial mobile telemetry and supply chain dispatch suites for manufacturing and textiles hubs across western Tamil Nadu.'
+    id: 'ind_web_mob',
+    name: 'Web & Mobile Applications',
+    category: 'Digital Product Engineering',
+    activeHiringPartners: 48,
+    openOpportunities: 210,
+    avgStartingCtc: '₹11,00,000 / yr',
+    topDemandedSkills: ['React', 'JavaScript', 'Node.js', 'Android', 'MongoDB']
   }
 ];

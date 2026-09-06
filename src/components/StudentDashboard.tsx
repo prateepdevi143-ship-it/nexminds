@@ -17,6 +17,8 @@ import { Student, Job, SkillEvidence, CareerGoal } from '../types';
 
 interface StudentDashboardProps {
   student: Student;
+  allStudents?: Student[];
+  onSwitchStudent?: (studentId: string) => void;
   evidences: SkillEvidence[];
   targetCareer: CareerGoal;
   jobs: Array<Job & { matchResult?: any }>;
@@ -27,6 +29,8 @@ interface StudentDashboardProps {
 
 export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   student,
+  allStudents = [],
+  onSwitchStudent,
   evidences,
   targetCareer,
   jobs,
@@ -52,6 +56,60 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* Student Cohort Switcher Bar */}
+      {allStudents && allStudents.length > 0 && onSwitchStudent && (
+        <div className="rounded-xl bg-white border border-slate-200 p-4 shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-700 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded">
+                  Active Student Cohort
+                </span>
+                <span className="text-xs text-slate-500 font-medium">
+                  {allStudents.length} Distinct Engineering Candidates
+                </span>
+              </div>
+              <h2 className="text-sm font-bold text-slate-900 mt-1">
+                Switch Student Profile to Compare Diverse Skills & Portfolios
+              </h2>
+            </div>
+            <p className="text-xs text-slate-500">
+              Each candidate has independent skills, verified evidence, and readiness metrics
+            </p>
+          </div>
+          <div className="flex items-center gap-2 overflow-x-auto pb-1.5 scrollbar-thin">
+            {allStudents.map((std) => {
+              const isSelected = student.id === std.id;
+              return (
+                <button
+                  key={std.id}
+                  id={`cohort-student-btn-${std.id}`}
+                  onClick={() => onSwitchStudent(std.id)}
+                  className={`shrink-0 flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-all ${
+                    isSelected
+                      ? 'bg-indigo-600 text-white shadow-xs font-semibold ring-2 ring-indigo-600/30'
+                      : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200'
+                  }`}
+                >
+                  <div className="text-left">
+                    <div className="font-semibold leading-tight flex items-center gap-1.5">
+                      <span>{std.name}</span>
+                      {isSelected && (
+                        <span className="text-[9px] bg-white/20 text-white px-1 py-0.2 rounded font-bold">
+                          Active
+                        </span>
+                      )}
+                    </div>
+                    <div className={`text-[10px] ${isSelected ? 'text-indigo-100' : 'text-slate-500'}`}>
+                      {std.careerGoal || 'AI Engineer'} • {std.careerReadinessScore || 75}%
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
       {/* Overview Banner */}
       <div className="rounded-xl bg-white border border-slate-200 p-6 sm:p-8 shadow-xs">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">

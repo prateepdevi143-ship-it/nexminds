@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, UserCheck, Building2, ShieldCheck, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Sparkles, BrainCircuit, UserCheck, Building2, ShieldCheck, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useAuth } from '../contexts/AuthContext';
 import { UserRole } from '../types';
@@ -28,11 +28,15 @@ export const RoleSelectionScreen: React.FC = () => {
         className="w-full max-w-lg bg-white border border-slate-200 rounded-2xl shadow-lg p-6 sm:p-8"
       >
         <div className="text-center mb-6">
-          <div className="w-12 h-12 rounded-xl bg-indigo-600 flex items-center justify-center text-white mx-auto mb-3 shadow-xs">
-            <Sparkles className="w-6 h-6 text-white" />
+          <div className="relative w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-700 via-indigo-600 to-violet-600 flex items-center justify-center text-white mx-auto mb-3 shadow-md shadow-indigo-500/25">
+            <BrainCircuit className="w-8 h-8 text-white" />
+            <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-cyan-400 border-2 border-white"></span>
+            </span>
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-            Welcome to CareerAI, {firebaseUser?.displayName || 'there'}!
+          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+            Welcome to Nex<span className="text-indigo-600">minds</span>, {firebaseUser?.displayName || 'there'}!
           </h1>
           <p className="text-sm text-slate-500 mt-1">
             How will you use the platform? Choose your primary role:
