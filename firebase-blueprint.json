@@ -1,0 +1,67 @@
+{
+  "version": "1.0.0",
+  "entities": {
+    "users": {
+      "path": "/users/{userId}",
+      "fields": {
+        "email": "string",
+        "name": "string",
+        "role": "'student' | 'company' | 'admin'",
+        "createdAt": "timestamp"
+      }
+    },
+    "students": {
+      "path": "/students/{studentId}",
+      "fields": {
+        "userId": "string",
+        "name": "string",
+        "email": "string",
+        "college": "string",
+        "degree": "string",
+        "graduationYear": "number",
+        "cgpa": "number",
+        "careerGoal": "string",
+        "careerReadinessScore": "number",
+        "profileCompletion": "number",
+        "skills": "array<StudentSkill>",
+        "projects": "array<Project>",
+        "education": "array<Education>",
+        "experience": "array<Experience>"
+      }
+    },
+    "companies": {
+      "path": "/companies/{companyId}",
+      "fields": {
+        "userId": "string",
+        "name": "string",
+        "industry": "string",
+        "location": "string",
+        "verified": "boolean"
+      }
+    },
+    "jobs": {
+      "path": "/jobs/{jobId}",
+      "fields": {
+        "companyId": "string",
+        "companyName": "string",
+        "title": "string",
+        "requiredSkills": "array<string>",
+        "preferredSkills": "array<string>",
+        "status": "'published' | 'draft' | 'closed'",
+        "applicantCount": "number"
+      }
+    },
+    "applications": {
+      "path": "/applications/{applicationId}",
+      "fields": {
+        "studentId": "string",
+        "studentName": "string",
+        "jobId": "string",
+        "companyId": "string",
+        "status": "'applied' | 'under_review' | 'shortlisted' | 'interview' | 'selected' | 'rejected'",
+        "candidateScore": "number",
+        "timeline": "array<TimelineEvent>"
+      }
+    }
+  }
+}

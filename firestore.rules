@@ -1,0 +1,132 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isRole(role) {
+      return isAuthenticated() && getUserData().role == role;
+    }
+
+    function isStudent() {
+      return isRole('student');
+    }
+
+    function isCompany() {
+      return isRole('company');
+    }
+
+    function isAdmin() {
+      return isRole('admin');
+    }
+
+    // USERS collection: Private account documents
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow create: if isAuthenticated() && request.auth.uid == userId
+                    && request.resource.data.keys().hasAll(['email', 'role', 'name'])
+                    && request.resource.data.role in ['student', 'company', 'admin'];
+      allow update: if isAuthenticated() && (request.auth.uid == userId || isAdmin())
+                    && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']); // Prevent role escalation
+      allow delete: if isAdmin();
+    }
+
+    // STUDENTS collection
+    match /students/{studentId} {
+      allow read: if isAuthenticated(); // Companies can review student profiles when reviewing applications
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.userId;
+      allow update: if isAuthenticated() && (request.auth.uid == resource.data.userId || isAdmin());
+      allow delete: if isAuthenticated() && (request.auth.uid == resource.data.userId || isAdmin());
+
+      // Student subcollections
+      match /evidence/{evidenceId} {
+        allow read: if isAuthenticated();
+        allow write: if isAuthenticated() && (request.auth.uid == get(/databases/$(database)/documents/students/$(studentId)).data.userId || isAdmin());
+      }
+
+      match /learningProgress/{progressId} {
+        allow read, write: if isAuthenticated() && (request.auth.uid == get(/databases/$(database)/documents/students/$(studentId)).data.userId || isAdmin());
+      }
+
+      match /assessmentAttempts/{attemptId} {
+        allow read, write: if isAuthenticated() && (request.auth.uid == get(/databases/$(database)/documents/students/$(studentId)).data.userId || isAdmin());
+      }
+    }
+
+    // COMPANIES collection
+    match /companies/{companyId} {
+      allow read: if true; // Public company directory
+      allow create: if isAuthenticated() && isCompany() && request.auth.uid == request.resource.data.userId;
+      allow update: if isAuthenticated() && (request.auth.uid == resource.data.userId || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // JOBS collection
+    match /jobs/{jobId} {
+      allow read: if resource.data.status == 'published' || (isAuthenticated() && (request.auth.uid == resource.data.companyId || isAdmin()));
+      allow create: if isAuthenticated() && isCompany() && request.auth.uid == request.resource.data.companyId;
+      allow update: if isAuthenticated() && (request.auth.uid == resource.data.companyId || isAdmin());
+      allow delete: if isAuthenticated() && (request.auth.uid == resource.data.companyId || isAdmin());
+    }
+
+    // APPLICATIONS collection
+    match /applications/{applicationId} {
+      // Student who applied or Company who posted the job or Admin
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.studentId ||
+        request.auth.uid == resource.data.companyId ||
+        isAdmin()
+      );
+      allow create: if isAuthenticated() && isStudent() && request.auth.uid == request.resource.data.studentId;
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.companyId || // Company can update status
+        (request.auth.uid == resource.data.studentId && request.resource.data.status == 'withdrawn') || // Student can withdraw
+        isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    // CANONICAL SKILLS (Public Read, Admin Write)
+    match /skills/{skillId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // CAREERS (Public Read, Admin Write)
+    match /careers/{careerId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // COURSES (Public Read, Admin Write)
+    match /courses/{courseId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ASSESSMENTS (Public Read, Admin Write)
+    match /assessments/{assessmentId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // NOTIFICATIONS
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated() && request.auth.uid == resource.data.userId;
+      allow update: if isAuthenticated() && request.auth.uid == resource.data.userId;
+      allow create: if isAuthenticated();
+      allow delete: if isAuthenticated() && request.auth.uid == resource.data.userId;
+    }
+  }
+}
