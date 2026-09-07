@@ -51,7 +51,7 @@ export interface FirestoreErrorInfo {
   };
 }
 
-export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null): never {
+export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null): void {
   const errInfo: FirestoreErrorInfo = {
     error: error instanceof Error ? error.message : String(error),
     authInfo: {
@@ -69,8 +69,7 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
     operationType,
     path
   };
-  console.error('Firestore Real-Time Error: ', JSON.stringify(errInfo));
-  throw new Error(JSON.stringify(errInfo));
+  console.warn(`Firestore Real-Time Notice [${operationType} on ${path}]:`, errInfo.error);
 }
 
 // REAL-TIME FIRESTORE SUBSCRIPTION MANAGERS
@@ -102,6 +101,7 @@ export function subscribeToRealtimeJobs(
     );
   } catch (error) {
     handleFirestoreError(error, OperationType.LIST, path);
+    return () => {};
   }
 }
 
@@ -110,17 +110,27 @@ export function subscribeToRealtimeJobs(
  */
 export function subscribeToRealtimeApplications(
   onUpdate: (apps: Application[]) => void,
-  filters?: { studentId?: string; companyId?: string }
+  filters?: { studentId?: string; companyId?: string; role?: string }
 ): Unsubscribe {
+  // Only attempt Firestore subscription if authenticated with Firebase Auth
+  if (!auth.currentUser) {
+    return () => {};
+  }
+
   const path = 'applications';
   try {
     const appsRef = collection(db, path);
-    let q = query(appsRef);
+    let q;
 
     if (filters?.studentId) {
       q = query(appsRef, where('studentId', '==', filters.studentId));
     } else if (filters?.companyId) {
       q = query(appsRef, where('companyId', '==', filters.companyId));
+    } else if (filters?.role === 'company') {
+      q = query(appsRef, where('companyId', '==', auth.currentUser.uid));
+    } else {
+      // Default to student's own applications to satisfy Firestore security rules
+      q = query(appsRef, where('studentId', '==', auth.currentUser.uid));
     }
 
     return onSnapshot(
@@ -138,6 +148,7 @@ export function subscribeToRealtimeApplications(
     );
   } catch (error) {
     handleFirestoreError(error, OperationType.LIST, path);
+    return () => {};
   }
 }
 
@@ -148,10 +159,16 @@ export function subscribeToRealtimeNotifications(
   userId: string,
   onUpdate: (notifs: Notification[]) => void
 ): Unsubscribe {
+  // Only attempt Firestore subscription if authenticated with Firebase Auth
+  if (!auth.currentUser) {
+    return () => {};
+  }
+
+  const targetUid = auth.currentUser.uid || userId;
   const path = 'notifications';
   try {
     const notifsRef = collection(db, path);
-    const q = query(notifsRef, where('userId', '==', userId));
+    const q = query(notifsRef, where('userId', '==', targetUid));
 
     return onSnapshot(
       q,
@@ -170,6 +187,7 @@ export function subscribeToRealtimeNotifications(
     );
   } catch (error) {
     handleFirestoreError(error, OperationType.LIST, path);
+    return () => {};
   }
 }
 
@@ -180,6 +198,11 @@ export function subscribeToRealtimeEvidences(
   studentId: string,
   onUpdate: (evidences: SkillEvidence[]) => void
 ): Unsubscribe {
+  // Only attempt Firestore subscription if authenticated with Firebase Auth
+  if (!auth.currentUser) {
+    return () => {};
+  }
+
   const path = 'evidence';
   try {
     const evRef = collection(db, path);
@@ -200,6 +223,7 @@ export function subscribeToRealtimeEvidences(
     );
   } catch (error) {
     handleFirestoreError(error, OperationType.LIST, path);
+    return () => {};
   }
 }
 
@@ -210,6 +234,11 @@ export function subscribeToRealtimeStudent(
   studentId: string,
   onUpdate: (student: Student | null) => void
 ): Unsubscribe {
+  // Only attempt Firestore subscription if authenticated with Firebase Auth
+  if (!auth.currentUser) {
+    return () => {};
+  }
+
   const path = `students/${studentId}`;
   try {
     const studentDocRef = doc(db, 'students', studentId);
@@ -228,6 +257,7 @@ export function subscribeToRealtimeStudent(
     );
   } catch (error) {
     handleFirestoreError(error, OperationType.GET, path);
+    return () => {};
   }
 }
 

@@ -219,7 +219,7 @@ export const DEMO_STUDENTS: (Student & { isDemo?: boolean; demoSeedVersion?: str
       }
     },
     isDemo: true,
-    demoSeedVersion: 'v1'
+    demoSeedVersion: 'v2'
   },
 
   // Student 02: Kavin Raj (Java + DSA + SQL + Spring Boot)
@@ -305,7 +305,7 @@ export const DEMO_STUDENTS: (Student & { isDemo?: boolean; demoSeedVersion?: str
       }
     },
     isDemo: true,
-    demoSeedVersion: 'v1'
+    demoSeedVersion: 'v2'
   },
 
   // Student 03: Priya Dharshini (React + JavaScript + Node.js + MongoDB)
@@ -392,7 +392,7 @@ export const DEMO_STUDENTS: (Student & { isDemo?: boolean; demoSeedVersion?: str
       }
     },
     isDemo: true,
-    demoSeedVersion: 'v1'
+    demoSeedVersion: 'v2'
   },
 
   // Student 04: Vignesh Sundaram (Python + Data Science + SQL + Power BI)
@@ -478,7 +478,7 @@ export const DEMO_STUDENTS: (Student & { isDemo?: boolean; demoSeedVersion?: str
       }
     },
     isDemo: true,
-    demoSeedVersion: 'v1'
+    demoSeedVersion: 'v2'
   },
 
   // Student 05: Dharshan Pandian (Cybersecurity + Networking + Linux + Python)
@@ -564,7 +564,7 @@ export const DEMO_STUDENTS: (Student & { isDemo?: boolean; demoSeedVersion?: str
       }
     },
     isDemo: true,
-    demoSeedVersion: 'v1'
+    demoSeedVersion: 'v2'
   },
 
   // Student 06: Sneha Ramachandran (Java + Android + Firebase + Kotlin)
@@ -649,7 +649,7 @@ export const DEMO_STUDENTS: (Student & { isDemo?: boolean; demoSeedVersion?: str
       }
     },
     isDemo: true,
-    demoSeedVersion: 'v1'
+    demoSeedVersion: 'v2'
   },
 
   // Student 07: Hari Prasad (C++ + DSA + Competitive Programming + Low-level Systems)
@@ -736,7 +736,7 @@ export const DEMO_STUDENTS: (Student & { isDemo?: boolean; demoSeedVersion?: str
       }
     },
     isDemo: true,
-    demoSeedVersion: 'v1'
+    demoSeedVersion: 'v2'
   },
 
   // Student 08: Ananya Subramanian (Machine Learning + NLP + Python + Transformers)
@@ -822,7 +822,7 @@ export const DEMO_STUDENTS: (Student & { isDemo?: boolean; demoSeedVersion?: str
       }
     },
     isDemo: true,
-    demoSeedVersion: 'v1'
+    demoSeedVersion: 'v2'
   },
 
   // Student 09: Pranav Ravichandran (Cloud + DevOps + Linux + Docker + Kubernetes + CI/CD)
@@ -908,7 +908,7 @@ export const DEMO_STUDENTS: (Student & { isDemo?: boolean; demoSeedVersion?: str
       }
     },
     isDemo: true,
-    demoSeedVersion: 'v1'
+    demoSeedVersion: 'v2'
   },
 
   // Student 10: Rahul Manikandan (Full Stack Development + React + Node.js + PostgreSQL + Tailwind CSS)
@@ -994,7 +994,7 @@ export const DEMO_STUDENTS: (Student & { isDemo?: boolean; demoSeedVersion?: str
       }
     },
     isDemo: true,
-    demoSeedVersion: 'v1'
+    demoSeedVersion: 'v2'
   }
 ];
 
@@ -1014,7 +1014,7 @@ export const DEMO_COMPANIES: (Company & { isDemo?: boolean; demoSeedVersion?: st
     employeeCount: '250-500',
     verified: true,
     isDemo: true,
-    demoSeedVersion: 'v1'
+    demoSeedVersion: 'v2'
   },
   // Company 02: DataForge Analytics — Demo (Coimbatore)
   {
@@ -1030,7 +1030,7 @@ export const DEMO_COMPANIES: (Company & { isDemo?: boolean; demoSeedVersion?: st
     employeeCount: '150-300',
     verified: true,
     isDemo: true,
-    demoSeedVersion: 'v1'
+    demoSeedVersion: 'v2'
   },
   // Company 03: CloudAxis Systems — Demo (Hosur)
   {
@@ -1046,7 +1046,7 @@ export const DEMO_COMPANIES: (Company & { isDemo?: boolean; demoSeedVersion?: st
     employeeCount: '100-250',
     verified: true,
     isDemo: true,
-    demoSeedVersion: 'v1'
+    demoSeedVersion: 'v2'
   },
   // Company 04: SecureStack Labs — Demo (Chennai)
   {
@@ -1062,7 +1062,7 @@ export const DEMO_COMPANIES: (Company & { isDemo?: boolean; demoSeedVersion?: st
     employeeCount: '80-180',
     verified: true,
     isDemo: true,
-    demoSeedVersion: 'v1'
+    demoSeedVersion: 'v2'
   },
   // Company 05: AppNova Digital — Demo (Madurai)
   {
@@ -1078,7 +1078,7 @@ export const DEMO_COMPANIES: (Company & { isDemo?: boolean; demoSeedVersion?: st
     employeeCount: '120-220',
     verified: true,
     isDemo: true,
-    demoSeedVersion: 'v1'
+    demoSeedVersion: 'v2'
   }
 ];
 
@@ -1109,7 +1109,7 @@ export const DEMO_JOBS: (Job & { isDemo?: boolean; demoSeedVersion?: string })[]
     applicantCount: 5,
     createdAt: '2026-01-10T10:00:00.000Z',
     isDemo: true,
-    demoSeedVersion: 'v1'
+    demoSeedVersion: 'v2'
   },
   {
     id: 'job_02',
@@ -1135,7 +1135,7 @@ export const DEMO_JOBS: (Job & { isDemo?: boolean; demoSeedVersion?: string })[]
     applicantCount: 3,
     createdAt: '2026-01-12T11:00:00.000Z',
     isDemo: true,
-    demoSeedVersion: 'v1'
+    demoSeedVersion: 'v2'
   },
   {
     id: 'job_03',
@@ -1161,7 +1161,7 @@ export const DEMO_JOBS: (Job & { isDemo?: boolean; demoSeedVersion?: string })[]
     applicantCount: 7,
     createdAt: '2026-01-15T09:30:00.000Z',
     isDemo: true,
-    demoSeedVersion: 'v1'
+    demoSeedVersion: 'v2'
   },
   {
     id: 'job_04',
@@ -1185,7 +1185,7 @@ export const DEMO_JOBS: (Job & { isDemo?: boolean; demoSeedVersion?: string })[]
     applicantCount: 4,
     createdAt: '2026-01-18T14:00:00.000Z',
     isDemo: true,
-    demoSeedVersion: 'v1'
+    demoSeedVersion: 'v2'
   },
 
   // Company 02: DataForge Analytics (4 opportunities)
@@ -1211,7 +1211,7 @@ export const DEMO_JOBS: (Job & { isDemo?: boolean; demoSeedVersion?: string })[]
     applicantCount: 6,
     createdAt: '2026-01-11T10:30:00.000Z',
     isDemo: true,
-    demoSeedVersion: 'v1'
+    demoSeedVersion: 'v2'
   },
   {
     id: 'job_06',
@@ -1235,7 +1235,7 @@ export const DEMO_JOBS: (Job & { isDemo?: boolean; demoSeedVersion?: string })[]
     applicantCount: 5,
     createdAt: '2026-01-14T12:00:00.000Z',
     isDemo: true,
-    demoSeedVersion: 'v1'
+    demoSeedVersion: 'v2'
   },
   {
     id: 'job_07',
@@ -1261,7 +1261,7 @@ export const DEMO_JOBS: (Job & { isDemo?: boolean; demoSeedVersion?: string })[]
     applicantCount: 8,
     createdAt: '2026-01-16T15:00:00.000Z',
     isDemo: true,
-    demoSeedVersion: 'v1'
+    demoSeedVersion: 'v2'
   },
   {
     id: 'job_08',
@@ -1285,7 +1285,7 @@ export const DEMO_JOBS: (Job & { isDemo?: boolean; demoSeedVersion?: string })[]
     applicantCount: 3,
     createdAt: '2026-01-20T11:00:00.000Z',
     isDemo: true,
-    demoSeedVersion: 'v1'
+    demoSeedVersion: 'v2'
   },
 
   // Company 03: CloudAxis Systems (3 opportunities)
@@ -1311,7 +1311,7 @@ export const DEMO_JOBS: (Job & { isDemo?: boolean; demoSeedVersion?: string })[]
     applicantCount: 4,
     createdAt: '2026-01-13T10:00:00.000Z',
     isDemo: true,
-    demoSeedVersion: 'v1'
+    demoSeedVersion: 'v2'
   },
   {
     id: 'job_10',
@@ -1335,7 +1335,7 @@ export const DEMO_JOBS: (Job & { isDemo?: boolean; demoSeedVersion?: string })[]
     applicantCount: 2,
     createdAt: '2026-01-17T14:30:00.000Z',
     isDemo: true,
-    demoSeedVersion: 'v1'
+    demoSeedVersion: 'v2'
   },
   {
     id: 'job_11',
@@ -1361,7 +1361,7 @@ export const DEMO_JOBS: (Job & { isDemo?: boolean; demoSeedVersion?: string })[]
     applicantCount: 6,
     createdAt: '2026-01-19T09:00:00.000Z',
     isDemo: true,
-    demoSeedVersion: 'v1'
+    demoSeedVersion: 'v2'
   },
 
   // Company 04: SecureStack Labs (3 opportunities)
@@ -1387,7 +1387,7 @@ export const DEMO_JOBS: (Job & { isDemo?: boolean; demoSeedVersion?: string })[]
     applicantCount: 4,
     createdAt: '2026-01-12T13:00:00.000Z',
     isDemo: true,
-    demoSeedVersion: 'v1'
+    demoSeedVersion: 'v2'
   },
   {
     id: 'job_13',
@@ -1413,7 +1413,7 @@ export const DEMO_JOBS: (Job & { isDemo?: boolean; demoSeedVersion?: string })[]
     applicantCount: 5,
     createdAt: '2026-01-15T16:00:00.000Z',
     isDemo: true,
-    demoSeedVersion: 'v1'
+    demoSeedVersion: 'v2'
   },
   {
     id: 'job_14',
@@ -1437,7 +1437,7 @@ export const DEMO_JOBS: (Job & { isDemo?: boolean; demoSeedVersion?: string })[]
     applicantCount: 3,
     createdAt: '2026-01-21T10:00:00.000Z',
     isDemo: true,
-    demoSeedVersion: 'v1'
+    demoSeedVersion: 'v2'
   },
 
   // Company 05: AppNova Digital (3 opportunities)
@@ -1463,7 +1463,7 @@ export const DEMO_JOBS: (Job & { isDemo?: boolean; demoSeedVersion?: string })[]
     applicantCount: 6,
     createdAt: '2026-01-10T12:00:00.000Z',
     isDemo: true,
-    demoSeedVersion: 'v1'
+    demoSeedVersion: 'v2'
   },
   {
     id: 'job_16',
@@ -1487,7 +1487,7 @@ export const DEMO_JOBS: (Job & { isDemo?: boolean; demoSeedVersion?: string })[]
     applicantCount: 4,
     createdAt: '2026-01-14T11:30:00.000Z',
     isDemo: true,
-    demoSeedVersion: 'v1'
+    demoSeedVersion: 'v2'
   },
   {
     id: 'job_17',
@@ -1513,79 +1513,79 @@ export const DEMO_JOBS: (Job & { isDemo?: boolean; demoSeedVersion?: string })[]
     applicantCount: 7,
     createdAt: '2026-01-18T10:00:00.000Z',
     isDemo: true,
-    demoSeedVersion: 'v1'
+    demoSeedVersion: 'v2'
   }
 ];
 
 // 5. Skill Evidences for Students
 export const DEMO_EVIDENCES: (SkillEvidence & { isDemo?: boolean; demoSeedVersion?: string })[] = [
   // Student 01: Arjun Kumar Evidences
-  { id: 'ev_01_1', studentId: 'std_01', skillName: 'Python', type: 'project', title: 'Student Performance Predictor', verificationScore: 95, verified: true, verifiedAt: '2026-01-15T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-15T00:00:00.000Z' },
-  { id: 'ev_01_2', studentId: 'std_01', skillName: 'Machine Learning', type: 'certification', title: 'Machine Learning Foundations', verificationScore: 92, verified: true, verifiedAt: '2025-11-10T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-11-10T00:00:00.000Z' },
-  { id: 'ev_01_3', studentId: 'std_01', skillName: 'Pandas', type: 'work_experience', title: 'AI Developer Intern at Nexora', verificationScore: 90, verified: true, verifiedAt: '2025-08-30T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-08-30T00:00:00.000Z' },
-  { id: 'ev_01_4', studentId: 'std_01', skillName: 'NumPy', type: 'github', title: 'NumPy Mathematical Vector Engine', verificationScore: 88, verified: true, verifiedAt: '2026-01-10T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-10T00:00:00.000Z' },
-  { id: 'ev_01_5', studentId: 'std_01', skillName: 'Scikit-learn', type: 'assessment', title: 'NextMind Verified ML Assessment', verificationScore: 88, verified: true, verifiedAt: '2026-02-01T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-02-01T00:00:00.000Z' },
-  { id: 'ev_01_6', studentId: 'std_01', skillName: 'PyTorch', type: 'github', title: 'Multimodal Satellite Crop Health Classifier', verificationScore: 94, verified: true, verifiedAt: '2026-01-18T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-18T00:00:00.000Z' },
+  { id: 'ev_01_1', studentId: 'std_01', skillName: 'Python', type: 'project', title: 'Student Performance Predictor', verificationScore: 95, verified: true, verifiedAt: '2026-01-15T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2026-01-15T00:00:00.000Z' },
+  { id: 'ev_01_2', studentId: 'std_01', skillName: 'Machine Learning', type: 'certification', title: 'Machine Learning Foundations', verificationScore: 92, verified: true, verifiedAt: '2025-11-10T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2025-11-10T00:00:00.000Z' },
+  { id: 'ev_01_3', studentId: 'std_01', skillName: 'Pandas', type: 'work_experience', title: 'AI Developer Intern at Nexora', verificationScore: 90, verified: true, verifiedAt: '2025-08-30T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2025-08-30T00:00:00.000Z' },
+  { id: 'ev_01_4', studentId: 'std_01', skillName: 'NumPy', type: 'github', title: 'NumPy Mathematical Vector Engine', verificationScore: 88, verified: true, verifiedAt: '2026-01-10T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2026-01-10T00:00:00.000Z' },
+  { id: 'ev_01_5', studentId: 'std_01', skillName: 'Scikit-learn', type: 'assessment', title: 'NextMind Verified ML Assessment', verificationScore: 88, verified: true, verifiedAt: '2026-02-01T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2026-02-01T00:00:00.000Z' },
+  { id: 'ev_01_6', studentId: 'std_01', skillName: 'PyTorch', type: 'github', title: 'Multimodal Satellite Crop Health Classifier', verificationScore: 94, verified: true, verifiedAt: '2026-01-18T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2026-01-18T00:00:00.000Z' },
 
   // Student 02: Kavin Raj Evidences
-  { id: 'ev_02_1', studentId: 'std_02', skillName: 'Java', type: 'certification', title: 'Oracle Certified Java Associate', verificationScore: 95, verified: true, verifiedAt: '2025-08-10T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-08-10T00:00:00.000Z' },
-  { id: 'ev_02_2', studentId: 'std_02', skillName: 'DSA', type: 'project', title: 'LeetCode 320 Solved Problems Profile', verificationScore: 94, verified: true, verifiedAt: '2026-02-15T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-02-15T00:00:00.000Z' },
-  { id: 'ev_02_3', studentId: 'std_02', skillName: 'Spring Boot', type: 'project', title: 'Enterprise Banking Microservices Core', verificationScore: 90, verified: true, verifiedAt: '2026-01-20T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-20T00:00:00.000Z' },
-  { id: 'ev_02_4', studentId: 'std_02', skillName: 'SQL', type: 'work_experience', title: 'Java Backend Intern at DataForge', verificationScore: 89, verified: true, verifiedAt: '2025-07-31T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-07-31T00:00:00.000Z' },
-  { id: 'ev_02_5', studentId: 'std_02', skillName: 'REST API', type: 'project', title: 'Payment Webhook Processing Microservice', verificationScore: 78, verified: true, verifiedAt: '2026-01-25T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-25T00:00:00.000Z' },
+  { id: 'ev_02_1', studentId: 'std_02', skillName: 'Java', type: 'certification', title: 'Oracle Certified Java Associate', verificationScore: 95, verified: true, verifiedAt: '2025-08-10T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2025-08-10T00:00:00.000Z' },
+  { id: 'ev_02_2', studentId: 'std_02', skillName: 'DSA', type: 'project', title: 'LeetCode 320 Solved Problems Profile', verificationScore: 94, verified: true, verifiedAt: '2026-02-15T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2026-02-15T00:00:00.000Z' },
+  { id: 'ev_02_3', studentId: 'std_02', skillName: 'Spring Boot', type: 'project', title: 'Enterprise Banking Microservices Core', verificationScore: 90, verified: true, verifiedAt: '2026-01-20T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2026-01-20T00:00:00.000Z' },
+  { id: 'ev_02_4', studentId: 'std_02', skillName: 'SQL', type: 'work_experience', title: 'Java Backend Intern at DataForge', verificationScore: 89, verified: true, verifiedAt: '2025-07-31T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2025-07-31T00:00:00.000Z' },
+  { id: 'ev_02_5', studentId: 'std_02', skillName: 'REST API', type: 'project', title: 'Payment Webhook Processing Microservice', verificationScore: 78, verified: true, verifiedAt: '2026-01-25T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2026-01-25T00:00:00.000Z' },
 
   // Student 03: Priya Dharshini Evidences
-  { id: 'ev_03_1', studentId: 'std_03', skillName: 'React', type: 'project', title: 'Campus Recruitment Portal', verificationScore: 95, verified: true, verifiedAt: '2026-01-22T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-22T00:00:00.000Z' },
-  { id: 'ev_03_2', studentId: 'std_03', skillName: 'JavaScript', type: 'certification', title: 'Meta Front-End Developer Certificate', verificationScore: 93, verified: true, verifiedAt: '2025-07-20T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-07-20T00:00:00.000Z' },
-  { id: 'ev_03_3', studentId: 'std_03', skillName: 'Node.js', type: 'work_experience', title: 'Full Stack Intern at AppNova', verificationScore: 89, verified: true, verifiedAt: '2025-08-15T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-08-15T00:00:00.000Z' },
-  { id: 'ev_03_4', studentId: 'std_03', skillName: 'MongoDB', type: 'project', title: 'Collaborative Kanban Sprint Board', verificationScore: 87, verified: true, verifiedAt: '2026-02-05T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-02-05T00:00:00.000Z' },
-  { id: 'ev_03_5', studentId: 'std_03', skillName: 'TypeScript', type: 'github', title: 'Type-Safe React Design System Component Library', verificationScore: 92, verified: true, verifiedAt: '2026-01-28T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-28T00:00:00.000Z' },
+  { id: 'ev_03_1', studentId: 'std_03', skillName: 'React', type: 'project', title: 'Campus Recruitment Portal', verificationScore: 95, verified: true, verifiedAt: '2026-01-22T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2026-01-22T00:00:00.000Z' },
+  { id: 'ev_03_2', studentId: 'std_03', skillName: 'JavaScript', type: 'certification', title: 'Meta Front-End Developer Certificate', verificationScore: 93, verified: true, verifiedAt: '2025-07-20T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2025-07-20T00:00:00.000Z' },
+  { id: 'ev_03_3', studentId: 'std_03', skillName: 'Node.js', type: 'work_experience', title: 'Full Stack Intern at AppNova', verificationScore: 89, verified: true, verifiedAt: '2025-08-15T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2025-08-15T00:00:00.000Z' },
+  { id: 'ev_03_4', studentId: 'std_03', skillName: 'MongoDB', type: 'project', title: 'Collaborative Kanban Sprint Board', verificationScore: 87, verified: true, verifiedAt: '2026-02-05T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2026-02-05T00:00:00.000Z' },
+  { id: 'ev_03_5', studentId: 'std_03', skillName: 'TypeScript', type: 'github', title: 'Type-Safe React Design System Component Library', verificationScore: 92, verified: true, verifiedAt: '2026-01-28T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2026-01-28T00:00:00.000Z' },
 
   // Student 04: Vignesh Sundaram Evidences
-  { id: 'ev_04_1', studentId: 'std_04', skillName: 'SQL', type: 'work_experience', title: 'Data Analytics Intern at DataForge', verificationScore: 92, verified: true, verifiedAt: '2025-08-15T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-08-15T00:00:00.000Z' },
-  { id: 'ev_04_2', studentId: 'std_04', skillName: 'Power BI', type: 'certification', title: 'Google Data Analytics Professional', verificationScore: 90, verified: true, verifiedAt: '2025-08-30T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-08-30T00:00:00.000Z' },
-  { id: 'ev_04_3', studentId: 'std_04', skillName: 'Python', type: 'project', title: 'Healthcare Patient Analytics Dashboard', verificationScore: 88, verified: true, verifiedAt: '2026-01-25T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-25T00:00:00.000Z' },
-  { id: 'ev_04_4', studentId: 'std_04', skillName: 'Data Science', type: 'assessment', title: 'Verified Data Science Assessment', verificationScore: 87, verified: true, verifiedAt: '2026-02-10T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-02-10T00:00:00.000Z' },
-  { id: 'ev_04_5', studentId: 'std_04', skillName: 'Pandas', type: 'project', title: 'Hospital Resource Utilization Forecast', verificationScore: 89, verified: true, verifiedAt: '2026-01-29T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-29T00:00:00.000Z' },
+  { id: 'ev_04_1', studentId: 'std_04', skillName: 'SQL', type: 'work_experience', title: 'Data Analytics Intern at DataForge', verificationScore: 92, verified: true, verifiedAt: '2025-08-15T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2025-08-15T00:00:00.000Z' },
+  { id: 'ev_04_2', studentId: 'std_04', skillName: 'Power BI', type: 'certification', title: 'Google Data Analytics Professional', verificationScore: 90, verified: true, verifiedAt: '2025-08-30T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2025-08-30T00:00:00.000Z' },
+  { id: 'ev_04_3', studentId: 'std_04', skillName: 'Python', type: 'project', title: 'Healthcare Patient Analytics Dashboard', verificationScore: 88, verified: true, verifiedAt: '2026-01-25T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2026-01-25T00:00:00.000Z' },
+  { id: 'ev_04_4', studentId: 'std_04', skillName: 'Data Science', type: 'assessment', title: 'Verified Data Science Assessment', verificationScore: 87, verified: true, verifiedAt: '2026-02-10T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2026-02-10T00:00:00.000Z' },
+  { id: 'ev_04_5', studentId: 'std_04', skillName: 'Pandas', type: 'project', title: 'Hospital Resource Utilization Forecast', verificationScore: 89, verified: true, verifiedAt: '2026-01-29T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2026-01-29T00:00:00.000Z' },
 
   // Student 05: Dharshan Pandian Evidences
-  { id: 'ev_05_1', studentId: 'std_05', skillName: 'Linux', type: 'project', title: 'SSH Honeypot Intrusion Detection System', verificationScore: 93, verified: true, verifiedAt: '2026-01-18T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-18T00:00:00.000Z' },
-  { id: 'ev_05_2', studentId: 'std_05', skillName: 'Cybersecurity', type: 'certification', title: 'CompTIA Security+ Certified', verificationScore: 91, verified: true, verifiedAt: '2025-09-12T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-09-12T00:00:00.000Z' },
-  { id: 'ev_05_3', studentId: 'std_05', skillName: 'Networking', type: 'project', title: 'Automated Network Vulnerability Scanner', verificationScore: 89, verified: true, verifiedAt: '2026-02-05T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-02-05T00:00:00.000Z' },
-  { id: 'ev_05_4', studentId: 'std_05', skillName: 'OWASP', type: 'project', title: 'Automated OWASP Top 10 Web Vulnerability Scanner', verificationScore: 90, verified: true, verifiedAt: '2026-01-22T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-22T00:00:00.000Z' },
-  { id: 'ev_05_5', studentId: 'std_05', skillName: 'Python', type: 'github', title: 'Packet Sniffer & Flow Protocol Analyzer', verificationScore: 91, verified: true, verifiedAt: '2026-01-26T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-26T00:00:00.000Z' },
+  { id: 'ev_05_1', studentId: 'std_05', skillName: 'Linux', type: 'project', title: 'SSH Honeypot Intrusion Detection System', verificationScore: 93, verified: true, verifiedAt: '2026-01-18T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2026-01-18T00:00:00.000Z' },
+  { id: 'ev_05_2', studentId: 'std_05', skillName: 'Cybersecurity', type: 'certification', title: 'CompTIA Security+ Certified', verificationScore: 91, verified: true, verifiedAt: '2025-09-12T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2025-09-12T00:00:00.000Z' },
+  { id: 'ev_05_3', studentId: 'std_05', skillName: 'Networking', type: 'project', title: 'Automated Network Vulnerability Scanner', verificationScore: 89, verified: true, verifiedAt: '2026-02-05T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2026-02-05T00:00:00.000Z' },
+  { id: 'ev_05_4', studentId: 'std_05', skillName: 'OWASP', type: 'project', title: 'Automated OWASP Top 10 Web Vulnerability Scanner', verificationScore: 90, verified: true, verifiedAt: '2026-01-22T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2026-01-22T00:00:00.000Z' },
+  { id: 'ev_05_5', studentId: 'std_05', skillName: 'Python', type: 'github', title: 'Packet Sniffer & Flow Protocol Analyzer', verificationScore: 91, verified: true, verifiedAt: '2026-01-26T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2026-01-26T00:00:00.000Z' },
 
   // Student 06: Sneha Ramachandran Evidences
-  { id: 'ev_06_1', studentId: 'std_06', skillName: 'Android', type: 'project', title: 'MediConnect Patient Telehealth App', verificationScore: 93, verified: true, verifiedAt: '2026-01-20T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-20T00:00:00.000Z' },
-  { id: 'ev_06_2', studentId: 'std_06', skillName: 'Java', type: 'work_experience', title: 'Mobile Developer Intern at AppNova', verificationScore: 91, verified: true, verifiedAt: '2025-07-15T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-07-15T00:00:00.000Z' },
-  { id: 'ev_06_3', studentId: 'std_06', skillName: 'Firebase', type: 'project', title: 'Transit Real-Time GPS Tracking App', verificationScore: 88, verified: true, verifiedAt: '2026-02-08T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-02-08T00:00:00.000Z' },
-  { id: 'ev_06_4', studentId: 'std_06', skillName: 'REST API', type: 'project', title: 'Clinician Patient Telehealth API Client', verificationScore: 86, verified: true, verifiedAt: '2026-01-25T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-25T00:00:00.000Z' },
-  { id: 'ev_06_5', studentId: 'std_06', skillName: 'Kotlin', type: 'certification', title: 'Android App Development with Kotlin', verificationScore: 90, verified: true, verifiedAt: '2025-08-20T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-08-20T00:00:00.000Z' },
+  { id: 'ev_06_1', studentId: 'std_06', skillName: 'Android', type: 'project', title: 'MediConnect Patient Telehealth App', verificationScore: 93, verified: true, verifiedAt: '2026-01-20T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2026-01-20T00:00:00.000Z' },
+  { id: 'ev_06_2', studentId: 'std_06', skillName: 'Java', type: 'work_experience', title: 'Mobile Developer Intern at AppNova', verificationScore: 91, verified: true, verifiedAt: '2025-07-15T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2025-07-15T00:00:00.000Z' },
+  { id: 'ev_06_3', studentId: 'std_06', skillName: 'Firebase', type: 'project', title: 'Transit Real-Time GPS Tracking App', verificationScore: 88, verified: true, verifiedAt: '2026-02-08T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2026-02-08T00:00:00.000Z' },
+  { id: 'ev_06_4', studentId: 'std_06', skillName: 'REST API', type: 'project', title: 'Clinician Patient Telehealth API Client', verificationScore: 86, verified: true, verifiedAt: '2026-01-25T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2026-01-25T00:00:00.000Z' },
+  { id: 'ev_06_5', studentId: 'std_06', skillName: 'Kotlin', type: 'certification', title: 'Android App Development with Kotlin', verificationScore: 90, verified: true, verifiedAt: '2025-08-20T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2025-08-20T00:00:00.000Z' },
 
   // Student 07: Hari Prasad Evidences
-  { id: 'ev_07_1', studentId: 'std_07', skillName: 'C++', type: 'project', title: 'Thread-Safe In-Memory Cache Engine', verificationScore: 98, verified: true, verifiedAt: '2026-01-28T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-28T00:00:00.000Z' },
-  { id: 'ev_07_2', studentId: 'std_07', skillName: 'DSA', type: 'github', title: 'LeetCode 540 Problems Guardian Profile', verificationScore: 99, verified: true, verifiedAt: '2026-02-20T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-02-20T00:00:00.000Z' },
-  { id: 'ev_07_3', studentId: 'std_07', skillName: 'Linux', type: 'work_experience', title: 'Systems Engineering Intern at Nexora', verificationScore: 92, verified: true, verifiedAt: '2025-08-31T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-08-31T00:00:00.000Z' },
-  { id: 'ev_07_4', studentId: 'std_07', skillName: 'Python', type: 'project', title: 'High-Performance Profiling Scripts for Cache Engine', verificationScore: 92, verified: true, verifiedAt: '2026-02-02T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-02-02T00:00:00.000Z' },
+  { id: 'ev_07_1', studentId: 'std_07', skillName: 'C++', type: 'project', title: 'Thread-Safe In-Memory Cache Engine', verificationScore: 98, verified: true, verifiedAt: '2026-01-28T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2026-01-28T00:00:00.000Z' },
+  { id: 'ev_07_2', studentId: 'std_07', skillName: 'DSA', type: 'github', title: 'LeetCode 540 Problems Guardian Profile', verificationScore: 99, verified: true, verifiedAt: '2026-02-20T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2026-02-20T00:00:00.000Z' },
+  { id: 'ev_07_3', studentId: 'std_07', skillName: 'Linux', type: 'work_experience', title: 'Systems Engineering Intern at Nexora', verificationScore: 92, verified: true, verifiedAt: '2025-08-31T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2025-08-31T00:00:00.000Z' },
+  { id: 'ev_07_4', studentId: 'std_07', skillName: 'Python', type: 'project', title: 'High-Performance Profiling Scripts for Cache Engine', verificationScore: 92, verified: true, verifiedAt: '2026-02-02T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2026-02-02T00:00:00.000Z' },
 
   // Student 08: Ananya Subramanian Evidences
-  { id: 'ev_08_1', studentId: 'std_08', skillName: 'NLP', type: 'project', title: 'Multilingual Sentiment Analyzer (Tamil-English)', verificationScore: 94, verified: true, verifiedAt: '2026-01-24T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-24T00:00:00.000Z' },
-  { id: 'ev_08_2', studentId: 'std_08', skillName: 'Python', type: 'certification', title: 'NLP Specialization - DeepLearning.AI', verificationScore: 93, verified: true, verifiedAt: '2025-09-18T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-09-18T00:00:00.000Z' },
-  { id: 'ev_08_3', studentId: 'std_08', skillName: 'Machine Learning', type: 'work_experience', title: 'NLP Research Intern at DataForge', verificationScore: 91, verified: true, verifiedAt: '2025-08-31T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-08-31T00:00:00.000Z' },
-  { id: 'ev_08_4', studentId: 'std_08', skillName: 'Deep Learning', type: 'project', title: 'Transformer Cross-Attention Weights Visualizer', verificationScore: 93, verified: true, verifiedAt: '2026-01-20T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-20T00:00:00.000Z' },
-  { id: 'ev_08_5', studentId: 'std_08', skillName: 'PyTorch', type: 'github', title: 'Indic Language Pretrained Model Checkpoints', verificationScore: 94, verified: true, verifiedAt: '2026-01-22T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-22T00:00:00.000Z' },
+  { id: 'ev_08_1', studentId: 'std_08', skillName: 'NLP', type: 'project', title: 'Multilingual Sentiment Analyzer (Tamil-English)', verificationScore: 94, verified: true, verifiedAt: '2026-01-24T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2026-01-24T00:00:00.000Z' },
+  { id: 'ev_08_2', studentId: 'std_08', skillName: 'Python', type: 'certification', title: 'NLP Specialization - DeepLearning.AI', verificationScore: 93, verified: true, verifiedAt: '2025-09-18T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2025-09-18T00:00:00.000Z' },
+  { id: 'ev_08_3', studentId: 'std_08', skillName: 'Machine Learning', type: 'work_experience', title: 'NLP Research Intern at DataForge', verificationScore: 91, verified: true, verifiedAt: '2025-08-31T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2025-08-31T00:00:00.000Z' },
+  { id: 'ev_08_4', studentId: 'std_08', skillName: 'Deep Learning', type: 'project', title: 'Transformer Cross-Attention Weights Visualizer', verificationScore: 93, verified: true, verifiedAt: '2026-01-20T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2026-01-20T00:00:00.000Z' },
+  { id: 'ev_08_5', studentId: 'std_08', skillName: 'PyTorch', type: 'github', title: 'Indic Language Pretrained Model Checkpoints', verificationScore: 94, verified: true, verifiedAt: '2026-01-22T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2026-01-22T00:00:00.000Z' },
 
   // Student 09: Pranav Ravichandran Evidences
-  { id: 'ev_09_1', studentId: 'std_09', skillName: 'Linux', type: 'work_experience', title: 'Cloud Operations Intern at CloudAxis', verificationScore: 93, verified: true, verifiedAt: '2025-08-31T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-08-31T00:00:00.000Z' },
-  { id: 'ev_09_2', studentId: 'std_09', skillName: 'Docker', type: 'project', title: 'Automated Microservices GitOps Pipeline', verificationScore: 91, verified: true, verifiedAt: '2026-01-30T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-30T00:00:00.000Z' },
-  { id: 'ev_09_3', studentId: 'std_09', skillName: 'AWS', type: 'certification', title: 'AWS Solutions Architect Associate', verificationScore: 89, verified: true, verifiedAt: '2025-08-14T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-08-14T00:00:00.000Z' },
-  { id: 'ev_09_4', studentId: 'std_09', skillName: 'CI/CD', type: 'github', title: 'Zero-Downtime Blue-Green Helm Deployment Pipeline', verificationScore: 90, verified: true, verifiedAt: '2026-02-01T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-02-01T00:00:00.000Z' },
+  { id: 'ev_09_1', studentId: 'std_09', skillName: 'Linux', type: 'work_experience', title: 'Cloud Operations Intern at CloudAxis', verificationScore: 93, verified: true, verifiedAt: '2025-08-31T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2025-08-31T00:00:00.000Z' },
+  { id: 'ev_09_2', studentId: 'std_09', skillName: 'Docker', type: 'project', title: 'Automated Microservices GitOps Pipeline', verificationScore: 91, verified: true, verifiedAt: '2026-01-30T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2026-01-30T00:00:00.000Z' },
+  { id: 'ev_09_3', studentId: 'std_09', skillName: 'AWS', type: 'certification', title: 'AWS Solutions Architect Associate', verificationScore: 89, verified: true, verifiedAt: '2025-08-14T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2025-08-14T00:00:00.000Z' },
+  { id: 'ev_09_4', studentId: 'std_09', skillName: 'CI/CD', type: 'github', title: 'Zero-Downtime Blue-Green Helm Deployment Pipeline', verificationScore: 90, verified: true, verifiedAt: '2026-02-01T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2026-02-01T00:00:00.000Z' },
 
   // Student 10: Rahul Manikandan Evidences
-  { id: 'ev_10_1', studentId: 'std_10', skillName: 'React', type: 'project', title: 'Multi-Tenant SaaS Invoicing Billing Engine', verificationScore: 93, verified: true, verifiedAt: '2026-01-26T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-01-26T00:00:00.000Z' },
-  { id: 'ev_10_2', studentId: 'std_10', skillName: 'Node.js', type: 'work_experience', title: 'Full Stack Intern at AppNova', verificationScore: 90, verified: true, verifiedAt: '2025-08-31T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-08-31T00:00:00.000Z' },
-  { id: 'ev_10_3', studentId: 'std_10', skillName: 'SQL', type: 'certification', title: 'Full Stack Web with PostgreSQL', verificationScore: 89, verified: true, verifiedAt: '2025-07-28T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2025-07-28T00:00:00.000Z' },
-  { id: 'ev_10_4', studentId: 'std_10', skillName: 'MongoDB', type: 'project', title: 'Aggregated Invoicing Timeseries Database', verificationScore: 88, verified: true, verifiedAt: '2026-02-03T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v1', createdAt: '2026-02-03T00:00:00.000Z' }
+  { id: 'ev_10_1', studentId: 'std_10', skillName: 'React', type: 'project', title: 'Multi-Tenant SaaS Invoicing Billing Engine', verificationScore: 93, verified: true, verifiedAt: '2026-01-26T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2026-01-26T00:00:00.000Z' },
+  { id: 'ev_10_2', studentId: 'std_10', skillName: 'Node.js', type: 'work_experience', title: 'Full Stack Intern at AppNova', verificationScore: 90, verified: true, verifiedAt: '2025-08-31T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2025-08-31T00:00:00.000Z' },
+  { id: 'ev_10_3', studentId: 'std_10', skillName: 'SQL', type: 'certification', title: 'Full Stack Web with PostgreSQL', verificationScore: 89, verified: true, verifiedAt: '2025-07-28T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2025-07-28T00:00:00.000Z' },
+  { id: 'ev_10_4', studentId: 'std_10', skillName: 'MongoDB', type: 'project', title: 'Aggregated Invoicing Timeseries Database', verificationScore: 88, verified: true, verifiedAt: '2026-02-03T00:00:00.000Z', isDemo: true, demoSeedVersion: 'v2', createdAt: '2026-02-03T00:00:00.000Z' }
 ];
 
 // Admin Industry Seed

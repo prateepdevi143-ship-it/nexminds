@@ -551,7 +551,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           'x-user-name': encodeURIComponent(name)
         },
         body: JSON.stringify({
-          role: demoRole === 'industry' ? 'company' : demoRole,
+          role: (demoRole as string) === 'industry' ? 'company' : demoRole,
           email: demoEmail
         })
       });

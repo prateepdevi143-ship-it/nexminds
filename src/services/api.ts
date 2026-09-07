@@ -295,6 +295,13 @@ export const api = {
     return res.json();
   },
 
+  async getCareers(): Promise<CareerGoal[]> {
+    const headers = await getAuthHeaders();
+    const res = await fetch('/api/careers', { headers });
+    if (!res.ok) return [];
+    return res.json();
+  },
+
   async getOneSkillAway(): Promise<OneSkillAwaySimulation[]> {
     const headers = await getAuthHeaders();
     const res = await fetch('/api/students/one-skill-away', { headers });
@@ -468,6 +475,13 @@ export const api = {
     return res.json();
   },
 
+  async getCompanies(): Promise<Company[]> {
+    const headers = await getAuthHeaders();
+    const res = await fetch('/api/companies', { headers });
+    if (!res.ok) return [];
+    return res.json();
+  },
+
   // Courses & Learning
   async getCourses(): Promise<Course[]> {
     const headers = await getAuthHeaders();
@@ -494,12 +508,24 @@ export const api = {
     return res.json();
   },
 
-  async submitAssessment(id: string, answers: Record<string, number>): Promise<any> {
+  async submitAssessment(
+    id: string,
+    answers: Record<string, number>,
+    metadata?: {
+      timeUsedSeconds?: number;
+      isProctored?: boolean;
+      tabSwitchCount?: number;
+      fullscreenExitCount?: number;
+      cameraInterruptions?: number;
+      microphoneInterruptions?: number;
+      integrityEvents?: any[];
+    }
+  ): Promise<any> {
     const headers = await getAuthHeaders();
     const res = await fetch(`/api/assessments/${id}/submit`, {
       method: 'POST',
       headers,
-      body: JSON.stringify({ answers })
+      body: JSON.stringify({ answers, ...(metadata || {}) })
     });
     return res.json();
   },

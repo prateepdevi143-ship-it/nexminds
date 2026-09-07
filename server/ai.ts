@@ -218,12 +218,31 @@ ${resumeText.slice(0, 10000)}
     });
 
     const parsed = JSON.parse(response.text || '{}');
-    // Normalize extracted skills
+    // Normalize extracted skills safely
     if (parsed.skills && Array.isArray(parsed.skills)) {
-      parsed.skills = parsed.skills.map((s: any) => ({
-        ...s,
-        name: normalizeSkill(s.name)
-      }));
+      parsed.skills = parsed.skills.map((s: any) => {
+        const rawName = typeof s === 'string' ? s : (s?.name || s?.skill || '');
+        return {
+          name: normalizeSkill(rawName),
+          confidence: typeof s === 'object' && typeof s?.confidence === 'number' ? s.confidence : 0.88,
+          category: typeof s === 'object' && s?.category ? s.category : 'Technical'
+        };
+      }).filter((s: any) => s.name);
+    }
+    // Normalize extracted projects safely
+    if (parsed.projects && Array.isArray(parsed.projects)) {
+      parsed.projects = parsed.projects.map((p: any) => {
+        const title = (p?.title || p?.name || 'Project Portfolio Item').trim();
+        return {
+          ...p,
+          name: title,
+          title: title,
+          description: p?.description || 'Extracted project portfolio item.',
+          technologies: Array.isArray(p?.technologies)
+            ? p.technologies.map((t: any) => normalizeSkill(typeof t === 'string' ? t : (t?.name || ''))).filter(Boolean)
+            : []
+        };
+      });
     }
     return parsed;
   } catch (error) {

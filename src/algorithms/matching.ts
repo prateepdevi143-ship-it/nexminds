@@ -119,12 +119,17 @@ export function calculateSkillMatch(
 
   // Map of student skill name -> confidence (0-1)
   const studentSkillConfidenceMap = new Map<string, number>();
-  studentSkills.forEach(s => {
+  (studentSkills || []).forEach(s => {
     if (typeof s === 'string') {
-      studentSkillConfidenceMap.set(normalizeSkill(s).toLowerCase(), 0.85);
-    } else {
+      const norm = normalizeSkill(s);
+      if (norm) studentSkillConfidenceMap.set(norm.toLowerCase(), 0.85);
+    } else if (s) {
       const conf = Math.max(0.2, Math.min(1.0, s.confidence || 0.8));
-      studentSkillConfidenceMap.set(normalizeSkill(s.name).toLowerCase(), conf);
+      const sName = s.name || (s as any).skill || '';
+      const norm = normalizeSkill(sName);
+      if (norm) {
+        studentSkillConfidenceMap.set(norm.toLowerCase(), conf);
+      }
     }
   });
 
@@ -266,7 +271,12 @@ export function calculateOneSkillAway(
   targetSkillsList: string[][],
   missingCandidateSkills: string[]
 ): OneSkillAwaySimulation[] {
-  const currentSkillsNorm = currentSkills.map(s => (typeof s === 'string' ? normalizeSkill(s) : s.name));
+  const currentSkillsNorm = (currentSkills || [])
+    .map(s => {
+      const raw = typeof s === 'string' ? s : (s?.name || (s as any)?.skill || '');
+      return normalizeSkill(raw);
+    })
+    .filter(Boolean);
 
   // Current average match across all target profiles
   const currentMatches = targetSkillsList.map(reqs => calculateSkillMatch(currentSkillsNorm, reqs).matchScore);
@@ -502,7 +512,14 @@ export function calculateOpportunityMatch(
   const preferred = normalizeSkillsList(job.preferredSkills || []);
   const studentSkillMap = new Map<string, StudentSkill>();
   (student.skills || []).forEach(s => {
-    studentSkillMap.set(normalizeSkill(s.name).toLowerCase(), s);
+    const rawName = typeof s === 'string' ? s : (s?.name || (s as any)?.skill || '');
+    const norm = normalizeSkill(rawName);
+    if (norm) {
+      const skillObj = typeof s === 'string'
+        ? { id: `s_${norm}`, name: norm, confidence: 0.8, level: 80, freshness: 'recent' as const, evidenceCount: 1, lastDemonstrated: '' }
+        : s;
+      studentSkillMap.set(norm.toLowerCase(), skillObj);
+    }
   });
 
   // 1. Skill Match (35% weight)
@@ -580,7 +597,10 @@ export function calculateOpportunityMatch(
   let projectScore = 30;
   const jobSkillTerms = [...required, ...preferred].map(s => s.toLowerCase());
   const relevantProjects = (student.projects || []).filter(p =>
-    (p.technologies || []).some(t => jobSkillTerms.includes(t.toLowerCase()))
+    (p.technologies || []).some(t => {
+      const rawTech = typeof t === 'string' ? t : ((t as any)?.name || '');
+      return jobSkillTerms.includes(rawTech.toLowerCase());
+    })
   );
   projectScore = Math.min(100, Math.max(30, relevantProjects.length * 40));
   if (relevantProjects.length > 0) {
@@ -589,7 +609,7 @@ export function calculateOpportunityMatch(
 
   // 5. Career Alignment (10% weight)
   let careerAlignment = 60;
-  if (student.careerGoal) {
+  if (student.careerGoal && job.title) {
     const goalLower = student.careerGoal.toLowerCase();
     const titleLower = job.title.toLowerCase();
     if (titleLower.includes(goalLower) || goalLower.includes(titleLower.split(' ')[0])) {

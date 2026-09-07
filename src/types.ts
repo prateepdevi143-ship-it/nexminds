@@ -383,6 +383,10 @@ export interface SkillEvidence {
   confidence?: number;
   date?: string;
   details?: string;
+  description?: string;
+  verifiedBy?: string;
+  evidenceUrl?: string;
+  impactMetrics?: string;
   createdAt?: string;
 }
 
@@ -440,6 +444,10 @@ export interface AssessmentQuestion {
   options: string[];
   correctIndex: number;
   explanation: string;
+  skill?: string;
+  difficulty?: 'beginner' | 'intermediate' | 'advanced';
+  marks?: number;
+  negativeMarks?: number;
 }
 
 export interface Assessment {
@@ -451,6 +459,20 @@ export interface Assessment {
   durationMinutes: number;
   passingScore: number; // e.g. 70
   questions: AssessmentQuestion[];
+  isProctored?: boolean;
+  cameraRequired?: boolean;
+  microphoneRequired?: boolean;
+  fullscreenRequired?: boolean;
+}
+
+export interface AssessmentIntegrityEvent {
+  eventId: string;
+  attemptId: string;
+  studentId: string;
+  eventType: 'TAB_SWITCH' | 'FULLSCREEN_EXIT' | 'CAMERA_INTERRUPTION' | 'MICROPHONE_INTERRUPTION';
+  timestamp: string;
+  duration?: number;
+  metadata?: Record<string, any>;
 }
 
 export interface AssessmentAttempt {
@@ -460,10 +482,22 @@ export interface AssessmentAttempt {
   skillId: string;
   skillName: string;
   score: number;
+  percentage?: number;
   passed: boolean;
+  startedAt?: string;
   completedAt: string;
+  submittedAt?: string;
   totalQuestions: number;
   correctAnswers: number;
+  timeUsedSeconds?: number;
+  isProctored?: boolean;
+  integrityStatus?: 'CLEAR' | 'REVIEW_REQUIRED' | 'TERMINATED';
+  tabSwitchCount?: number;
+  fullscreenExitCount?: number;
+  cameraInterruptions?: number;
+  microphoneInterruptions?: number;
+  skillScores?: Record<string, number>;
+  integrityEvents?: AssessmentIntegrityEvent[];
 }
 
 export interface Notification {

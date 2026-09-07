@@ -132,6 +132,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       group: 'Career & Opportunities',
       items: [
         {
+          id: 'certified-internships',
+          label: 'Certified Internships',
+          icon: Award,
+          badge: 'FREE',
+          badgeColor: 'emerald',
+          description: 'Official skill-based programs & certificates'
+        },
+        {
           id: 'jobs',
           label: 'Job Matching',
           icon: Briefcase,

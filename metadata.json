@@ -1,6 +1,6 @@
 {
   "name": "Nexminds",
   "description": "Nexminds is a career readiness and capability intelligence platform connecting students, skills, evidence, learning, and job opportunities.",
-  "requestFramePermissions": [],
+  "requestFramePermissions": ["camera", "microphone"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

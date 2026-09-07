@@ -120,47 +120,29 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span>NoSQL Real-Time Sync</span>
           </div>
 
-          {/* Persona Switcher */}
-          <div className="flex items-center p-1 rounded-lg bg-slate-100 border border-slate-200/80">
-            <button
-              id="nav-role-student"
-              onClick={() => onSwitchRole('student')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                activeRole === 'student'
-                  ? 'bg-white text-slate-900 font-semibold shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <UserCheck className="w-3.5 h-3.5 text-indigo-600" />
-              <span>Student</span>
-            </button>
-            <button
-              id="nav-role-company"
-              onClick={() => onSwitchRole('company')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                activeRole === 'company'
-                  ? 'bg-white text-slate-900 font-semibold shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <Building2 className="w-3.5 h-3.5 text-indigo-600" />
-              <span>Company</span>
-            </button>
-            <button
-              id="nav-role-admin"
-              onClick={() => onSwitchRole('admin')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                activeRole === 'admin'
-                  ? 'bg-white text-slate-900 font-semibold shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />
-              <span className="hidden sm:inline">Admin</span>
-            </button>
+          {/* Authenticated Role Status Badge (No cross-role switching in UI) */}
+          <div id="nav-authenticated-role-badge" className="flex items-center">
+            {activeRole === 'student' && (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50/80 border border-indigo-200/80 text-xs font-semibold text-indigo-700 shadow-2xs">
+                <UserCheck className="w-3.5 h-3.5 text-indigo-600" />
+                <span>Student</span>
+              </div>
+            )}
+            {activeRole === 'company' && (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50/80 border border-emerald-200/80 text-xs font-semibold text-emerald-700 shadow-2xs">
+                <Building2 className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Company</span>
+              </div>
+            )}
+            {activeRole === 'admin' && (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-50/80 border border-purple-200/80 text-xs font-semibold text-purple-700 shadow-2xs">
+                <ShieldCheck className="w-3.5 h-3.5 text-purple-600" />
+                <span>Administrator</span>
+              </div>
+            )}
           </div>
 
-          {/* Active Student Indicator (when in Student role, static without switching) */}
+          {/* Active Student Indicator */}
           {activeRole === 'student' && currentStudent && (
             <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50/80 text-slate-800 text-xs font-medium shadow-2xs">
               <GraduationCap className="w-3.5 h-3.5 text-indigo-600" />

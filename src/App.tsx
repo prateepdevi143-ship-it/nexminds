@@ -36,6 +36,9 @@ import { CareerDoctor } from './components/CareerDoctor';
 import { AIChatAssistant } from './components/AIChatAssistant';
 import { CompanyPortal } from './components/CompanyPortal';
 import { AdminPortal } from './components/AdminPortal';
+import { CertifiedInternshipsStudent } from './components/CertifiedInternshipsStudent';
+import { CertificateVerificationView } from './components/CertificateVerificationView';
+import { AccessDeniedScreen } from './components/AccessDeniedScreen';
 import { Student, SkillEvidence, CareerGoal, Job, Application, Notification, User, UserRole } from './types';
 import { api } from './services/api';
 import {
@@ -71,6 +74,12 @@ export default function App() {
   const [assessmentTargetSkill, setAssessmentTargetSkill] = useState<string | undefined>(undefined);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [viewingCertId, setViewingCertId] = useState<string | null>(() => {
+    if (typeof window !== 'undefined' && window.location.hash.startsWith('#certificate-verify/')) {
+      return decodeURIComponent(window.location.hash.replace('#certificate-verify/', ''));
+    }
+    return null;
+  });
 
   // Sync activeRole with authRole when user logs in or role changes
   useEffect(() => {
@@ -151,36 +160,48 @@ export default function App() {
     let unsubEvidences: (() => void) | undefined;
 
     try {
-      // Real-time synchronization of published jobs
+      // Real-time synchronization of published jobs (public collection, accessible to all)
       unsubJobs = subscribeToRealtimeJobs(realtimeJobs => {
         if (realtimeJobs && realtimeJobs.length > 0) {
           setJobs(realtimeJobs);
         }
       });
 
-      // Real-time synchronization of candidate application pipeline
-      unsubApps = subscribeToRealtimeApplications(realtimeApps => {
-        if (realtimeApps && realtimeApps.length > 0) {
-          setApplications(realtimeApps);
+      // User-specific Firestore real-time collections (require authenticated Firebase user session)
+      if (firebaseUser?.uid) {
+        // Real-time synchronization of candidate application pipeline
+        if (activeRole === 'company') {
+          unsubApps = subscribeToRealtimeApplications(realtimeApps => {
+            if (realtimeApps && realtimeApps.length > 0) {
+              setApplications(realtimeApps);
+            }
+          }, { companyId: firebaseUser.uid, role: 'company' });
+        } else if (activeRole === 'student') {
+          const studentTargetId = student?.id || firebaseUser.uid;
+          unsubApps = subscribeToRealtimeApplications(realtimeApps => {
+            if (realtimeApps && realtimeApps.length > 0) {
+              setApplications(realtimeApps);
+            }
+          }, { studentId: studentTargetId, role: 'student' });
         }
-      });
 
-      // Real-time synchronization of verified skill artifacts
-      if (student?.id) {
-        unsubEvidences = subscribeToRealtimeEvidences(student.id, realtimeEvs => {
-          if (realtimeEvs && realtimeEvs.length > 0) {
-            setEvidences(realtimeEvs);
+        // Real-time synchronization of verified skill artifacts
+        const studentId = student?.id || firebaseUser.uid;
+        if (studentId) {
+          unsubEvidences = subscribeToRealtimeEvidences(studentId, realtimeEvs => {
+            if (realtimeEvs && realtimeEvs.length > 0) {
+              setEvidences(realtimeEvs);
+            }
+          });
+        }
+
+        // Real-time notifications listener
+        unsubNotifs = subscribeToRealtimeNotifications(firebaseUser.uid, realtimeNotifs => {
+          if (realtimeNotifs) {
+            setNotifications(realtimeNotifs);
           }
         });
       }
-
-      // Real-time notifications listener
-      const currentUid = firebaseUser?.uid || (authUser?.id || 'usr_student_01');
-      unsubNotifs = subscribeToRealtimeNotifications(currentUid, realtimeNotifs => {
-        if (realtimeNotifs) {
-          setNotifications(realtimeNotifs);
-        }
-      });
     } catch (e) {
       console.warn('Real-time database subscription notice:', e);
     }
@@ -191,7 +212,7 @@ export default function App() {
       if (unsubNotifs) unsubNotifs();
       if (unsubEvidences) unsubEvidences();
     };
-  }, [student?.id, firebaseUser?.uid, authUser?.id]);
+  }, [student?.id, firebaseUser?.uid, authUser?.id, activeRole]);
 
   const handleRoleSwitch = async (role: 'student' | 'company' | 'admin') => {
     setActiveRole(role);
@@ -322,6 +343,15 @@ export default function App() {
     );
   }
 
+  if (viewingCertId) {
+    return (
+      <CertificateVerificationView
+        certificateId={viewingCertId}
+        onBack={() => setViewingCertId(null)}
+      />
+    );
+  }
+
   // Active student fallback if student object is still resolving
   const fallbackUserId = firebaseUser?.uid || currentUser?.id || 'usr_student_01';
   const currentStudent: Student = student || {
@@ -429,6 +459,13 @@ export default function App() {
                     onSelectTab={setActiveTab}
                   />
                 )}
+                {activeTab === 'certified-internships' && (
+                  <CertifiedInternshipsStudent
+                    student={currentStudent}
+                    onNavigateToAssessments={handleTakeAssessment}
+                    onViewCertificateVerification={(certId) => setViewingCertId(certId)}
+                  />
+                )}
                 {activeTab === 'jobs' && (
                   <JobBoard
                     jobs={jobs}
@@ -490,7 +527,9 @@ export default function App() {
             )}
 
             {activeRole === 'admin' && (
-              <AdminPortal />
+              <AdminPortal
+                initialTab={activeTab === 'admin-certified-internships' ? 'certified-internships' : 'overview'}
+              />
             )}
           </motion.div>
         </AnimatePresence>

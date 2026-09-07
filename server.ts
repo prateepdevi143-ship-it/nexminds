@@ -159,14 +159,18 @@ function resolveUser(req: express.Request): User {
 }
 
 function resolveStudent(req: express.Request): Student | undefined {
-  const user = resolveUser(req);
-  if (user.role !== 'student') return undefined;
-
   const students = db.get('students');
   const customStudentId = (req.headers['x-student-id'] as string) || (req.query.studentId as string);
   if (customStudentId) {
     const s = students.find(s => s.id === customStudentId || s.userId === customStudentId);
     if (s) return s;
+  }
+
+  const user = resolveUser(req);
+  if (user.role !== 'student') {
+    const directStudent = students.find(s => s.userId === user.id || s.id === user.id);
+    if (directStudent) return directStudent;
+    return undefined;
   }
 
   let student = students.find(s => s.userId === user.id || s.email?.toLowerCase() === user.email?.toLowerCase() || s.id === user.id);
@@ -319,7 +323,7 @@ app.post('/api/auth/switch-demo', (req, res) => {
     if (role === 'student') targetUser = users.find(u => u.id === 'usr_student_01') || users.find(u => u.role === 'student');
     else if (role === 'company') targetUser = users.find(u => u.id === 'usr_company_01') || users.find(u => u.role === 'company');
     else if (role === 'admin') targetUser = users.find(u => u.id === 'usr_admin') || users.find(u => u.role === 'admin');
-    else if (role === 'industry') targetUser = users.find(u => u.id === 'usr_industry_01') || users.find(u => u.role === 'industry');
+    else if (role === 'industry') targetUser = users.find(u => u.id === 'usr_industry_01') || users.find(u => (u.role as string) === 'industry');
     else targetUser = users.find(u => u.role === role);
   }
 
@@ -540,6 +544,11 @@ app.post('/api/auth/register', (req, res) => {
   res.json({ user: newUser, profile });
 });
 
+// All Companies
+app.get('/api/companies', (req, res) => {
+  res.json(db.get('companies') || []);
+});
+
 // Company Profile Routes
 app.get('/api/company/profile', (req, res) => {
   const user = resolveUser(req);
@@ -578,24 +587,13 @@ app.get('/api/students', (req, res) => {
   res.json(students);
 });
 
-app.get('/api/students/:id', (req, res) => {
-  const students = db.get('students');
-  const student = students.find(s => s.id === req.params.id || s.userId === req.params.id);
-  if (!student) return res.status(404).json({ error: 'Student not found' });
-
-  const evidences = db.get('evidences').filter(e => e.studentId === student.id);
-  const careers = db.get('careers');
-  const targetCareer = careers.find(c => c.id === student.targetCareerId || c.title.toLowerCase() === student.careerGoal.toLowerCase()) || careers[0];
-  res.json({ student, evidences, targetCareer });
-});
-
 app.get('/api/students/profile', (req, res) => {
   const student = resolveStudent(req) || db.get('students')[0];
   if (!student) return res.status(404).json({ error: 'No active student' });
 
   const evidences = db.get('evidences').filter(e => e.studentId === student.id);
   const careers = db.get('careers');
-  const targetCareer = careers.find(c => c.id === student.targetCareerId || c.title.toLowerCase() === student.careerGoal.toLowerCase()) || careers[0];
+  const targetCareer = careers.find(c => c.id === student.targetCareerId || (c.title && student.careerGoal && c.title.toLowerCase() === student.careerGoal.toLowerCase())) || careers[0];
 
   // Recalculate freshness and readiness score dynamically
   student.skills = (student.skills || []).map(sk => ({
@@ -645,12 +643,17 @@ app.post('/api/students/resume/upload', async (req, res) => {
     const analysis = await analyzeResumeWithGemini(resumeText);
 
     // Merge extracted skills into student profile
-    const existingSkillNames = new Set((student.skills || []).map(s => s.name.toLowerCase()));
+    const existingSkillNames = new Set(
+      (student.skills || [])
+        .map(s => (s?.name || (s as any)?.skill || (typeof s === 'string' ? s : '')).toLowerCase())
+        .filter(Boolean)
+    );
     const newStudentSkills = [...(student.skills || [])];
     const newEvidences: SkillEvidence[] = [];
 
     (analysis.skills || []).forEach(extracted => {
-      const canonicalName = normalizeSkill(extracted.name);
+      const rawName = typeof extracted === 'string' ? extracted : (extracted?.name || (extracted as any)?.skill || '');
+      const canonicalName = normalizeSkill(rawName);
       if (!canonicalName) return;
 
       const normLower = canonicalName.toLowerCase();
@@ -658,8 +661,8 @@ app.post('/api/students/resume/upload', async (req, res) => {
         newStudentSkills.push({
           skillId: `sk_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
           name: canonicalName,
-          level: Math.round((extracted.confidence || 0.8) * 90),
-          confidence: extracted.confidence || 0.85,
+          level: Math.round(((extracted as any)?.confidence || 0.8) * 90),
+          confidence: (extracted as any)?.confidence || 0.85,
           lastDemonstrated: new Date().toISOString(),
           evidenceCount: 1,
           freshness: 'recent'
@@ -674,24 +677,32 @@ app.post('/api/students/resume/upload', async (req, res) => {
         skill: canonicalName,
         sourceType: 'resume',
         sourceTitle: `Resume Extraction: ${fileName || 'Resume.pdf'}`,
-        confidence: extracted.confidence || 0.85,
+        confidence: (extracted as any)?.confidence || 0.85,
         date: new Date().toISOString(),
-        details: `Extracted via CareerAI Talent Intelligence parser with ${(extracted.confidence || 0.85) * 100}% confidence.`
+        details: `Extracted via CareerAI Talent Intelligence parser with ${Math.round(((extracted as any)?.confidence || 0.85) * 100)}% confidence.`
       });
     });
 
-    // Merge extracted projects
-    const existingProjectNames = new Set((student.projects || []).map(p => p.name.toLowerCase()));
+    // Merge extracted projects safely handling name and title
+    const existingProjectNames = new Set(
+      (student.projects || [])
+        .map(p => ((p as any)?.name || (p as any)?.title || (typeof p === 'string' ? p : '')).toLowerCase())
+        .filter(Boolean)
+    );
     const newProjects = [...(student.projects || [])];
     (analysis.projects || []).forEach(p => {
-      if (!existingProjectNames.has(p.name.toLowerCase())) {
+      const projTitle = ((p as any)?.name || (p as any)?.title || (typeof p === 'string' ? p : '')).trim();
+      if (!projTitle) return;
+
+      if (!existingProjectNames.has(projTitle.toLowerCase())) {
         newProjects.push({
           id: `proj_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
-          name: p.name,
+          name: projTitle,
+          title: projTitle,
           description: p.description || 'Extracted project portfolio item.',
-          technologies: (p.technologies || []).map(normalizeSkill)
+          technologies: ((p as any)?.technologies || []).map((t: any) => normalizeSkill(typeof t === 'string' ? t : (t?.name || ''))).filter(Boolean)
         });
-        existingProjectNames.add(p.name.toLowerCase());
+        existingProjectNames.add(projTitle.toLowerCase());
       }
     });
 
@@ -716,9 +727,10 @@ app.post('/api/students/resume/upload', async (req, res) => {
           };
           // Recalculate readiness
           const careers = db.get('careers');
-          const targetCareer = careers.find(c => c.id === s.targetCareerId) || careers[0];
+          const targetCareer = careers.find(c => c.id === s.targetCareerId || (c.title && s.careerGoal && c.title.toLowerCase() === s.careerGoal.toLowerCase())) || careers[0];
           const allEvidences = db.get('evidences').filter(e => e.studentId === s.id);
-          updated.careerReadinessScore = calculateCareerReadiness(updated, targetCareer.requiredSkills, allEvidences);
+          const reqSkills = targetCareer?.requiredSkills || ['Python', 'Machine Learning'];
+          updated.careerReadinessScore = calculateCareerReadiness(updated, reqSkills, allEvidences);
           return updated;
         }
         return s;
@@ -747,33 +759,36 @@ app.post('/api/students/resume/upload', async (req, res) => {
 
 // Skill Gap Analysis
 app.get('/api/students/gap-analysis', (req, res) => {
-  const student = resolveStudent(req);
+  const student = resolveStudent(req) || db.get('students')[0];
   if (!student) return res.status(404).json({ error: 'No active student' });
 
   const careers = db.get('careers');
-  const targetCareer = careers.find(c => c.id === student.targetCareerId || c.title.toLowerCase() === student.careerGoal.toLowerCase()) || careers[0];
+  const targetCareer = careers.find(c => c.id === student.targetCareerId || (c.title && student.careerGoal && c.title.toLowerCase() === student.careerGoal.toLowerCase())) || careers[0];
 
-  const analysis = calculateSkillGaps(student.skills || [], targetCareer.requiredSkills);
-  analysis.targetCareer = targetCareer.title;
+  const targetSkills = targetCareer?.requiredSkills || ['Python', 'Machine Learning'];
+  const analysis = calculateSkillGaps(student.skills || [], targetSkills);
+  analysis.targetCareer = targetCareer?.title || 'Target Role';
 
   res.json({ analysis, targetCareer });
 });
 
 // One Skill Away Simulation
 app.get('/api/students/one-skill-away', (req, res) => {
-  const student = resolveStudent(req);
+  const student = resolveStudent(req) || db.get('students')[0];
   if (!student) return res.status(404).json({ error: 'No active student' });
 
   const jobs = db.get('jobs').filter(j => j.status === 'published');
-  const allTargetSkills = jobs.map(j => j.requiredSkills);
+  const allTargetSkills = jobs.map(j => j.requiredSkills || []);
 
   // Missing candidate skills across active jobs
-  const currentSkillsNorm = (student.skills || []).map(s => s.name.toLowerCase());
+  const currentSkillsNorm = (student.skills || [])
+    .map(s => (s?.name || (s as any)?.skill || (typeof s === 'string' ? s : '')).toLowerCase())
+    .filter(Boolean);
   const missingCandidates = new Set<string>();
   jobs.forEach(j => {
-    j.requiredSkills.forEach(req => {
+    (j.requiredSkills || []).forEach(req => {
       const norm = normalizeSkill(req);
-      if (!currentSkillsNorm.includes(norm.toLowerCase())) {
+      if (norm && !currentSkillsNorm.includes(norm.toLowerCase())) {
         missingCandidates.add(norm);
       }
     });
@@ -845,6 +860,18 @@ app.post('/api/students/evidence/add', (req, res) => {
   });
 
   res.json({ success: true, evidence: newEv });
+});
+
+// Single Student by ID (placed after all specific student subroutes to avoid matching 'profile' or 'gap-analysis')
+app.get('/api/students/:id', (req, res) => {
+  const students = db.get('students');
+  const student = students.find(s => s.id === req.params.id || s.userId === req.params.id);
+  if (!student) return res.status(404).json({ error: 'Student not found' });
+
+  const evidences = db.get('evidences').filter(e => e.studentId === student.id);
+  const careers = db.get('careers');
+  const targetCareer = careers.find(c => c.id === student.targetCareerId || (c.title && student.careerGoal && c.title.toLowerCase() === student.careerGoal.toLowerCase())) || careers[0];
+  res.json({ student, evidences, targetCareer });
 });
 
 // Jobs & Opportunities API
@@ -1477,7 +1504,7 @@ app.get('/api/applications/:id/improvement-plan', (req, res) => {
   const student = db.get('students').find(s => s.id === application.studentId);
   const gaps = (application.skillGapsIdentified && application.skillGapsIdentified.length > 0)
     ? application.skillGapsIdentified
-    : (job ? job.requiredSkills.filter(reqSkill => !(student?.skills || []).some(s => s.name.toLowerCase() === reqSkill.toLowerCase())) : ['Core Engineering Foundations']);
+    : (job ? (job.requiredSkills || []).filter(reqSkill => !(student?.skills || []).some(s => (s?.name || (s as any)?.skill || '').toLowerCase() === (reqSkill || '').toLowerCase())) : ['Core Engineering Foundations']);
 
   // Match courses from COMPREHENSIVE_COURSES
   const courses = db.get('courses');
@@ -1537,7 +1564,7 @@ app.get('/api/certified-internships', (req, res) => {
     ? (db.get('internshipApplications') || []).filter(a => a.studentId === student.id)
     : [];
 
-  const studentSkills = (student?.skills || []).map(s => s.name.toLowerCase());
+  const studentSkills = (student?.skills || []).map(s => (s?.name || (s as any)?.skill || '').toLowerCase()).filter(Boolean);
 
   const enriched = internships.map(internship => {
     let matchScore = 0;
@@ -1753,7 +1780,7 @@ app.post('/api/certified-internships/:id/apply', (req, res) => {
   }
 
   // Calculate skill match
-  const studentSkills = (student.skills || []).map(s => s.name.toLowerCase());
+  const studentSkills = (student.skills || []).map(s => (s?.name || (s as any)?.skill || '').toLowerCase()).filter(Boolean);
   const reqSkills = internship.skills || [];
   const matchedSkills = reqSkills.filter(sk => studentSkills.some(s => s.includes(sk.toLowerCase()) || sk.toLowerCase().includes(s)));
   const missingSkills = reqSkills.filter(sk => !matchedSkills.includes(sk));
@@ -2271,31 +2298,54 @@ app.get('/api/learning/progress', (req, res) => {
   res.json(progressList);
 });
 
+// Careers API
+app.get('/api/careers', (req, res) => {
+  res.json(db.get('careers'));
+});
+
 // Assessments API
 app.get('/api/assessments', (req, res) => {
-  const assessments = db.get('assessments').map(a => ({
-    id: a.id,
-    skillId: a.skillId,
-    skillName: a.skillName,
-    title: a.title,
-    description: a.description,
-    durationMinutes: a.durationMinutes,
-    passingScore: a.passingScore,
-    questionCount: a.questions.length
-  }));
+  const proctoredSkills = ['Python', 'Machine Learning', 'Deep Learning', 'SQL', 'Cybersecurity', 'Java', 'Docker', 'React'];
+  const assessments = db.get('assessments').map(a => {
+    const isProctored = a.isProctored ?? proctoredSkills.includes(a.skillName);
+    return {
+      id: a.id,
+      skillId: a.skillId,
+      skillName: a.skillName,
+      title: a.title,
+      description: a.description,
+      durationMinutes: a.durationMinutes,
+      passingScore: a.passingScore,
+      isProctored,
+      cameraRequired: a.cameraRequired ?? isProctored,
+      microphoneRequired: a.microphoneRequired ?? isProctored,
+      fullscreenRequired: a.fullscreenRequired ?? isProctored,
+      questionCount: a.questions.length
+    };
+  });
   res.json(assessments);
 });
 
 app.get('/api/assessments/:id', (req, res) => {
   const assessment = db.get('assessments').find(a => a.id === req.params.id || a.skillId === req.params.id);
   if (!assessment) return res.status(404).json({ error: 'Assessment not found' });
+  const proctoredSkills = ['Python', 'Machine Learning', 'Deep Learning', 'SQL', 'Cybersecurity', 'Java', 'Docker', 'React'];
+  const isProctored = assessment.isProctored ?? proctoredSkills.includes(assessment.skillName);
+
   // Return questions without disclosing correct answers
   const sanitized = {
     ...assessment,
+    isProctored,
+    cameraRequired: assessment.cameraRequired ?? isProctored,
+    microphoneRequired: assessment.microphoneRequired ?? isProctored,
+    fullscreenRequired: assessment.fullscreenRequired ?? isProctored,
     questions: assessment.questions.map(q => ({
       id: q.id,
       question: q.question,
-      options: q.options
+      options: q.options,
+      skill: q.skill || assessment.skillName,
+      difficulty: q.difficulty || 'intermediate',
+      marks: 5
     }))
   };
   res.json(sanitized);
@@ -2308,26 +2358,93 @@ app.post('/api/assessments/:id/submit', (req, res) => {
   const assessment = db.get('assessments').find(a => a.id === req.params.id || a.skillId === req.params.id);
   if (!assessment) return res.status(404).json({ error: 'Assessment not found' });
 
-  const { answers } = req.body; // map of question id -> chosen option index
+  const {
+    answers,
+    timeUsedSeconds = 0,
+    isProctored = false,
+    tabSwitchCount = 0,
+    fullscreenExitCount = 0,
+    cameraInterruptions = 0,
+    microphoneInterruptions = 0,
+    integrityEvents = []
+  } = req.body; // map of question id -> chosen option index
   if (!answers) return res.status(400).json({ error: 'Answers object required' });
 
   let correctCount = 0;
+  const skillCounts: Record<string, { total: number; correct: number }> = {};
+
   const results = assessment.questions.map(q => {
     const chosen = answers[q.id];
     const isCorrect = chosen === q.correctIndex;
     if (isCorrect) correctCount++;
+
+    const sk = q.skill || assessment.skillName;
+    if (!skillCounts[sk]) skillCounts[sk] = { total: 0, correct: 0 };
+    skillCounts[sk].total++;
+    if (isCorrect) skillCounts[sk].correct++;
+
     return {
       questionId: q.id,
       question: q.question,
       chosenIndex: chosen,
       correctIndex: q.correctIndex,
       isCorrect,
-      explanation: q.explanation
+      explanation: q.explanation,
+      skill: sk
     };
   });
 
   const scorePercentage = Math.round((correctCount / assessment.questions.length) * 100);
   const passed = scorePercentage >= assessment.passingScore;
+
+  // Calculate skill-level performance
+  const skillScores: Record<string, number> = {};
+  Object.entries(skillCounts).forEach(([sk, stat]) => {
+    skillScores[sk] = Math.round((stat.correct / stat.total) * 100);
+  });
+  if (!skillScores[assessment.skillName]) {
+    skillScores[assessment.skillName] = scorePercentage;
+  }
+
+  const strengths = Object.entries(skillScores).filter(([_, sc]) => sc >= 70).map(([sk]) => sk);
+  const improvements = Object.entries(skillScores).filter(([_, sc]) => sc < 70).map(([sk]) => sk);
+
+  // Integrity evaluation
+  const totalViolations = (tabSwitchCount || 0) + (fullscreenExitCount || 0) + (cameraInterruptions || 0) + (microphoneInterruptions || 0);
+  let integrityStatus: 'CLEAR' | 'REVIEW_REQUIRED' | 'TERMINATED' = 'CLEAR';
+  if (totalViolations >= 5) {
+    integrityStatus = 'TERMINATED';
+  } else if (totalViolations >= 2) {
+    integrityStatus = 'REVIEW_REQUIRED';
+  }
+
+  // Record attempt in database
+  const attemptRecord = {
+    id: `att_${Date.now()}`,
+    studentId: student.id,
+    assessmentId: assessment.id,
+    skillId: assessment.skillId,
+    skillName: assessment.skillName,
+    score: scorePercentage,
+    percentage: scorePercentage,
+    passed,
+    startedAt: new Date(Date.now() - Math.max(timeUsedSeconds, 30) * 1000).toISOString(),
+    completedAt: new Date().toISOString(),
+    submittedAt: new Date().toISOString(),
+    totalQuestions: assessment.questions.length,
+    correctAnswers: correctCount,
+    timeUsedSeconds,
+    isProctored: Boolean(isProctored),
+    integrityStatus,
+    tabSwitchCount: tabSwitchCount || 0,
+    fullscreenExitCount: fullscreenExitCount || 0,
+    cameraInterruptions: cameraInterruptions || 0,
+    microphoneInterruptions: microphoneInterruptions || 0,
+    skillScores,
+    integrityEvents: integrityEvents || []
+  };
+
+  db.update('assessmentAttempts', (attempts: any = []) => [attemptRecord, ...(Array.isArray(attempts) ? attempts : [])]);
 
   if (passed) {
     // Add verified SkillEvidence
@@ -2340,7 +2457,7 @@ app.post('/api/assessments/:id/submit', (req, res) => {
       sourceTitle: `${assessment.title} Passed (${scorePercentage}%)`,
       confidence: 0.95,
       date: new Date().toISOString(),
-      details: `Scored ${correctCount}/${assessment.questions.length} on verified platform technical assessment.`
+      details: `Scored ${correctCount}/${assessment.questions.length} on verified platform technical assessment${isProctored ? ' with proctoring integrity monitoring' : ''}.`
     };
     db.update('evidences', evs => [evidence, ...evs]);
 
@@ -2408,6 +2525,18 @@ app.post('/api/assessments/:id/submit', (req, res) => {
     passed,
     correctCount,
     totalQuestions: assessment.questions.length,
+    timeUsedSeconds,
+    skillScores,
+    strengths,
+    improvements,
+    integrity: {
+      isProctored: Boolean(isProctored),
+      status: integrityStatus,
+      tabSwitchCount: tabSwitchCount || 0,
+      fullscreenExitCount: fullscreenExitCount || 0,
+      cameraInterruptions: cameraInterruptions || 0,
+      microphoneInterruptions: microphoneInterruptions || 0
+    },
     results
   });
 });
