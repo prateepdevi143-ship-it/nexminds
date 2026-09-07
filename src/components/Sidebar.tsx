@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   LayoutDashboard,
   FileText,
@@ -15,13 +15,176 @@ import {
   Sparkles,
   X,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   TrendingUp,
   CheckCircle2,
   Building2,
-  ShieldAlert
+  ShieldAlert,
+  UserCheck,
+  Check,
+  AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Student, CareerGoal, User } from '../types';
+
+export interface ProfileCompletionItem {
+  id: string;
+  label: string;
+  points: number;
+  completed: boolean;
+  tabId: string;
+  hint: string;
+}
+
+export interface ProfileCompletionSummary {
+  percentage: number;
+  completedPoints: number;
+  totalPoints: number;
+  items: ProfileCompletionItem[];
+  missingCount: number;
+  nextSuggestedAction?: ProfileCompletionItem;
+}
+
+export function calculateProfileCompletion(student?: Student | null): ProfileCompletionSummary {
+  if (!student) {
+    return {
+      percentage: 0,
+      completedPoints: 0,
+      totalPoints: 100,
+      items: [],
+      missingCount: 0
+    };
+  }
+
+  // 1. Basic Identity & Contact (15 pts): Name & Email (10 pts) + Phone, Location or Bio (5 pts)
+  const hasBasicInfo = Boolean(student.name?.trim() && student.email?.trim());
+  const hasContactDetails = Boolean(
+    student.phone?.trim() || student.location?.trim() || student.bio?.trim()
+  );
+  const basicPoints = (hasBasicInfo ? 10 : 0) + (hasContactDetails ? 5 : 0);
+
+  // 2. Academic Background (15 pts): College (5 pts), Degree (5 pts), Grad Year (5 pts)
+  const hasValidCollege = Boolean(student.college?.trim() && student.college !== 'University Partner');
+  const hasDegree = Boolean(student.degree?.trim());
+  const hasGradYear = Boolean(student.graduationYear && student.graduationYear > 2000);
+  const academicComplete = hasValidCollege && hasDegree && hasGradYear;
+  const academicPoints = (hasValidCollege ? 5 : 0) + (hasDegree ? 5 : 0) + (hasGradYear ? 5 : 0);
+
+  // 3. Target Career Goal (15 pts): careerGoal or targetCareerId
+  const hasCareerGoal = Boolean(student.careerGoal?.trim() || student.targetCareerId?.trim());
+  const careerGoalPoints = hasCareerGoal ? 15 : 0;
+
+  // 4. Resume & ATS Audit (20 pts): resumeFileName, resumeScore > 0, or resumeUrl
+  const hasResume = Boolean(
+    student.resumeFileName?.trim() ||
+    (student.resumeScore && student.resumeScore > 0) ||
+    student.resumeUrl?.trim()
+  );
+  const resumePoints = hasResume ? 20 : 0;
+
+  // 5. Skills Repository (15 pts): At least 3 verified/demonstrated skills
+  const skillsCount = student.skills?.length || 0;
+  let skillsPoints = 0;
+  if (skillsCount >= 3) {
+    skillsPoints = 15;
+  } else if (skillsCount === 2) {
+    skillsPoints = 10;
+  } else if (skillsCount === 1) {
+    skillsPoints = 5;
+  }
+
+  // 6. Portfolio Projects (10 pts): At least 1 project added
+  const projectsCount = student.projects?.length || 0;
+  const projectPoints = projectsCount >= 1 ? 10 : 0;
+
+  // 7. External Profiles / Links (10 pts): GitHub, LinkedIn, or Portfolio URL
+  const hasExternalLinks = Boolean(
+    student.githubUrl?.trim() ||
+    student.linkedinUrl?.trim() ||
+    student.portfolioUrl?.trim() ||
+    student.github?.trim() ||
+    student.linkedin?.trim() ||
+    student.externalProfiles?.githubUsername?.trim() ||
+    student.externalProfiles?.linkedinUrl?.trim()
+  );
+  const externalPoints = hasExternalLinks ? 10 : 0;
+
+  const items: ProfileCompletionItem[] = [
+    {
+      id: 'basic_info',
+      label: 'Contact & Bio Details',
+      points: 15,
+      completed: basicPoints === 15,
+      tabId: 'dashboard',
+      hint: !hasContactDetails ? 'Add phone, location, or bio' : 'Complete basic contact info'
+    },
+    {
+      id: 'academics',
+      label: 'Academic Credentials',
+      points: 15,
+      completed: academicComplete,
+      tabId: 'dashboard',
+      hint: !hasValidCollege ? 'Specify your university or college' : 'Add degree & graduation year'
+    },
+    {
+      id: 'career_goal',
+      label: 'Target Career Goal',
+      points: 15,
+      completed: hasCareerGoal,
+      tabId: 'skills-gap',
+      hint: 'Define your desired target career role'
+    },
+    {
+      id: 'resume',
+      label: 'Resume & ATS Audit',
+      points: 20,
+      completed: hasResume,
+      tabId: 'resume',
+      hint: 'Upload resume for ATS audit'
+    },
+    {
+      id: 'skills',
+      label: 'Skills (Min. 3 Skills)',
+      points: 15,
+      completed: skillsCount >= 3,
+      tabId: 'skills-graph',
+      hint: skillsCount === 0 ? 'Add your top skills' : `Add ${3 - skillsCount} more skill(s)`
+    },
+    {
+      id: 'projects',
+      label: 'Portfolio Project',
+      points: 10,
+      completed: projectsCount >= 1,
+      tabId: 'dashboard',
+      hint: 'Showcase at least 1 verified project'
+    },
+    {
+      id: 'external_links',
+      label: 'LinkedIn / GitHub Links',
+      points: 10,
+      completed: hasExternalLinks,
+      tabId: 'skills-graph',
+      hint: 'Connect GitHub or LinkedIn profile'
+    }
+  ];
+
+  const completedPoints = basicPoints + academicPoints + careerGoalPoints + resumePoints + skillsPoints + projectPoints + externalPoints;
+  const percentage = Math.min(100, Math.round(completedPoints));
+
+  const missingItems = items.filter(item => !item.completed);
+  const sortedMissing = [...missingItems].sort((a, b) => b.points - a.points);
+  const nextSuggestedAction = sortedMissing[0];
+
+  return {
+    percentage,
+    completedPoints,
+    totalPoints: 100,
+    items,
+    missingCount: missingItems.length,
+    nextSuggestedAction
+  };
+}
 
 export interface TabItem {
   id: string;
@@ -65,6 +228,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isOpenMobile,
   onCloseMobile
 }) => {
+  const [showCompletionDetails, setShowCompletionDetails] = useState(false);
+  const profileCompletion = useMemo(() => calculateProfileCompletion(student), [student]);
+
   // Prevent background scrolling on mobile when drawer is open
   useEffect(() => {
     if (isOpenMobile) {
@@ -300,6 +466,164 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <X className="w-5 h-5" />
         </button>
       </div>
+
+      {/* Dynamic Profile Completion Progress Bar (Student Role Only) */}
+      {activeRole === 'student' && student && (
+        <div className="p-3 border-b border-slate-100 bg-white">
+          <div
+            id="sidebar-profile-completion-card"
+            className="p-3 rounded-xl bg-slate-50/90 border border-slate-200/80 shadow-2xs space-y-2.5 transition-all"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-slate-900 font-semibold text-xs">
+                <UserCheck className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                <span>Profile Completion</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span
+                  id="profile-completion-percentage-badge"
+                  className={`text-[11px] font-bold px-1.5 py-0.5 rounded-md border ${
+                    profileCompletion.percentage === 100
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                      : profileCompletion.percentage >= 70
+                      ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                      : profileCompletion.percentage >= 40
+                      ? 'bg-amber-50 text-amber-700 border-amber-200'
+                      : 'bg-rose-50 text-rose-700 border-rose-200'
+                  }`}
+                >
+                  {profileCompletion.percentage}%
+                </span>
+                <button
+                  type="button"
+                  id="toggle-profile-completion-breakdown"
+                  onClick={() => setShowCompletionDetails(prev => !prev)}
+                  className="p-1 text-slate-400 hover:text-slate-700 rounded-md hover:bg-slate-200/60 transition-colors cursor-pointer"
+                  title={showCompletionDetails ? 'Hide breakdown' : 'View missing data items'}
+                  aria-label="Toggle profile completion details"
+                >
+                  {showCompletionDetails ? (
+                    <ChevronUp className="w-3.5 h-3.5" />
+                  ) : (
+                    <ChevronDown className="w-3.5 h-3.5" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Dynamic Progress Bar */}
+            <div
+              id="profile-completion-progress-bar-track"
+              role="progressbar"
+              aria-valuenow={profileCompletion.percentage}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              className="w-full bg-slate-200/80 rounded-full h-1.5 overflow-hidden"
+            >
+              <div
+                id="profile-completion-progress-bar-fill"
+                className={`h-full rounded-full transition-all duration-500 ease-out ${
+                  profileCompletion.percentage === 100
+                    ? 'bg-emerald-500'
+                    : profileCompletion.percentage >= 70
+                    ? 'bg-indigo-600'
+                    : profileCompletion.percentage >= 40
+                    ? 'bg-amber-500'
+                    : 'bg-rose-500'
+                }`}
+                style={{ width: `${profileCompletion.percentage}%` }}
+              />
+            </div>
+
+            {/* Next Action or Completion Status */}
+            {profileCompletion.percentage === 100 ? (
+              <div className="flex items-center gap-1.5 text-[11px] text-emerald-700 font-medium">
+                <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
+                <span>All profile data complete!</span>
+              </div>
+            ) : profileCompletion.nextSuggestedAction ? (
+              <div className="flex items-center justify-between text-[11px] gap-1">
+                <span
+                  className="text-slate-500 truncate text-[11px]"
+                  title={profileCompletion.nextSuggestedAction.hint}
+                >
+                  Need: {profileCompletion.nextSuggestedAction.label}
+                </span>
+                <button
+                  type="button"
+                  id={`btn-complete-${profileCompletion.nextSuggestedAction.id}`}
+                  onClick={() => {
+                    if (profileCompletion.nextSuggestedAction?.tabId) {
+                      onSelectTab(profileCompletion.nextSuggestedAction.tabId);
+                      onCloseMobile();
+                    }
+                  }}
+                  className="text-indigo-600 font-semibold hover:text-indigo-800 hover:underline shrink-0 text-[10px] flex items-center gap-0.5 cursor-pointer"
+                >
+                  <span>Fix (+{profileCompletion.nextSuggestedAction.points}%)</span>
+                  <ChevronRight className="w-2.5 h-2.5" />
+                </button>
+              </div>
+            ) : null}
+
+            {/* Expandable Checklist Details */}
+            <AnimatePresence>
+              {showCompletionDetails && (
+                <motion.div
+                  id="profile-completion-checklist-container"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="pt-2 border-t border-slate-200/70 space-y-1.5 overflow-hidden"
+                >
+                  <div className="flex items-center justify-between text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+                    <span>Missing Data Check</span>
+                    <span>{profileCompletion.items.filter(i => i.completed).length}/{profileCompletion.items.length} Done</span>
+                  </div>
+                  <div className="space-y-1 max-h-48 overflow-y-auto pr-0.5">
+                    {profileCompletion.items.map(item => (
+                      <div
+                        key={item.id}
+                        id={`completion-item-${item.id}`}
+                        onClick={() => {
+                          if (!item.completed) {
+                            onSelectTab(item.tabId);
+                            onCloseMobile();
+                          }
+                        }}
+                        className={`flex items-center justify-between p-1.5 rounded-md text-[11px] transition-colors ${
+                          item.completed
+                            ? 'bg-emerald-50/50 text-slate-600'
+                            : 'bg-white hover:bg-indigo-50/70 text-slate-800 border border-slate-200/80 cursor-pointer group'
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5 truncate">
+                          {item.completed ? (
+                            <Check className="w-3 h-3 text-emerald-600 shrink-0" />
+                          ) : (
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+                          )}
+                          <span className={`truncate ${item.completed ? 'text-slate-500 line-through' : 'font-medium'}`}>
+                            {item.label}
+                          </span>
+                        </div>
+                        {!item.completed ? (
+                          <span className="text-[10px] font-semibold text-indigo-600 group-hover:underline shrink-0 ml-1">
+                            +{item.points}%
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-emerald-600 font-semibold shrink-0 ml-1">✓</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+      )}
 
       {/* Vertically Arranged Feature Navigation List */}
       <div className="flex-1 overflow-y-auto px-3 py-3 space-y-5 scrollbar-thin">
