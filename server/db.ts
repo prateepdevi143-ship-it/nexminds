@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { User, Student, Company, Job, Application, SkillEvidence, CanonicalSkill, CareerGoal, Course, Assessment, Notification, MandatoryAssessmentAttempt, RecruiterFeedback, CertifiedInternship, CertificateRecord, InternshipApplication, MicroTrial, MicroTrialSubmission, MicroTrialEvaluation } from '../src/types';
+import { User, Student, Company, Job, Application, SkillEvidence, CanonicalSkill, CareerGoal, Course, Assessment, Notification, MandatoryAssessmentAttempt, RecruiterFeedback, CertifiedInternship, CertificateRecord, InternshipApplication, MicroTrial, MicroTrialSubmission, MicroTrialEvaluation, ImprovementEvidenceRecord, RejectionSkillGap } from '../src/types';
 import { DEMO_USERS, DEMO_STUDENTS, DEMO_COMPANIES, DEMO_JOBS, DEMO_EVIDENCES, CAREER_GOALS, ADMIN_INDUSTRIES_SEED, AdminIndustryData } from './data/demoAccountsData';
 import { DEMO_APPLICATIONS } from './data/applicationsData';
 import { COMPREHENSIVE_COURSES } from './data/coursesData';
@@ -31,6 +31,8 @@ export interface DatabaseSchema {
   microTrials: MicroTrial[];
   microTrialSubmissions: MicroTrialSubmission[];
   microTrialEvaluations: MicroTrialEvaluation[];
+  improvementEvidences: ImprovementEvidenceRecord[];
+  skillGaps: RejectionSkillGap[];
 }
 
 const DB_DIR = path.join(process.cwd(), 'data');
@@ -124,7 +126,9 @@ export const INITIAL_SEED: DatabaseSchema = {
   internshipApplications: INITIAL_INTERNSHIP_APPLICATIONS,
   microTrials: INITIAL_MICRO_TRIALS,
   microTrialSubmissions: INITIAL_MICRO_TRIAL_SUBMISSIONS,
-  microTrialEvaluations: INITIAL_MICRO_TRIAL_EVALUATIONS
+  microTrialEvaluations: INITIAL_MICRO_TRIAL_EVALUATIONS,
+  improvementEvidences: [],
+  skillGaps: []
 };
 
 class DatabaseStore {
@@ -179,12 +183,23 @@ class DatabaseStore {
             );
           }
 
+          const applicationsList = parsed.applications || INITIAL_SEED.applications;
+          const app19 = DEMO_APPLICATIONS.find(a => a.id === 'app_19');
+          if (app19 && !applicationsList.some((a: any) => a.id === 'app_19')) {
+            applicationsList.unshift(app19);
+          }
+
+          let skillGapsList = parsed.skillGaps || [];
+          if (skillGapsList.length === 0 && (app19 as any)?.skillGaps) {
+            skillGapsList = [...(app19 as any).skillGaps];
+          }
+
           return {
             users: parsed.users || INITIAL_SEED.users,
             students: parsed.students || INITIAL_SEED.students,
             companies: parsed.companies || INITIAL_SEED.companies,
             jobs: parsed.jobs || INITIAL_SEED.jobs,
-            applications: parsed.applications || INITIAL_SEED.applications,
+            applications: applicationsList,
             evidences: evidencesList,
             canonicalSkills: parsed.canonicalSkills || INITIAL_SEED.canonicalSkills,
             careers: parsed.careers || INITIAL_SEED.careers,
@@ -199,7 +214,9 @@ class DatabaseStore {
             internshipApplications: parsed.internshipApplications || INITIAL_SEED.internshipApplications,
             microTrials: (parsed.microTrials && parsed.microTrials.length >= 4) ? parsed.microTrials : INITIAL_SEED.microTrials,
             microTrialSubmissions: (parsed.microTrialSubmissions && parsed.microTrialSubmissions.length >= 2) ? parsed.microTrialSubmissions : INITIAL_SEED.microTrialSubmissions,
-            microTrialEvaluations: (parsed.microTrialEvaluations && parsed.microTrialEvaluations.length >= 2) ? parsed.microTrialEvaluations : INITIAL_SEED.microTrialEvaluations
+            microTrialEvaluations: (parsed.microTrialEvaluations && parsed.microTrialEvaluations.length >= 2) ? parsed.microTrialEvaluations : INITIAL_SEED.microTrialEvaluations,
+            improvementEvidences: parsed.improvementEvidences || [],
+            skillGaps: skillGapsList
           };
         }
       }

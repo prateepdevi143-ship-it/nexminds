@@ -273,6 +273,109 @@ export interface Application {
   studentFeedback?: string;
   internalHRNotes?: string;
   feedbackAt?: string;
+  structuredRatings?: StructuredRecruiterRatings;
+  aiAnalysis?: RejectionAiAnalysis;
+}
+
+export type SkillProficiencyLevel = 'Strong' | 'Good' | 'Moderate' | 'Weak' | 'Missing' | 'Needs Improvement';
+
+export interface StructuredRecruiterRatings {
+  technicalWeaknesses?: string[];
+  missingSkills?: string[];
+  problemSolving?: SkillProficiencyLevel;
+  communication?: SkillProficiencyLevel;
+  projectsQuality?: SkillProficiencyLevel;
+  resumeQuality?: SkillProficiencyLevel;
+  experienceLevel?: SkillProficiencyLevel;
+  interviewPerformance?: SkillProficiencyLevel;
+  domainKnowledge?: SkillProficiencyLevel;
+  otherComments?: string;
+}
+
+export interface RejectionSkillGap {
+  id: string;
+  studentId: string;
+  applicationId: string;
+  skill: string;
+  currentLevel: string; // e.g. 'Weak'
+  currentScore: number; // 0 - 100
+  requiredLevel: string; // e.g. 'Strong'
+  requiredScore: number; // 0 - 100
+  gap: 'High' | 'Medium' | 'Low' | 'None';
+  gapScore: number; // 0 - 100
+  priority: 'HIGH' | 'MEDIUM' | 'LOW' | 'NONE';
+  priorityScore: number; // 0 - 100
+  source: 'HR feedback' | 'Job requirements' | 'Assessment gap' | 'Skill profile';
+  evidenceSource: string; // e.g. 'HR feedback' | 'Resume/assessment' | 'Profile'
+  status: 'OPEN' | 'IN_PROGRESS' | 'BRIDGED';
+  explanation: string;
+  recommendedActions: string[];
+}
+
+export interface RejectionAiAnalysis {
+  technicalSkills: Array<{ skill: string; level: SkillProficiencyLevel }>;
+  problemSolvingLevel: SkillProficiencyLevel;
+  projectsLevel: SkillProficiencyLevel;
+  communicationLevel?: SkillProficiencyLevel;
+  constructiveExplanation: string;
+  skillGaps: RejectionSkillGap[];
+  priorityRankings: Array<{ skill: string; priority: 'HIGH' | 'MEDIUM' | 'LOW'; priorityScore: number; reason: string }>;
+  overallActionPlan: string;
+  analyzedAt: string;
+}
+
+export interface ImprovementEvidenceRecord {
+  id: string;
+  studentId: string;
+  applicationId?: string;
+  skill: string;
+  evidenceType: 'course' | 'certification' | 'assessment' | 'github_repo' | 'project' | 'deployed_app' | 'internship' | 'hackathon' | 'test_result' | 'portfolio';
+  title: string;
+  details: string;
+  evidenceUrl?: string;
+  testScore?: number;
+  submittedAt: string;
+  verificationStatus: 'verified' | 'pending' | 'rejected';
+  previousSkillScore: number;
+  newSkillScore: number;
+  scoreDelta: number;
+  verifiedConfidence: number;
+  aiReassessmentNotes: string;
+}
+
+export interface SkillImprovementTimelineEvent {
+  id: string;
+  date: string;
+  type: 'rejection' | 'hr_feedback' | 'ai_analysis' | 'improvement_plan' | 'evidence_submitted' | 'ai_reassessment' | 'score_boost' | 'reapplication';
+  title: string;
+  description: string;
+  meta?: Record<string, any>;
+}
+
+export interface ReapplicationMatchRecommendation {
+  jobId: string;
+  jobTitle: string;
+  companyName: string;
+  companyId?: string;
+  previousMatchScore: number;
+  currentMatchScore: number;
+  scoreDelta: number;
+  improvedSkills: string[];
+  remainingGaps: string[];
+  recommendationReason: string;
+  eligibleToReapply: boolean;
+  requiredSkills: string[];
+}
+
+export interface RejectionGrowthLoopData {
+  application: Application;
+  job?: Job;
+  feedback?: RecruiterFeedback;
+  aiAnalysis?: RejectionAiAnalysis;
+  skillGaps: RejectionSkillGap[];
+  improvementEvidences: ImprovementEvidenceRecord[];
+  timeline: SkillImprovementTimelineEvent[];
+  reapplicationOpportunities: ReapplicationMatchRecommendation[];
 }
 
 export interface RecruiterFeedback {
@@ -290,6 +393,8 @@ export interface RecruiterFeedback {
   skillGapsIdentified: string[];
   studentFeedback: string;
   internalHRNotes?: string;
+  structuredRatings?: StructuredRecruiterRatings;
+  aiAnalysis?: RejectionAiAnalysis;
   createdAt: string;
 }
 

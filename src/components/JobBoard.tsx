@@ -403,7 +403,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({
                         <span className="font-semibold block text-[11px]">
                           {assessmentPassed
                             ? `Mandatory Role Assessment Passed: ${assessmentAttempt.score}% ✓`
-                            : `Mandatory Technical Assessment Required (${job.minimumAssessmentScore || 60}% to unlock)`}
+                            : `Mandatory Technical Assessment (2 Easy Demo Questions • 50% to unlock)`}
                         </span>
                         <span className="text-[10px] opacity-80">
                           {assessmentPassed
@@ -507,7 +507,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({
                   {assessmentModalJob.title} Technical Gate
                 </h3>
                 <p className="text-xs text-slate-500 mt-1">
-                  Passing score: {assessmentModalJob.minimumAssessmentScore || 60}% • Objective competency verification
+                  Passing score: {assessmentData?.passingScore || 50}% • 2 Easy General Questions (Demo)
                 </p>
               </div>
               <button
@@ -614,10 +614,10 @@ export const JobBoard: React.FC<JobBoardProps> = ({
                 <div className="p-3 rounded-lg bg-indigo-50/70 border border-indigo-200/60 text-indigo-900 text-xs flex items-center justify-between">
                   <span className="flex items-center gap-1.5 font-medium">
                     <Clock className="w-4 h-4 text-indigo-600" />
-                    Standard Technical Screening • {assessmentData.questions.length} Questions
+                    Standard Technical Screening • {assessmentData.questions.length} Easy General Questions (Demo)
                   </span>
                   <span className="font-semibold text-indigo-700">
-                    Target: {assessmentData.passingScore}%
+                    Target: {assessmentData.passingScore}% (1 of 2 to pass)
                   </span>
                 </div>
 
@@ -775,7 +775,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({
                     Mandatory Technical Assessment Policy
                   </h4>
                   <p className="text-slate-500 text-xs">
-                    This role requires a verified score of {selectedJob.minimumAssessmentScore || 60}% or higher before your application can be reviewed by hiring managers.
+                    This role requires a quick 2-question general technical assessment (50% passing score) for the demo before your application can be reviewed by hiring managers.
                   </p>
                 </div>
               )}

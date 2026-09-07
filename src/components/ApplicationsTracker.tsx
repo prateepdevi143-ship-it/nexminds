@@ -12,15 +12,18 @@ import {
   Sparkles,
   ChevronRight,
   CheckCircle2,
-  ExternalLink
+  ExternalLink,
+  RefreshCw
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Application, ApplicationStatus } from '../types';
 import { api } from '../services/api';
+import { RejectionGrowthLoopView } from './RejectionGrowthLoopView';
 
 interface ApplicationsTrackerProps {
   applications: Application[];
   onSelectTab: (tab: string) => void;
+  onRefreshData?: () => void;
 }
 
 const STATUS_ORDER: ApplicationStatus[] = [
@@ -33,12 +36,15 @@ const STATUS_ORDER: ApplicationStatus[] = [
 
 export const ApplicationsTracker: React.FC<ApplicationsTrackerProps> = ({
   applications,
-  onSelectTab
+  onSelectTab,
+  onRefreshData
 }) => {
-  const appList = applications || [];
+  const [localApps, setLocalApps] = useState<Application[]>(applications || []);
+  const appList = localApps.length > 0 ? localApps : (applications || []);
   const [selectedApp, setSelectedApp] = useState<Application | null>(appList[0] || null);
   const [improvementPlan, setImprovementPlan] = useState<any | null>(null);
   const [loadingPlan, setLoadingPlan] = useState(false);
+  const [growthLoopApp, setGrowthLoopApp] = useState<Application | null>(null);
 
   const getStatusBadge = (status: ApplicationStatus) => {
     switch (status) {
@@ -210,66 +216,102 @@ export const ApplicationsTracker: React.FC<ApplicationsTrackerProps> = ({
                     </div>
                   </div>
                 ) : (
-                  /* Rejection Banner & Constructive Feedback */
-                  <div className="p-4 rounded-xl bg-rose-50/70 border border-rose-200 space-y-3">
-                    <div className="flex items-start gap-2.5">
-                      <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-                      <div>
-                        <h4 className="font-bold text-xs text-rose-900">
-                          Application Outcome: Not Moving Forward
-                        </h4>
-                        <p className="text-xs text-rose-700 mt-0.5">
-                          {selectedApp.rejectionReason
-                            ? `Primary factor: ${selectedApp.rejectionReason.replace('_', ' ')}`
-                            : 'This requisition has concluded.'}
-                        </p>
+                  /* REJECTION -> FEEDBACK -> SKILL GAP -> IMPROVEMENT LOOP */
+                  <div className="p-5 rounded-2xl bg-gradient-to-br from-rose-50/90 via-white to-indigo-50/60 border border-rose-200/90 space-y-4 shadow-sm">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-2.5">
+                        <div className="p-1.5 rounded-xl bg-rose-100 text-rose-700 mt-0.5">
+                          <AlertCircle className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[10px] font-bold uppercase tracking-wider">
+                            Rejection Outcome Transformed
+                          </div>
+                          <h4 className="font-bold text-sm text-slate-900 mt-0.5">
+                            Constructive Feedback & Intelligent Growth Loop
+                          </h4>
+                          <p className="text-xs text-slate-600 mt-0.5">
+                            {selectedApp.rejectionReason
+                              ? `Hiring decision factor: ${selectedApp.rejectionReason.replace('_', ' ')}`
+                              : 'Requisition outcome recorded with actionable career guidance.'}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Recalculated Match Preview */}
+                      <div className="text-right shrink-0 bg-white/80 p-2.5 rounded-xl border border-slate-200 shadow-2xs">
+                        <span className="text-[10px] text-slate-400 block font-semibold uppercase">Job Match</span>
+                        <div className="text-base font-black text-indigo-700">
+                          {selectedApp.matchScore || selectedApp.matchScoreAtApplication || 60}%
+                        </div>
                       </div>
                     </div>
 
                     {/* Student Feedback from Employer */}
                     {selectedApp.studentFeedback && (
-                      <div className="p-3 rounded-lg bg-white border border-rose-200/80 space-y-1">
-                        <span className="text-[11px] font-bold text-slate-800 flex items-center gap-1">
-                          💬 Hiring Team Constructive Feedback:
+                      <div className="p-3.5 rounded-xl bg-white border border-rose-200 shadow-2xs space-y-1">
+                        <span className="text-[11px] font-bold text-slate-900 flex items-center gap-1.5">
+                          💬 Hiring Team Evaluation:
                         </span>
-                        <p className="text-xs text-slate-600 leading-relaxed italic">
+                        <p className="text-xs text-slate-700 leading-relaxed italic font-medium">
                           "{selectedApp.studentFeedback}"
                         </p>
                       </div>
                     )}
 
+                    {/* Competency Ratings (if available) */}
+                    {selectedApp.structuredRatings && (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        <div className="p-2 rounded-lg bg-white border border-slate-200 text-[11px]">
+                          <span className="text-slate-400 block text-[10px]">Problem Solving</span>
+                          <span className="font-bold text-rose-700">{selectedApp.structuredRatings.problemSolving || 'Weak'}</span>
+                        </div>
+                        <div className="p-2 rounded-lg bg-white border border-slate-200 text-[11px]">
+                          <span className="text-slate-400 block text-[10px]">Project Depth</span>
+                          <span className="font-bold text-amber-700">{selectedApp.structuredRatings.projectsQuality || 'Needs Improvement'}</span>
+                        </div>
+                        <div className="p-2 rounded-lg bg-white border border-slate-200 text-[11px]">
+                          <span className="text-slate-400 block text-[10px]">Communication</span>
+                          <span className="font-bold text-emerald-700">{selectedApp.structuredRatings.communication || 'Good'}</span>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Skill Gaps identified */}
                     {selectedApp.skillGapsIdentified && selectedApp.skillGapsIdentified.length > 0 && (
-                      <div className="space-y-1">
-                        <span className="text-[11px] font-bold text-rose-900">
-                          Key Competencies to Strengthen:
+                      <div className="space-y-1.5">
+                        <span className="text-[11px] font-bold text-slate-700 block">
+                          Identified Skill Gaps to Bridge:
                         </span>
-                        <div className="flex flex-wrap gap-1">
+                        <div className="flex flex-wrap gap-1.5">
                           {selectedApp.skillGapsIdentified.map((gap: string) => (
                             <span
                               key={gap}
-                              className="px-2 py-0.5 rounded text-[10px] font-semibold bg-white border border-rose-200 text-rose-800"
+                              className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white border border-rose-200 text-rose-800 shadow-2xs"
                             >
-                              {gap}
+                              ⚡ {gap}
                             </span>
                           ))}
                         </div>
                       </div>
                     )}
 
-                    {/* Personalized Improvement Plan Generator */}
-                    <div className="pt-2">
-                      {!improvementPlan ? (
-                        <button
-                          type="button"
-                          onClick={() => handleFetchImprovementPlan(selectedApp.id)}
-                          disabled={loadingPlan}
-                          className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-rose-900 hover:bg-rose-800 text-white transition-colors flex items-center gap-1.5 shadow-xs"
-                        >
-                          <Sparkles className="w-3.5 h-3.5" />
-                          <span>{loadingPlan ? 'Generating Custom Plan...' : 'View Personalized Improvement Plan'}</span>
-                        </button>
-                      ) : null}
+                    {/* Growth Loop Launch Button */}
+                    <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-rose-100">
+                      <div className="text-[11px] text-slate-500 flex items-center gap-1">
+                        <RefreshCw className="w-3.5 h-3.5 text-indigo-600 animate-spin-slow" />
+                        <span>Submit evidence to upgrade score & unlock re-application</span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setGrowthLoopApp(selectedApp)}
+                        className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white transition-all shadow-md hover:shadow-indigo-200 flex items-center justify-center gap-2"
+                      >
+                        <Sparkles className="w-4 h-4 text-amber-300" />
+                        <span>Open Interactive Growth Loop</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   </div>
                 )}
@@ -377,6 +419,32 @@ export const ApplicationsTracker: React.FC<ApplicationsTrackerProps> = ({
             ) : (
               <p className="text-xs text-slate-400 text-center py-6">Select an application to view details</p>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Interactive Rejection -> Feedback -> Skill Gap -> Improvement Loop Modal */}
+      {growthLoopApp && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto">
+          <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl">
+            <RejectionGrowthLoopView
+              application={growthLoopApp}
+              onClose={() => setGrowthLoopApp(null)}
+              onReapplied={() => {
+                const updated = appList.map(a =>
+                  a.id === growthLoopApp.id ? { ...a, status: 'under_review' as ApplicationStatus, matchScore: Math.max(a.matchScore || 60, 84) } : a
+                );
+                setLocalApps(updated);
+                if (selectedApp?.id === growthLoopApp.id) {
+                  setSelectedApp({
+                    ...selectedApp,
+                    status: 'under_review',
+                    matchScore: Math.max(selectedApp.matchScore || 60, 84)
+                  });
+                }
+                if (onRefreshData) onRefreshData();
+              }}
+            />
           </div>
         </div>
       )}

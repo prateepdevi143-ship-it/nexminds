@@ -49,6 +49,9 @@ export const CompanyPortal: React.FC<CompanyPortalProps> = ({ onRefreshData }) =
   const [evalSkillGaps, setEvalSkillGaps] = useState<string[]>([]);
   const [evalInternalNotes, setEvalInternalNotes] = useState('');
   const [evalStudentFeedback, setEvalStudentFeedback] = useState('');
+  const [evalProblemSolving, setEvalProblemSolving] = useState<'Strong' | 'Good' | 'Moderate' | 'Weak' | 'Needs Improvement'>('Weak');
+  const [evalProjectsQuality, setEvalProjectsQuality] = useState<'Strong' | 'Good' | 'Moderate' | 'Weak' | 'Needs Improvement'>('Needs Improvement');
+  const [evalCommunication, setEvalCommunication] = useState<'Strong' | 'Good' | 'Moderate' | 'Weak' | 'Needs Improvement'>('Good');
   const [isSubmittingEval, setIsSubmittingEval] = useState(false);
 
   // New Job / Internship Form
@@ -106,6 +109,29 @@ export const CompanyPortal: React.FC<CompanyPortalProps> = ({ onRefreshData }) =
     setEvalSkillGaps(app.skillGapsIdentified || []);
     setEvalInternalNotes(app.internalHRNotes || '');
     setEvalStudentFeedback(app.studentFeedback || '');
+    setEvalProblemSolving((app.structuredRatings?.problemSolving as any) || 'Weak');
+    setEvalProjectsQuality((app.structuredRatings?.projectsQuality as any) || 'Needs Improvement');
+    setEvalCommunication((app.structuredRatings?.communication as any) || 'Good');
+  };
+
+  const fillRejectionPreset = (preset: 'dsa_and_projects' | 'cloud_experience') => {
+    if (preset === 'dsa_and_projects') {
+      setEvalReason('missing_skills');
+      setEvalSkillGaps(['Problem Solving & Algorithmic Foundations', 'Production Systems & Real-World Projects']);
+      setEvalProblemSolving('Weak');
+      setEvalProjectsQuality('Needs Improvement');
+      setEvalCommunication('Good');
+      setEvalStudentFeedback('Python knowledge is good, but problem-solving skills were weak. Projects were too basic for our enterprise production demands.');
+      setEvalInternalNotes('Candidate was strong on syntax but struggled on algorithmic problem solving under time constraints. Projects are basic tutorials.');
+    } else {
+      setEvalReason('insufficient_evidence');
+      setEvalSkillGaps(['Docker & Cloud Deployment', 'Production Systems & Real-World Projects']);
+      setEvalProblemSolving('Moderate');
+      setEvalProjectsQuality('Needs Improvement');
+      setEvalCommunication('Good');
+      setEvalStudentFeedback('Demonstrated sound fundamentals, but lacks hands-on containerized production experience and cloud deployment proof.');
+      setEvalInternalNotes('Encouraged to deploy a containerized application and re-apply in future cycles.');
+    }
   };
 
   const handleSaveEvaluation = async (e: React.FormEvent) => {
@@ -119,7 +145,13 @@ export const CompanyPortal: React.FC<CompanyPortalProps> = ({ onRefreshData }) =
         primaryReason: evalStatus === 'rejected' ? evalReason : undefined,
         skillGapsIdentified: evalSkillGaps,
         internalHRNotes: evalInternalNotes,
-        studentFeedback: evalStudentFeedback
+        studentFeedback: evalStudentFeedback,
+        structuredRatings: evalStatus === 'rejected' ? {
+          problemSolving: evalProblemSolving,
+          projectsQuality: evalProjectsQuality,
+          communication: evalCommunication,
+          technicalWeaknesses: evalSkillGaps
+        } : undefined
       });
 
       setEvaluatingApp(null);
@@ -518,7 +550,30 @@ export const CompanyPortal: React.FC<CompanyPortalProps> = ({ onRefreshData }) =
 
               {/* If Rejected: Rejection Reasons & Skill Gap Tags */}
               {evalStatus === 'rejected' && (
-                <div className="p-4 rounded-xl bg-rose-50/60 border border-rose-200 space-y-3">
+                <div className="p-4 rounded-xl bg-rose-50/60 border border-rose-200 space-y-3.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-rose-900 uppercase tracking-wider">
+                      Rejection & Growth Loop Configuration
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] text-slate-500">Quick Fill:</span>
+                      <button
+                        type="button"
+                        onClick={() => fillRejectionPreset('dsa_and_projects')}
+                        className="px-2 py-0.5 rounded bg-white border border-rose-300 text-rose-800 text-[10px] font-bold hover:bg-rose-100 transition-colors"
+                      >
+                        ⚡ Python Good / DSA Weak
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => fillRejectionPreset('cloud_experience')}
+                        className="px-2 py-0.5 rounded bg-white border border-rose-300 text-rose-800 text-[10px] font-bold hover:bg-rose-100 transition-colors"
+                      >
+                        ⚡ Cloud Missing
+                      </button>
+                    </div>
+                  </div>
+
                   <div className="space-y-1">
                     <label className="font-semibold text-rose-900 block">Primary Rejection Cause</label>
                     <select
@@ -534,12 +589,60 @@ export const CompanyPortal: React.FC<CompanyPortalProps> = ({ onRefreshData }) =
                     </select>
                   </div>
 
+                  {/* Structured Competency Ratings for AI Analysis */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-bold text-slate-700 block">Problem Solving</label>
+                      <select
+                        value={evalProblemSolving}
+                        onChange={(e: any) => setEvalProblemSolving(e.target.value)}
+                        className="w-full px-2 py-1.5 rounded-lg bg-white border border-rose-200 text-slate-800 text-xs font-semibold focus:outline-none"
+                      >
+                        <option value="Strong">Strong</option>
+                        <option value="Good">Good</option>
+                        <option value="Moderate">Moderate</option>
+                        <option value="Weak">Weak</option>
+                        <option value="Needs Improvement">Needs Improvement</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-bold text-slate-700 block">Projects Quality</label>
+                      <select
+                        value={evalProjectsQuality}
+                        onChange={(e: any) => setEvalProjectsQuality(e.target.value)}
+                        className="w-full px-2 py-1.5 rounded-lg bg-white border border-rose-200 text-slate-800 text-xs font-semibold focus:outline-none"
+                      >
+                        <option value="Strong">Strong</option>
+                        <option value="Good">Good</option>
+                        <option value="Moderate">Moderate</option>
+                        <option value="Weak">Weak</option>
+                        <option value="Needs Improvement">Needs Improvement</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-bold text-slate-700 block">Communication</label>
+                      <select
+                        value={evalCommunication}
+                        onChange={(e: any) => setEvalCommunication(e.target.value)}
+                        className="w-full px-2 py-1.5 rounded-lg bg-white border border-rose-200 text-slate-800 text-xs font-semibold focus:outline-none"
+                      >
+                        <option value="Strong">Strong</option>
+                        <option value="Good">Good</option>
+                        <option value="Moderate">Moderate</option>
+                        <option value="Weak">Weak</option>
+                        <option value="Needs Improvement">Needs Improvement</option>
+                      </select>
+                    </div>
+                  </div>
+
                   <div className="space-y-1">
                     <label className="font-semibold text-rose-900 block">
-                      Specific Skill Gaps Identified (Triggers improvement plan for student)
+                      Specific Skill Gaps Identified (Triggers AI Rejection Growth Loop)
                     </label>
                     <div className="flex flex-wrap gap-1.5">
-                      {['Python', 'PyTorch', 'Docker', 'FastAPI', 'SQL', 'Git', 'Kubernetes', 'System Design'].map(sk => {
+                      {['Problem Solving & Algorithmic Foundations', 'Production Systems & Real-World Projects', 'Python', 'PyTorch', 'Docker & Cloud Deployment', 'FastAPI', 'SQL', 'Git', 'System Design'].map(sk => {
                         const isSelected = evalSkillGaps.includes(sk);
                         return (
                           <button

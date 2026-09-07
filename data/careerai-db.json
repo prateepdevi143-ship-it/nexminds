@@ -129,7 +129,7 @@
       "careerGoal": "AI / Machine Learning Engineer",
       "targetCareerId": "cg_ai_eng",
       "profileCompletion": 95,
-      "careerReadinessScore": 60,
+      "careerReadinessScore": 65,
       "resumeFileName": "Uploaded_Resume.pdf",
       "resumeScore": 42,
       "skills": [
@@ -139,7 +139,8 @@
           "confidence": 0.95,
           "verified": true,
           "lastDemonstrated": "2026-02-20",
-          "evidenceCount": 5
+          "evidenceCount": 5,
+          "freshness": "needs_refresh"
         },
         {
           "id": "s01_2",
@@ -147,7 +148,8 @@
           "confidence": 0.9,
           "verified": true,
           "lastDemonstrated": "2026-02-18",
-          "evidenceCount": 4
+          "evidenceCount": 4,
+          "freshness": "needs_refresh"
         },
         {
           "id": "s01_3",
@@ -155,7 +157,8 @@
           "confidence": 0.88,
           "verified": true,
           "lastDemonstrated": "2026-02-15",
-          "evidenceCount": 3
+          "evidenceCount": 3,
+          "freshness": "needs_refresh"
         },
         {
           "id": "s01_4",
@@ -163,7 +166,8 @@
           "confidence": 0.86,
           "verified": true,
           "lastDemonstrated": "2026-02-12",
-          "evidenceCount": 3
+          "evidenceCount": 3,
+          "freshness": "needs_refresh"
         },
         {
           "id": "s01_5",
@@ -171,7 +175,8 @@
           "confidence": 0.85,
           "verified": true,
           "lastDemonstrated": "2026-02-10",
-          "evidenceCount": 3
+          "evidenceCount": 3,
+          "freshness": "needs_refresh"
         },
         {
           "id": "s01_6",
@@ -179,7 +184,8 @@
           "confidence": 0.82,
           "verified": true,
           "lastDemonstrated": "2026-01-25",
-          "evidenceCount": 2
+          "evidenceCount": 2,
+          "freshness": "needs_refresh"
         },
         {
           "skillId": "sk_1788741132959_934",
@@ -207,6 +213,15 @@
           "lastDemonstrated": "2026-09-07T00:32:12.959Z",
           "evidenceCount": 1,
           "freshness": "recent"
+        },
+        {
+          "id": "sk_1788768993373",
+          "name": "Problem Solving & Algorithmic Foundations",
+          "level": 68,
+          "confidence": 0.88,
+          "verified": true,
+          "lastDemonstrated": "2026-09-07T08:16:33.373Z",
+          "evidenceCount": 1
         }
       ],
       "projects": [
@@ -337,7 +352,7 @@
       "careerGoal": "Backend Software Developer",
       "targetCareerId": "cg_backend",
       "profileCompletion": 92,
-      "careerReadinessScore": 89,
+      "careerReadinessScore": 73,
       "resumeFileName": "Kavin_Raj_Java_Backend.pdf",
       "resumeScore": 91,
       "skills": [
@@ -347,15 +362,18 @@
           "confidence": 0.94,
           "verified": true,
           "lastDemonstrated": "2026-02-22",
-          "evidenceCount": 5
+          "evidenceCount": 5,
+          "freshness": "needs_refresh"
         },
         {
           "id": "s02_2",
           "name": "DSA",
-          "confidence": 0.92,
+          "confidence": 0.95,
           "verified": true,
-          "lastDemonstrated": "2026-02-20",
-          "evidenceCount": 4
+          "lastDemonstrated": "2026-09-07T07:50:30.592Z",
+          "evidenceCount": 6,
+          "freshness": "recent",
+          "level": null
         },
         {
           "id": "s02_3",
@@ -363,7 +381,8 @@
           "confidence": 0.88,
           "verified": true,
           "lastDemonstrated": "2026-02-14",
-          "evidenceCount": 3
+          "evidenceCount": 3,
+          "freshness": "needs_refresh"
         },
         {
           "id": "s02_4",
@@ -371,7 +390,18 @@
           "confidence": 0.86,
           "verified": true,
           "lastDemonstrated": "2026-02-10",
-          "evidenceCount": 3
+          "evidenceCount": 3,
+          "freshness": "needs_refresh"
+        },
+        {
+          "skillId": "sk_1788767350549_88do",
+          "name": "Python",
+          "level": 100,
+          "confidence": 0.95,
+          "verified": true,
+          "lastDemonstrated": "2026-09-07T07:50:30.592Z",
+          "evidenceCount": 2,
+          "freshness": "recent"
         }
       ],
       "projects": [
@@ -461,7 +491,8 @@
         }
       },
       "isDemo": true,
-      "demoSeedVersion": "v1"
+      "demoSeedVersion": "v1",
+      "updatedAt": "2026-09-07T07:50:30.592Z"
     },
     {
       "id": "std_03",
@@ -2332,6 +2363,161 @@
   ],
   "applications": [
     {
+      "id": "app_19",
+      "jobId": "job_03",
+      "jobTitle": "Full Stack Systems Engineer",
+      "companyId": "cmp_01",
+      "companyName": "Nexora Technologies — Demo",
+      "studentId": "std_01",
+      "studentName": "Arjun Kumar",
+      "studentEmail": "demo.student01@nextmind.demo",
+      "studentCollege": "Chennai Institute of Technology — Demo Profile",
+      "studentDegree": "B.Tech Artificial Intelligence & Data Science",
+      "status": "rejected",
+      "appliedAt": "2026-01-24T10:00:00.000Z",
+      "matchScore": 62,
+      "candidateScore": 62,
+      "matchScoreAtApplication": 62,
+      "assessmentScore": 58,
+      "assessmentPassed": false,
+      "evidenceStrength": 60,
+      "rejectionReason": "Missing critical production requirements & weak problem-solving performance",
+      "studentFeedback": "Python knowledge is good, but problem-solving skills were weak. Projects were too basic for our enterprise production demands.",
+      "internalHRNotes": "Candidate demonstrated solid Python syntax awareness, but timed problem solving revealed bottlenecks in algorithmic complexity and tree/graph traversals. Existing GitHub projects are starter templates rather than deployed production systems. Strong potential if DSA and real-world project depth are upgraded.",
+      "skillGapsIdentified": [
+        "Problem Solving & Algorithmic Foundations",
+        "Production Systems & Real-World Projects",
+        "Docker & Cloud Deployment"
+      ],
+      "structuredRatings": {
+        "problemSolving": "Weak",
+        "projectsQuality": "Needs Improvement",
+        "communication": "Good",
+        "resumeQuality": "Moderate",
+        "technicalWeaknesses": [
+          "Problem Solving & DSA",
+          "Production-Grade Architecture"
+        ],
+        "missingSkills": [
+          "Docker & Cloud Deployment"
+        ]
+      },
+      "aiAnalysis": {
+        "technicalSkills": [
+          {
+            "skill": "Python",
+            "level": "Good"
+          },
+          {
+            "skill": "FastAPI",
+            "level": "Moderate"
+          },
+          {
+            "skill": "Docker & Cloud Deployment",
+            "level": "Missing"
+          }
+        ],
+        "problemSolvingLevel": "Weak",
+        "projectsLevel": "Needs Improvement",
+        "communicationLevel": "Good",
+        "constructiveExplanation": "The hiring team noted solid fundamentals in Python. However, the role requires strong algorithmic problem solving and production-tested architectures. Strengthening these two high-priority competencies will immediately position you as a top candidate.",
+        "skillGaps": [
+          {
+            "id": "gap_ps_demo",
+            "studentId": "std_01",
+            "applicationId": "app_10",
+            "skill": "Problem Solving & Algorithmic Foundations",
+            "currentLevel": "Weak (40%)",
+            "currentScore": 40,
+            "requiredLevel": "Strong (85%)",
+            "requiredScore": 85,
+            "gap": "High",
+            "gapScore": 45,
+            "priority": "HIGH",
+            "priorityScore": 95,
+            "source": "HR feedback",
+            "evidenceSource": "HR Rejection Feedback",
+            "status": "OPEN",
+            "explanation": "Recruiter noted algorithmic problem-solving speed and depth were insufficient during technical screening.",
+            "recommendedActions": [
+              "Solve 20 beginner Data Structures & Algorithms challenges on LeetCode/HackerRank",
+              "Tackle 15 intermediate algorithmic problems focusing on Arrays, HashMaps, and Two-Pointers",
+              "Complete a timed 30-minute benchmark coding assessment",
+              "Implement an algorithmic optimization in an existing project repository",
+              "Upload verified problem-solving evidence (profile / badge / test score)"
+            ]
+          },
+          {
+            "id": "gap_proj_demo",
+            "studentId": "std_01",
+            "applicationId": "app_10",
+            "skill": "Production Systems & Real-World Projects",
+            "currentLevel": "Needs Improvement (45%)",
+            "currentScore": 45,
+            "requiredLevel": "Strong (80%)",
+            "requiredScore": 80,
+            "gap": "High",
+            "gapScore": 35,
+            "priority": "HIGH",
+            "priorityScore": 90,
+            "source": "HR feedback",
+            "evidenceSource": "HR Rejection Feedback",
+            "status": "OPEN",
+            "explanation": "Projects evaluated were considered tutorial-level. The team demands real-world architectures with live deployments.",
+            "recommendedActions": [
+              "Architect an end-to-end fullstack production application addressing a real problem",
+              "Add production capabilities: authentication, automated unit tests, and CI/CD workflow",
+              "Deploy the application publicly on a cloud platform (Render, Vercel, or Cloud Run)",
+              "Provide a clean GitHub repository with architectural documentation and benchmark tests",
+              "Submit the live deployment URL as verified capability evidence"
+            ]
+          }
+        ],
+        "priorityRankings": [
+          {
+            "skill": "Problem Solving & Algorithmic Foundations",
+            "priority": "HIGH",
+            "priorityScore": 95,
+            "reason": "Directly cited in HR evaluation as primary blocker"
+          },
+          {
+            "skill": "Production Systems & Real-World Projects",
+            "priority": "HIGH",
+            "priorityScore": 90,
+            "reason": "Candidate projects were deemed too basic for production scale"
+          }
+        ],
+        "overallActionPlan": "Focus on your 2 High Priority gaps: complete the 35 DSA algorithmic challenge track and build/deploy a fullstack cloud-native project.",
+        "analyzedAt": "2026-02-04T16:00:00.000Z"
+      },
+      "feedbackAt": "2026-02-04T16:00:00.000Z",
+      "timeline": [
+        {
+          "status": "applied",
+          "date": "2026-01-24T10:00:00.000Z",
+          "note": "Application submitted for Full Stack Systems Engineer."
+        },
+        {
+          "status": "under_review",
+          "date": "2026-01-28T14:00:00.000Z",
+          "note": "Technical screening by senior engineering recruiter."
+        },
+        {
+          "status": "rejected",
+          "date": "2026-02-04T16:00:00.000Z",
+          "note": "Decision recorded: Missing critical production requirements & weak problem-solving performance. Actionable feedback provided."
+        },
+        {
+          "status": "rejected",
+          "date": "2026-09-07T08:16:33.381Z",
+          "note": "Verified evidence submitted for Problem Solving & Algorithmic Foundations: Score improved 42 → 68 (+26 pts). Match capability increased to 80%."
+        }
+      ],
+      "isDemo": true,
+      "demoSeedVersion": "v1",
+      "updatedAt": "2026-09-07T08:16:45.203Z"
+    },
+    {
       "id": "app_01",
       "jobId": "job_01",
       "jobTitle": "Software Engineer (Python & Data Systems)",
@@ -2481,7 +2667,7 @@
       "skillGapsIdentified": [
         "REST API"
       ],
-      "feedbackAt": "2026-02-04T15:30:00.000Z",
+      "feedbackAt": "2026-09-07T07:52:12.198Z",
       "timeline": [
         {
           "status": "applied",
@@ -2497,10 +2683,16 @@
           "status": "rejected",
           "date": "2026-02-04T15:30:00.000Z",
           "note": "Decision recorded: Insufficient REST API production experience."
+        },
+        {
+          "status": "rejected",
+          "date": "2026-09-07T07:52:12.198Z",
+          "note": "Application rejected: Insufficient REST API production experience"
         }
       ],
       "isDemo": true,
-      "demoSeedVersion": "v1"
+      "demoSeedVersion": "v1",
+      "updatedAt": "2026-09-07T07:52:12.198Z"
     },
     {
       "id": "app_05",
@@ -3009,6 +3201,63 @@
     }
   ],
   "evidences": [
+    {
+      "id": "ev_imp_1788768993369",
+      "studentId": "std_01",
+      "skill": "Problem Solving & Algorithmic Foundations",
+      "skillName": "Problem Solving & Algorithmic Foundations",
+      "type": "project",
+      "title": "LeetCode 75 Problems Milestone",
+      "description": "Solved 35 medium algorithmic problems across dynamic programming, arrays, and graph traversals. — Evaluated & verified through CareerAI Rejection Improvement Loop",
+      "url": "https://leetcode.com/arjun_dev_demo",
+      "verified": true,
+      "confidence": 0.88,
+      "createdAt": "2026-09-07T08:16:33.369Z"
+    },
+    {
+      "id": "ev_mand_assm_1788767430590_7rv7",
+      "studentId": "std_02",
+      "skill": "DSA",
+      "sourceType": "assessment",
+      "sourceId": "job_01",
+      "sourceTitle": "Software Engineer (Python & Data Systems) Assessment (100%)",
+      "confidence": 0.95,
+      "date": "2026-09-07T07:50:30.590Z",
+      "details": "Passed mandatory role assessment for Software Engineer (Python & Data Systems) at Nexora Technologies — Demo scoring 100%."
+    },
+    {
+      "id": "ev_mand_assm_1788767430588_efm2",
+      "studentId": "std_02",
+      "skill": "Python",
+      "sourceType": "assessment",
+      "sourceId": "job_01",
+      "sourceTitle": "Software Engineer (Python & Data Systems) Assessment (100%)",
+      "confidence": 0.95,
+      "date": "2026-09-07T07:50:30.588Z",
+      "details": "Passed mandatory role assessment for Software Engineer (Python & Data Systems) at Nexora Technologies — Demo scoring 100%."
+    },
+    {
+      "id": "ev_mand_assm_1788767350547_gpvf",
+      "studentId": "std_02",
+      "skill": "DSA",
+      "sourceType": "assessment",
+      "sourceId": "job_01",
+      "sourceTitle": "Software Engineer (Python & Data Systems) Assessment (50%)",
+      "confidence": 0.95,
+      "date": "2026-09-07T07:49:10.547Z",
+      "details": "Passed mandatory role assessment for Software Engineer (Python & Data Systems) at Nexora Technologies — Demo scoring 50%."
+    },
+    {
+      "id": "ev_mand_assm_1788767350543_iq6p",
+      "studentId": "std_02",
+      "skill": "Python",
+      "sourceType": "assessment",
+      "sourceId": "job_01",
+      "sourceTitle": "Software Engineer (Python & Data Systems) Assessment (50%)",
+      "confidence": 0.95,
+      "date": "2026-09-07T07:49:10.544Z",
+      "details": "Passed mandatory role assessment for Software Engineer (Python & Data Systems) at Nexora Technologies — Demo scoring 50%."
+    },
     {
       "id": "ev_01_1",
       "studentId": "std_01",
@@ -3682,6 +3931,34 @@
       "confidence": 0.85,
       "date": "2026-09-07T00:32:12.959Z",
       "details": "Extracted via CareerAI Talent Intelligence parser with 85% confidence."
+    },
+    {
+      "id": "ev_trial_ml_01",
+      "studentId": "student_01",
+      "skill": "Machine Learning",
+      "sourceType": "micro-trial",
+      "type": "micro-trial",
+      "sourceTitle": "Micro-Trial: Build ML Inference & Model Evaluation Pipeline",
+      "title": "Micro-Trial: Build ML Inference & Model Evaluation Pipeline",
+      "confidence": 0.92,
+      "date": "2026-03-05T14:35:00Z",
+      "details": "Demonstrated practical ML feature validation and vectorized sigmoid inference with 88% Proof-of-Work score.",
+      "verified": true,
+      "verificationScore": 88
+    },
+    {
+      "id": "ev_trial_py_01",
+      "studentId": "student_01",
+      "skill": "Python",
+      "sourceType": "micro-trial",
+      "type": "micro-trial",
+      "sourceTitle": "Micro-Trial: Build ML Inference & Model Evaluation Pipeline",
+      "title": "Micro-Trial: Build ML Inference & Model Evaluation Pipeline",
+      "confidence": 0.94,
+      "date": "2026-03-05T14:35:00Z",
+      "details": "Demonstrated robust exception handling, NumPy vectorization, and type-hinted methods with 88% Proof-of-Work score.",
+      "verified": true,
+      "verificationScore": 88
     }
   ],
   "canonicalSkills": [
@@ -5630,6 +5907,56 @@
   ],
   "notifications": [
     {
+      "id": "notif_1788769005206",
+      "userId": "usr_student_01",
+      "title": "Re-Application Submitted: Full Stack Systems Engineer 🚀",
+      "message": "Your re-application was submitted with your enhanced capability profile (80% match). The hiring team has been notified.",
+      "type": "application",
+      "read": false,
+      "createdAt": "2026-09-07T08:16:45.206Z",
+      "link": "/applications"
+    },
+    {
+      "id": "notif_1788768993384",
+      "userId": "usr_student_01",
+      "title": "Skill Competency Upgraded: Problem Solving & Algorithmic Foundations (42 → 68) 🚀",
+      "message": "Your evidence was verified with high confidence! Match compatibility for Full Stack Systems Engineer increased from 62% to 80%. You are eligible to re-apply.",
+      "type": "application",
+      "read": false,
+      "createdAt": "2026-09-07T08:16:33.384Z",
+      "link": "/applications"
+    },
+    {
+      "id": "notif_1788767532204",
+      "userId": "usr_student_02",
+      "title": "Application Update: Software Engineer (Python & Data Systems)",
+      "message": "Nexora Technologies — Demo reviewed your application and provided actionable feedback. Review your personalized improvement plan to bridge identified gaps.",
+      "type": "application",
+      "read": false,
+      "createdAt": "2026-09-07T07:52:12.204Z",
+      "link": "/applications"
+    },
+    {
+      "id": "notif_1788767430594",
+      "userId": "usr_student_02",
+      "title": "Mandatory Assessment Passed! 🎯",
+      "message": "You passed the assessment for Software Engineer (Python & Data Systems) (100%). You are now eligible to submit your application.",
+      "type": "assessment",
+      "read": false,
+      "createdAt": "2026-09-07T07:50:30.594Z",
+      "link": "/jobs"
+    },
+    {
+      "id": "notif_1788767350552",
+      "userId": "usr_student_02",
+      "title": "Mandatory Assessment Passed! 🎯",
+      "message": "You passed the assessment for Software Engineer (Python & Data Systems) (50%). You are now eligible to submit your application.",
+      "type": "assessment",
+      "read": false,
+      "createdAt": "2026-09-07T07:49:10.552Z",
+      "link": "/jobs"
+    },
+    {
       "id": "notif_1788741132963",
       "userId": "usr_student_01",
       "title": "Resume Parsed Successfully 📄",
@@ -5867,8 +6194,87 @@
       ]
     }
   ],
-  "assessmentAttempts": [],
+  "assessmentAttempts": [
+    {
+      "id": "att_1788767430584",
+      "opportunityId": "job_01",
+      "studentId": "std_02",
+      "score": 100,
+      "passed": true,
+      "attemptNumber": 3,
+      "date": "2026-09-07T07:50:30.584Z",
+      "breakdown": [
+        {
+          "skill": "Web Standards & JSON",
+          "score": 100,
+          "passed": true
+        },
+        {
+          "skill": "Database Fundamentals",
+          "score": 100,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "id": "att_1788767350541",
+      "opportunityId": "job_01",
+      "studentId": "std_02",
+      "score": 50,
+      "passed": true,
+      "attemptNumber": 2,
+      "date": "2026-09-07T07:49:10.541Z",
+      "breakdown": [
+        {
+          "skill": "Web Standards & JSON",
+          "score": 100,
+          "passed": true
+        },
+        {
+          "skill": "Database Fundamentals",
+          "score": 0,
+          "passed": false
+        }
+      ]
+    },
+    {
+      "id": "att_1788767340062",
+      "opportunityId": "job_01",
+      "studentId": "std_02",
+      "score": 0,
+      "passed": false,
+      "attemptNumber": 1,
+      "date": "2026-09-07T07:49:00.062Z",
+      "breakdown": [
+        {
+          "skill": "Web Standards & JSON",
+          "score": 0,
+          "passed": false
+        },
+        {
+          "skill": "Database Fundamentals",
+          "score": 0,
+          "passed": false
+        }
+      ]
+    }
+  ],
   "recruiterFeedbacks": [
+    {
+      "id": "fb_1788767532201",
+      "applicationId": "app_04",
+      "studentId": "std_02",
+      "opportunityId": "job_01",
+      "companyId": "cmp_01",
+      "status": "rejected",
+      "primaryReason": "Insufficient REST API production experience",
+      "skillGapsIdentified": [
+        "REST API"
+      ],
+      "internalHRNotes": "Candidate demonstrated 94% DSA skills on LeetCode, but struggled with RESTful architectural trade-offs in Section 3. Recommended for re-evaluation once candidate submits REST API proof.",
+      "studentFeedback": "Strong core Java and algorithm fundamentals demonstrated in your submission. For this specific backend systems role, our team requires proven production experience designing REST API contracts, API rate-limiting, and OpenAPI schemas. We encourage you to complete practical REST API projects and re-apply in 90 days.",
+      "createdAt": "2026-09-07T07:52:12.201Z"
+    },
     {
       "id": "fb_01",
       "applicationId": "app_04",
@@ -6526,5 +6932,497 @@
       "certificateIssuedAt": "2026-08-28T17:00:00.000Z",
       "enrolledAt": "2026-08-02T10:00:00.000Z"
     }
-  ]
+  ],
+  "microTrials": [
+    {
+      "id": "trial_ml_01",
+      "companyId": "comp_01",
+      "companyName": "NeuralScale AI",
+      "jobId": "job_01",
+      "jobTitle": "Junior ML Engineer",
+      "title": "Build ML Inference & Model Evaluation Pipeline for Customer Churn",
+      "description": "Implement a production-grade inference service function that validates incoming JSON payloads, generates churn probability scores, and calculates threshold-based classification metrics.",
+      "trialType": "ai_ml",
+      "difficulty": "Intermediate",
+      "timeLimitMinutes": 45,
+      "requiredSkills": [
+        "Python",
+        "Machine Learning",
+        "FastAPI",
+        "Pandas",
+        "Model Evaluation"
+      ],
+      "preferredSkills": [
+        "Scikit-Learn",
+        "NumPy",
+        "Docker"
+      ],
+      "taskInstructions": "### Practical Task Requirements:\n1. **Payload Ingestion & Validation**: Define a function `predict_churn(customers_df, model_weights, threshold=0.5)` that validates numeric column ranges (e.g. `tenure`, `monthly_charges`, `support_tickets`).\n2. **Probability Computation**: Apply sigmoid-based logistic weights to compute individual customer churn probabilities.\n3. **Threshold Decision**: Output binary predictions `0` (Retained) or `1` (Churned) based on the supplied threshold.\n4. **Metrics Evaluation**: Implement `calculate_evaluation_metrics(y_true, y_pred)` returning Precision, Recall, and F1-Score.\n5. **Robust Error Handling**: Handle empty DataFrames, missing columns, and division-by-zero gracefully with structured errors.",
+      "starterCode": "import numpy as np\nimport pandas as pd\nfrom typing import Dict, Any, List\n\ndef predict_churn(\n    customers_df: pd.DataFrame,\n    weights: Dict[str, float],\n    bias: float = -0.5,\n    threshold: float = 0.5\n) -> Dict[str, Any]:\n    \"\"\"\n    Computes churn probabilities and binary decisions.\n    \n    Args:\n        customers_df: DataFrame containing ['tenure', 'monthly_charges', 'support_tickets']\n        weights: Dictionary mapping feature name to float coefficient\n        bias: Model intercept term\n        threshold: Decision threshold (default: 0.5)\n        \n    Returns:\n        Dictionary with 'probabilities', 'predictions', and 'summary_stats'\n    \"\"\"\n    if customers_df.empty:\n        raise ValueError(\"Input DataFrame is empty\")\n        \n    required_cols = ['tenure', 'monthly_charges', 'support_tickets']\n    for col in required_cols:\n        if col not in customers_df.columns:\n            raise KeyError(f\"Missing required feature column: {col}\")\n            \n    # TODO: 1. Calculate linear combination: z = w1*x1 + w2*x2 + ... + bias\n    # TODO: 2. Compute sigmoid probability: 1 / (1 + exp(-z))\n    # TODO: 3. Apply threshold to produce binary predictions (0 or 1)\n    \n    return {\n        \"status\": \"success\",\n        \"probabilities\": [],\n        \"predictions\": []\n    }\n\ndef calculate_evaluation_metrics(y_true: List[int], y_pred: List[int]) -> Dict[str, float]:\n    \"\"\"\n    Calculates precision, recall, and f1_score.\n    \"\"\"\n    # TODO: Calculate TP, FP, FN and return metrics dictionary\n    pass\n",
+      "inputFiles": [
+        {
+          "name": "sample_customers.json",
+          "content": "[\n  {\"id\": \"cust_101\", \"tenure\": 12, \"monthly_charges\": 65.5, \"support_tickets\": 3},\n  {\"id\": \"cust_102\", \"tenure\": 48, \"monthly_charges\": 29.0, \"support_tickets\": 0},\n  {\"id\": \"cust_103\", \"tenure\": 3, \"monthly_charges\": 89.2, \"support_tickets\": 5}\n]",
+          "description": "Sample batch customer dataset for verification"
+        }
+      ],
+      "expectedOutput": "Function returns dictionary with array of float probabilities [0.0 - 1.0], binary predictions [0, 1], and validation metrics with Precision >= 0.80.",
+      "evaluationCriteria": [
+        "Mathematical correctness of sigmoid inference & vectorization",
+        "Correct precision/recall/F1 edge-case calculations",
+        "Clean input validation and exception raising",
+        "Execution speed and vectorization efficiency"
+      ],
+      "testCases": [
+        {
+          "id": "tc_1",
+          "name": "Valid customer batch calculation",
+          "input": "sample_customers.json",
+          "expectedOutput": "len(probabilities) == 3"
+        },
+        {
+          "id": "tc_2",
+          "name": "Empty DataFrame raises ValueError",
+          "input": "pd.DataFrame()",
+          "expectedOutput": "ValueError"
+        },
+        {
+          "id": "tc_3",
+          "name": "Missing columns raises KeyError",
+          "input": "DataFrame without support_tickets",
+          "expectedOutput": "KeyError"
+        }
+      ],
+      "maxAttempts": 3,
+      "allowedTechnologies": [
+        "Python",
+        "Pandas",
+        "NumPy",
+        "FastAPI"
+      ],
+      "submissionType": "code",
+      "aiEvaluationEnabled": true,
+      "manualReviewRequired": false,
+      "status": "published",
+      "createdAt": "2026-03-01T10:00:00Z",
+      "matchImprovementEstimate": 12
+    },
+    {
+      "id": "trial_backend_01",
+      "companyId": "comp_02",
+      "companyName": "FinEdge Labs",
+      "jobId": "job_02",
+      "jobTitle": "Junior Backend Developer",
+      "title": "High-Throughput Protected REST API with Express & JWT Verification",
+      "description": "Construct a resilient, secure Node.js / Express endpoint for payment verification with header token parsing, schema sanitization, and structured HTTP error responses.",
+      "trialType": "coding",
+      "difficulty": "Intermediate",
+      "timeLimitMinutes": 40,
+      "requiredSkills": [
+        "Node.js",
+        "Express.js",
+        "REST API",
+        "MongoDB",
+        "Authentication"
+      ],
+      "preferredSkills": [
+        "TypeScript",
+        "Jest",
+        "Redis"
+      ],
+      "taskInstructions": "### Practical Task Requirements:\n1. **JWT Verification Middleware**: Inspect `Authorization: Bearer <token>`. Verify token payload and reject malformed/expired tokens with 401 Unauthorized.\n2. **Request Validation**: Enforce that `amount` is a positive number, `currency` is an ISO string, and `recipientId` is a valid UUID.\n3. **Idempotency Check**: Simulate checking an idempotency key to prevent double charging.\n4. **Structured Error Contract**: Ensure all error responses return `{ error: { code: string, message: string, timestamp: string } }`.",
+      "starterCode": "const express = require('express');\nconst router = express.Router();\n\n// Middleware: Authenticate JWT Token\nfunction authenticateToken(req, res, next) {\n  const authHeader = req.headers['authorization'];\n  const token = authHeader && authHeader.split(' ')[1];\n  \n  if (!token) {\n    return res.status(401).json({\n      error: { code: 'AUTH_REQUIRED', message: 'Bearer token missing' }\n    });\n  }\n  \n  // TODO: Verify token signature and attach req.user\n  next();\n}\n\n// POST /api/transactions\nrouter.post('/transactions', authenticateToken, async (req, res) => {\n  try {\n    const { amount, currency, recipientId, idempotencyKey } = req.body;\n    \n    // TODO: 1. Validate required fields\n    // TODO: 2. Check for negative amount\n    // TODO: 3. Simulate atomic transaction processing\n    \n    return res.status(201).json({\n      success: true,\n      transactionId: 'tx_' + Date.now(),\n      status: 'CONFIRMED'\n    });\n  } catch (err) {\n    return res.status(500).json({\n      error: { code: 'INTERNAL_ERROR', message: err.message }\n    });\n  }\n});\n\nmodule.exports = router;",
+      "expectedOutput": "Router handles valid payloads with HTTP 201, invalid tokens with HTTP 401, and invalid payloads with HTTP 400 and structured JSON.",
+      "evaluationCriteria": [
+        "Strict adherence to HTTP status codes (201, 400, 401, 500)",
+        "Secure token extraction without uncaught crashes",
+        "Input sanitization against injection / negative numbers",
+        "Production code readability and clean error propagation"
+      ],
+      "testCases": [
+        {
+          "id": "tc_1",
+          "name": "Valid transaction returns 201",
+          "input": "{\"amount\": 100, \"currency\": \"USD\", \"recipientId\": \"uuid-1\"}",
+          "expectedOutput": "status: 201"
+        },
+        {
+          "id": "tc_2",
+          "name": "Missing token returns 401",
+          "input": "No Auth Header",
+          "expectedOutput": "status: 401"
+        },
+        {
+          "id": "tc_3",
+          "name": "Negative amount returns 400",
+          "input": "{\"amount\": -50}",
+          "expectedOutput": "status: 400"
+        }
+      ],
+      "maxAttempts": 3,
+      "allowedTechnologies": [
+        "Node.js",
+        "Express.js",
+        "JavaScript",
+        "TypeScript"
+      ],
+      "submissionType": "code",
+      "aiEvaluationEnabled": true,
+      "manualReviewRequired": false,
+      "status": "published",
+      "createdAt": "2026-03-02T11:00:00Z",
+      "matchImprovementEstimate": 10
+    },
+    {
+      "id": "trial_react_01",
+      "companyId": "comp_03",
+      "companyName": "NextCloud Solutions",
+      "jobId": "job_03",
+      "jobTitle": "Frontend Developer",
+      "title": "Interactive Real-Time Cluster Health Heatmap in React",
+      "description": "Build a responsive, accessible React component that renders a 24-hour node status heatmap with hover tooltip inspection and status filters.",
+      "trialType": "frontend",
+      "difficulty": "Intermediate",
+      "timeLimitMinutes": 35,
+      "requiredSkills": [
+        "React",
+        "TypeScript",
+        "Tailwind CSS",
+        "Component Design"
+      ],
+      "preferredSkills": [
+        "Accessibility",
+        "State Management"
+      ],
+      "taskInstructions": "### Practical Task Requirements:\n1. **Component State**: Render a grid of server nodes with states: `HEALTHY` (Emerald), `DEGRADED` (Amber), `CRITICAL` (Rose).\n2. **Interactive Inspection**: Hovering over any cell displays a tooltip with latency, CPU usage %, and timestamp.\n3. **Filtering**: Add toggle buttons to filter the grid by status (`All`, `Only Incidents`).\n4. **Accessibility**: Implement proper ARIA attributes (`aria-label`, `role=\"grid\"`) and keyboard navigation support.",
+      "starterCode": "import React, { useState, useMemo } from 'react';\n\nexport interface NodeStatus {\n  id: string;\n  name: string;\n  status: 'HEALTHY' | 'DEGRADED' | 'CRITICAL';\n  cpuPercent: number;\n  latencyMs: number;\n  updatedAt: string;\n}\n\nexport const ClusterHeatmap: React.FC<{ nodes: NodeStatus[] }> = ({ nodes }) => {\n  const [filter, setFilter] = useState<'ALL' | 'INCIDENTS'>('ALL');\n  const [hoveredNode, setHoveredNode] = useState<NodeStatus | null>(null);\n\n  const filteredNodes = useMemo(() => {\n    if (filter === 'INCIDENTS') {\n      return nodes.filter(n => n.status !== 'HEALTHY');\n    }\n    return nodes;\n  }, [nodes, filter]);\n\n  // TODO: Implement interactive grid layout with status badges, tooltips, and accessibility\n  return (\n    <div className=\"p-4 border rounded-xl space-y-4\">\n      <div className=\"flex justify-between items-center\">\n        <h3 className=\"font-semibold text-slate-800\">Cluster Health Monitor</h3>\n        {/* TODO: Add filter controls */}\n      </div>\n      \n      {/* TODO: Render interactive heatmap cells */}\n    </div>\n  );\n};",
+      "expectedOutput": "Accessible React component rendering responsive grid with clean Tailwind color mapping and interactive hover state.",
+      "evaluationCriteria": [
+        "Component composition and TypeScript typing",
+        "Appropriate responsive layout with Tailwind CSS",
+        "Memoization and state performance",
+        "Keyboard accessibility and ARIA roles"
+      ],
+      "maxAttempts": 3,
+      "allowedTechnologies": [
+        "React",
+        "TypeScript",
+        "Tailwind CSS"
+      ],
+      "submissionType": "code",
+      "aiEvaluationEnabled": true,
+      "manualReviewRequired": false,
+      "status": "published",
+      "createdAt": "2026-03-03T09:30:00Z",
+      "matchImprovementEstimate": 9
+    },
+    {
+      "id": "trial_docker_01",
+      "companyId": "comp_01",
+      "companyName": "NeuralScale AI",
+      "jobId": "job_04",
+      "jobTitle": "Cloud & DevOps Engineer",
+      "title": "Multi-Stage Production Dockerfile & Health Probe Automation",
+      "description": "Construct an enterprise-grade multi-stage Dockerfile for a Node.js microservice ensuring minimal image footprint, unprivileged user security, and automated health checks.",
+      "trialType": "coding",
+      "difficulty": "Intermediate",
+      "timeLimitMinutes": 30,
+      "requiredSkills": [
+        "Docker",
+        "Linux",
+        "CI/CD",
+        "Containerization"
+      ],
+      "preferredSkills": [
+        "Security",
+        "Bash"
+      ],
+      "taskInstructions": "### Practical Task Requirements:\n1. **Multi-Stage Build**: Stage 1 (Builder) installs full build dependencies and builds assets; Stage 2 (Runner) only copies production artifacts.\n2. **Least Privilege**: Avoid running as `root`. Create or switch to a non-root user (e.g. `node` or `appuser`).\n3. **Image Optimization**: Leverage `.dockerignore` awareness and eliminate temporary caches (`--no-cache` / `npm prune --production`).\n4. **Healthcheck Directive**: Implement `HEALTHCHECK --interval=30s --timeout=3s --retries=3 CMD curl -f http://localhost:3000/health || exit 1`.",
+      "starterCode": "# STAGE 1: Builder\nFROM node:20-alpine AS builder\nWORKDIR /app\n\n# TODO: Copy package files and install dependencies\n# TODO: Copy source code and build\n\n# STAGE 2: Production Runner\nFROM node:20-alpine AS runner\nWORKDIR /app\n\nENV NODE_ENV=production\n\n# TODO: 1. Configure non-root user\n# TODO: 2. Copy artifacts from builder\n# TODO: 3. Configure HEALTHCHECK\n# TODO: 4. Define EXPOSE and CMD entry point",
+      "expectedOutput": "Clean multi-stage Dockerfile with non-root security, minimal layers, and valid HEALTHCHECK definition.",
+      "evaluationCriteria": [
+        "Effective layer caching and multi-stage separation",
+        "Security hardening with non-root execution",
+        "Proper container signal handling and HEALTHCHECK",
+        "Alpine package cleanup best practices"
+      ],
+      "maxAttempts": 3,
+      "allowedTechnologies": [
+        "Docker",
+        "Linux",
+        "DevOps"
+      ],
+      "submissionType": "code",
+      "aiEvaluationEnabled": true,
+      "manualReviewRequired": false,
+      "status": "published",
+      "createdAt": "2026-03-04T14:00:00Z",
+      "matchImprovementEstimate": 11
+    },
+    {
+      "id": "trial_sql_01",
+      "companyId": "comp_04",
+      "companyName": "HealthAI Diagnostics",
+      "jobId": "job_05",
+      "jobTitle": "Data Analyst",
+      "title": "Analytical Window Queries & Patient Cohort Retention in PostgreSQL",
+      "description": "Formulate advanced analytical SQL queries utilizing window functions, rolling moving averages, and cohort retention matrices.",
+      "trialType": "sql",
+      "difficulty": "Intermediate",
+      "timeLimitMinutes": 35,
+      "requiredSkills": [
+        "SQL",
+        "PostgreSQL",
+        "Data Aggregation",
+        "Query Optimization"
+      ],
+      "preferredSkills": [
+        "Database Indexing",
+        "ETL"
+      ],
+      "taskInstructions": "### Practical Task Requirements:\n1. **Window Aggregation**: Calculate the 7-day rolling average of daily hospital admissions partitioned by medical department.\n2. **Cohort Retention**: Compute month-over-month retention percentage for new patient checkups.\n3. **Anomaly Flags**: Add a calculated column flagging any day where admission count exceeds 2 standard deviations above the 30-day department mean.\n4. **Query Performance**: Write clean CTEs (Common Table Expressions) and avoid Cartesian joins.",
+      "starterCode": "-- Schema context:\n-- admissions (id UUID, patient_id UUID, department_id VARCHAR, admission_date DATE, discharge_date DATE)\n\nWITH daily_department_admissions AS (\n  SELECT\n    department_id,\n    admission_date,\n    COUNT(id) AS daily_count\n  FROM admissions\n  GROUP BY department_id, admission_date\n),\n\n-- TODO: 1. Calculate 7-day rolling average using OVER (PARTITION BY ... ORDER BY ... ROWS BETWEEN ...)\nrolling_stats AS (\n  SELECT\n    department_id,\n    admission_date,\n    daily_count\n    -- TODO: Add rolling average calculation\n  FROM daily_department_admissions\n)\n\n-- TODO: 2. Query final result with anomaly flag\nSELECT * FROM rolling_stats\nORDER BY department_id, admission_date DESC;",
+      "expectedOutput": "Syntactically valid PostgreSQL query utilizing Window functions with partition clauses, rolling boundaries, and CASE condition flags.",
+      "evaluationCriteria": [
+        "Correct SQL window clause syntax (ROWS BETWEEN 6 PRECEDING AND CURRENT ROW)",
+        "Proper partitioning by department",
+        "Clean CTE readability and query execution plan awareness",
+        "Accurate mathematical edge-case handling for nulls"
+      ],
+      "maxAttempts": 3,
+      "allowedTechnologies": [
+        "SQL",
+        "PostgreSQL"
+      ],
+      "submissionType": "code",
+      "aiEvaluationEnabled": true,
+      "manualReviewRequired": false,
+      "status": "published",
+      "createdAt": "2026-03-05T08:00:00Z",
+      "matchImprovementEstimate": 10
+    }
+  ],
+  "microTrialSubmissions": [
+    {
+      "id": "sub_demo_01",
+      "trialId": "trial_ml_01",
+      "trialTitle": "Build ML Inference & Model Evaluation Pipeline for Customer Churn",
+      "candidateId": "student_01",
+      "studentName": "Arjun Kumar",
+      "studentEmail": "arjun.kumar@gmail.com",
+      "jobId": "job_01",
+      "jobTitle": "Junior ML Engineer",
+      "companyId": "comp_01",
+      "companyName": "NeuralScale AI",
+      "submittedAt": "2026-03-05T14:32:00Z",
+      "executionTimeSeconds": 1420,
+      "attemptNumber": 1,
+      "submissionType": "code",
+      "content": "import numpy as np\nimport pandas as pd\nfrom typing import Dict, Any, List\n\ndef predict_churn(\n    customers_df: pd.DataFrame,\n    weights: Dict[str, float],\n    bias: float = -0.5,\n    threshold: float = 0.5\n) -> Dict[str, Any]:\n    if customers_df.empty:\n        raise ValueError(\"Input DataFrame is empty\")\n        \n    required_cols = ['tenure', 'monthly_charges', 'support_tickets']\n    for col in required_cols:\n        if col not in customers_df.columns:\n            raise KeyError(f\"Missing required feature column: {col}\")\n            \n    # Vectorized linear combination\n    z = np.full(len(customers_df), bias, dtype=float)\n    for col, w in weights.items():\n        if col in customers_df.columns:\n            z += customers_df[col].values * w\n            \n    # Sigmoid activation\n    probs = 1.0 / (1.0 + np.exp(-np.clip(z, -250, 250)))\n    preds = (probs >= threshold).astype(int).tolist()\n    \n    return {\n        \"status\": \"success\",\n        \"probabilities\": [round(float(p), 4) for p in probs],\n        \"predictions\": preds,\n        \"summary_stats\": {\n            \"total\": len(customers_df),\n            \"churn_count\": int(sum(preds)),\n            \"churn_rate\": round(float(np.mean(preds)), 4)\n        }\n    }\n\ndef calculate_evaluation_metrics(y_true: List[int], y_pred: List[int]) -> Dict[str, float]:\n    y_t = np.array(y_true)\n    y_p = np.array(y_pred)\n    \n    tp = np.sum((y_t == 1) & (y_p == 1))\n    fp = np.sum((y_t == 0) & (y_p == 1))\n    fn = np.sum((y_t == 1) & (y_p == 0))\n    tn = np.sum((y_t == 0) & (y_p == 0))\n    \n    precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0\n    recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0\n    f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0.0\n    \n    return {\n        \"precision\": round(float(precision), 4),\n        \"recall\": round(float(recall), 4),\n        \"f1_score\": round(float(f1), 4)\n    }",
+      "repositoryUrl": "https://github.com/arjunkumar-dev/customer-churn-inference-api",
+      "status": "completed",
+      "evaluationStatus": "completed",
+      "evaluationId": "eval_demo_01",
+      "integritySignals": {
+        "tabSwitches": 1,
+        "fullscreenExits": 0,
+        "pasteEvents": 2,
+        "riskLevel": "low",
+        "notes": "Natural typing cadence and smooth continuous development."
+      }
+    },
+    {
+      "id": "sub_demo_02",
+      "trialId": "trial_backend_01",
+      "trialTitle": "High-Throughput Protected REST API with Express & JWT Verification",
+      "candidateId": "student_02",
+      "studentName": "Priya Sharma",
+      "studentEmail": "priya.sharma@gmail.com",
+      "jobId": "job_02",
+      "jobTitle": "Junior Backend Developer",
+      "companyId": "comp_02",
+      "companyName": "FinEdge Labs",
+      "submittedAt": "2026-03-06T09:15:00Z",
+      "executionTimeSeconds": 1680,
+      "attemptNumber": 1,
+      "submissionType": "code",
+      "content": "const express = require('express');\nconst router = express.Router();\n\nfunction authenticateToken(req, res, next) {\n  const authHeader = req.headers['authorization'];\n  const token = authHeader && authHeader.split(' ')[1];\n  if (!token) {\n    return res.status(401).json({\n      error: { code: 'AUTH_REQUIRED', message: 'Bearer token missing' }\n    });\n  }\n  // Mock verification\n  if (token === 'invalid_token') {\n    return res.status(403).json({ error: { code: 'INVALID_TOKEN', message: 'Forbidden' } });\n  }\n  req.user = { id: 'usr_verified' };\n  next();\n}\n\nrouter.post('/transactions', authenticateToken, (req, res) => {\n  const { amount, currency, recipientId } = req.body;\n  if (!amount || typeof amount !== 'number' || amount <= 0) {\n    return res.status(400).json({ error: { code: 'INVALID_AMOUNT', message: 'Amount must be positive' } });\n  }\n  if (!currency || !recipientId) {\n    return res.status(400).json({ error: { code: 'MISSING_FIELDS', message: 'Currency and recipient required' } });\n  }\n  return res.status(201).json({\n    success: true,\n    transactionId: 'tx_' + Date.now(),\n    status: 'CONFIRMED'\n  });\n});\n\nmodule.exports = router;",
+      "status": "completed",
+      "evaluationStatus": "completed",
+      "evaluationId": "eval_demo_02",
+      "integritySignals": {
+        "tabSwitches": 2,
+        "fullscreenExits": 0,
+        "pasteEvents": 1,
+        "riskLevel": "low"
+      }
+    }
+  ],
+  "microTrialEvaluations": [
+    {
+      "id": "eval_demo_01",
+      "submissionId": "sub_demo_01",
+      "trialId": "trial_ml_01",
+      "trialTitle": "Build ML Inference & Model Evaluation Pipeline for Customer Churn",
+      "candidateId": "student_01",
+      "studentName": "Arjun Kumar",
+      "jobId": "job_01",
+      "jobTitle": "Junior ML Engineer",
+      "overallScore": 88,
+      "proofOfWorkScore": 88,
+      "proofOfWorkBreakdown": {
+        "correctness": 92,
+        "taskCompletion": 88,
+        "problemSolving": 86,
+        "codeQuality": 85,
+        "technicalReasoning": 88,
+        "proofOfWorkScore": 88
+      },
+      "skillScores": {
+        "Python": 94,
+        "Machine Learning": 90,
+        "FastAPI": 84,
+        "Pandas": 91,
+        "Model Evaluation": 89
+      },
+      "passed": true,
+      "strengths": [
+        "Excellent vectorization with NumPy clips preventing arithmetic overflow",
+        "Comprehensive error raising for empty datasets and missing columns",
+        "Clean separation of evaluation metrics with safe division handling"
+      ],
+      "weaknesses": [
+        "Could incorporate type annotations for NumPy ndarrays",
+        "Consider adding configurable logit calibration parameters"
+      ],
+      "qualitativeFeedback": "Outstanding practical execution. The candidate demonstrated high production maturity by preventing numerical instability with np.clip, validating DataFrame schemas upfront, and structuring clean evaluation metrics.",
+      "deterministicResults": [
+        {
+          "check": "Submission Completeness & Non-Empty Artifact",
+          "passed": true,
+          "details": "Provided 52 lines of robust vectorized Python code.",
+          "score": 100
+        },
+        {
+          "check": "Tech Stack & API Alignment",
+          "passed": true,
+          "details": "Implemented required Pandas, NumPy, and classification algorithms.",
+          "score": 95
+        },
+        {
+          "check": "Production Robustness & Error Handling",
+          "passed": true,
+          "details": "Handled zero division and empty DataFrame validation.",
+          "score": 95
+        },
+        {
+          "check": "Test Suite Execution (3 Verification Checks)",
+          "passed": true,
+          "details": "Passed all 3 verification checks.",
+          "score": 100
+        }
+      ],
+      "evaluatedAt": "2026-03-05T14:35:00Z",
+      "evaluatorType": "hybrid",
+      "recommendedActions": [
+        "Direct interview fast-track approved",
+        "Verified Machine Learning and Python Proof-of-Work badge issued"
+      ],
+      "matchScoreBefore": 74,
+      "matchScoreAfter": 86,
+      "matchImprovement": 12
+    },
+    {
+      "id": "eval_demo_02",
+      "submissionId": "sub_demo_02",
+      "trialId": "trial_backend_01",
+      "trialTitle": "High-Throughput Protected REST API with Express & JWT Verification",
+      "candidateId": "student_02",
+      "studentName": "Priya Sharma",
+      "jobId": "job_02",
+      "jobTitle": "Junior Backend Developer",
+      "overallScore": 78,
+      "proofOfWorkScore": 78,
+      "proofOfWorkBreakdown": {
+        "correctness": 80,
+        "taskCompletion": 80,
+        "problemSolving": 75,
+        "codeQuality": 78,
+        "technicalReasoning": 75,
+        "proofOfWorkScore": 78
+      },
+      "skillScores": {
+        "Node.js": 82,
+        "Express.js": 85,
+        "REST API": 80,
+        "MongoDB": 70,
+        "Authentication": 76
+      },
+      "passed": true,
+      "strengths": [
+        "Correct HTTP status codes implemented for authentication and bad requests",
+        "Input validation checks for positive numeric amounts"
+      ],
+      "weaknesses": [
+        "Simulated token check could be replaced with real jwt.verify library call",
+        "Missing async database persistence hook"
+      ],
+      "qualitativeFeedback": "Good solid implementation of the Express router. Handles authentication guard middleware and positive amount constraints cleanly.",
+      "deterministicResults": [
+        {
+          "check": "Submission Completeness & Non-Empty Artifact",
+          "passed": true,
+          "details": "Provided complete Express router implementation.",
+          "score": 85
+        },
+        {
+          "check": "Tech Stack & API Alignment",
+          "passed": true,
+          "details": "Matches Node.js and Express REST paradigms.",
+          "score": 80
+        },
+        {
+          "check": "Production Robustness & Error Handling",
+          "passed": true,
+          "details": "Structured error objects returned with status codes.",
+          "score": 85
+        },
+        {
+          "check": "Test Suite Execution (3 Verification Checks)",
+          "passed": true,
+          "details": "Passed 2 of 3 automated test cases.",
+          "score": 75
+        }
+      ],
+      "evaluatedAt": "2026-03-06T09:18:00Z",
+      "evaluatorType": "hybrid",
+      "recommendedActions": [
+        "Candidate is pending recruiter review in candidate dashboard",
+        "Ready for technical interview round"
+      ],
+      "matchScoreBefore": 70,
+      "matchScoreAfter": 80,
+      "matchImprovement": 10
+    }
+  ],
+  "improvementEvidences": [
+    {
+      "id": "imp_1788768993367",
+      "studentId": "std_01",
+      "applicationId": "app_19",
+      "skill": "Problem Solving & Algorithmic Foundations",
+      "evidenceType": "coding_profile",
+      "title": "LeetCode 75 Problems Milestone",
+      "details": "Solved 35 medium algorithmic problems across dynamic programming, arrays, and graph traversals.",
+      "evidenceUrl": "https://leetcode.com/arjun_dev_demo",
+      "submittedAt": "2026-09-07T08:16:33.367Z",
+      "verificationStatus": "verified",
+      "previousSkillScore": 42,
+      "newSkillScore": 68,
+      "scoreDelta": 26,
+      "verifiedConfidence": 0.88,
+      "aiReassessmentNotes": "Impressive advancement in algorithmic capability. Successfully tackling 35 medium-difficulty LeetCode problems demonstrates a solid conceptual grasp and practical execution in complex areas like dynamic programming, graph traversals, and array manipulation."
+    }
+  ],
+  "skillGaps": []
 }

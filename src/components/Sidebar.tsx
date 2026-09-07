@@ -17,15 +17,12 @@ import {
   ChevronRight,
   ChevronDown,
   ChevronUp,
-  TrendingUp,
   CheckCircle2,
   Building2,
   ShieldAlert,
   UserCheck,
   Check,
   AlertCircle,
-  Bot,
-  ArrowRight,
   Code2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -403,8 +400,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ? companyGroups
       : adminGroups;
 
-  const readiness = student?.careerReadinessScore || 78;
-
   const renderBadge = (badge: string | number, isActive: boolean, color?: string) => {
     if (isActive) {
       return (
@@ -476,77 +471,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <X className="w-5 h-5" />
         </button>
       </div>
-
-      {/* AI Copilot (AI Advisor) Card Widget - Replaces Profile Completion */}
-      {activeRole === 'student' && (
-        <div className="mx-3 mt-2.5 p-3 rounded-2xl bg-gradient-to-br from-indigo-50/90 via-slate-50 to-purple-50/60 border border-indigo-100/90 shadow-2xs">
-          <div className="flex items-center justify-between gap-2 mb-2">
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white flex items-center justify-center shadow-xs shrink-0">
-                <Sparkles className="w-3.5 h-3.5" />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-bold text-slate-900 truncate">AI Copilot</span>
-                  <span className="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-semibold bg-indigo-100 text-indigo-700 shrink-0">
-                    AI Advisor
-                  </span>
-                </div>
-                <p className="text-[10px] text-slate-500 truncate">Gemini 3.5 & 3.1 Pro</p>
-              </div>
-            </div>
-            <span className="flex h-2 w-2 relative shrink-0" title="AI Advisor Online">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-          </div>
-
-          <p className="text-[11px] text-slate-600 mb-2 leading-relaxed line-clamp-2">
-            {student?.careerGoal
-              ? `Targeting ${student.careerGoal}. Ask about 7-factor match or request a mock interview.`
-              : 'Ask about ATS bullet optimization, high-demand skills, or interview prep.'}
-          </p>
-
-          <div className="space-y-1 mb-2.5">
-            <button
-              onClick={() => {
-                onSelectTab('chat');
-                onCloseMobile();
-              }}
-              className="w-full text-left text-[10px] px-2 py-1 rounded-lg bg-white/90 hover:bg-indigo-50/80 border border-slate-200/70 hover:border-indigo-200 text-slate-700 hover:text-indigo-900 transition-colors flex items-center justify-between group cursor-pointer"
-            >
-              <span className="truncate">"How do I reach 90% readiness?"</span>
-              <ArrowRight className="w-2.5 h-2.5 text-slate-400 group-hover:text-indigo-600 shrink-0 ml-1" />
-            </button>
-            <button
-              onClick={() => {
-                onSelectTab('chat');
-                onCloseMobile();
-              }}
-              className="w-full text-left text-[10px] px-2 py-1 rounded-lg bg-white/90 hover:bg-indigo-50/80 border border-slate-200/70 hover:border-indigo-200 text-slate-700 hover:text-indigo-900 transition-colors flex items-center justify-between group cursor-pointer"
-            >
-              <span className="truncate">"Start technical mock interview"</span>
-              <ArrowRight className="w-2.5 h-2.5 text-slate-400 group-hover:text-indigo-600 shrink-0 ml-1" />
-            </button>
-          </div>
-
-          <button
-            id="sidebar-launch-copilot-btn"
-            onClick={() => {
-              onSelectTab('chat');
-              onCloseMobile();
-            }}
-            className={`w-full py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer ${
-              activeTab === 'chat'
-                ? 'bg-indigo-600 text-white shadow-indigo-600/20'
-                : 'bg-slate-900 hover:bg-indigo-700 text-white'
-            }`}
-          >
-            <Bot className="w-3.5 h-3.5" />
-            <span>Launch AI Advisor</span>
-          </button>
-        </div>
-      )}
 
       {/* Vertically Arranged Feature Navigation List */}
       <div className="flex-1 overflow-y-auto px-3 py-3 space-y-5 scrollbar-thin">
@@ -639,80 +563,43 @@ export const Sidebar: React.FC<SidebarProps> = ({
         ))}
       </div>
 
-      {/* Sidebar Footer Context: Student Capability Card or Platform Status */}
-      <div className="p-3 border-t border-slate-100 bg-slate-50/80">
-        {activeRole === 'student' && student ? (
-          <div
-            id="sidebar-career-readiness-card"
-            onClick={() => {
-              onSelectTab('skills-gap');
-              onCloseMobile();
-            }}
-            className="p-3.5 rounded-xl bg-white border border-slate-200/90 shadow-2xs hover:border-indigo-300 hover:shadow-xs transition-all cursor-pointer group"
-          >
-            <div className="flex items-center justify-between mb-1.5">
-              <div className="flex items-center gap-1.5 text-slate-800 font-semibold text-xs">
-                <Target className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
-                <span className="truncate max-w-[130px]">
-                  {student.careerGoal || targetCareer?.title || 'AI Engineer'}
+      {/* Sidebar Footer Context: Platform Status (for Company or Admin) */}
+      {activeRole !== 'student' && (
+        <div className="p-3 border-t border-slate-100 bg-slate-50/80">
+          {activeRole === 'company' ? (
+            <div
+              id="sidebar-company-status-card"
+              onClick={() => {
+                onSelectTab('company-dashboard');
+                onCloseMobile();
+              }}
+              className="p-3 rounded-xl bg-white border border-slate-200/90 shadow-2xs hover:border-indigo-300 transition-all cursor-pointer group"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-semibold text-slate-900">
+                  Company Hiring Portal
+                </span>
+                <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded">
+                  Verified
                 </span>
               </div>
-              <span className="text-[11px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-1.5 py-0.5 rounded-md">
-                {readiness}%
-              </span>
+              <p className="text-[11px] text-slate-500 leading-snug">
+                {jobsCount} active opening{jobsCount === 1 ? '' : 's'} accepting applications.
+              </p>
             </div>
-
-            {/* Visual Progress Bar */}
-            <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden mb-2">
-              <div
-                className="bg-gradient-to-r from-indigo-500 to-indigo-600 h-full rounded-full transition-all duration-500"
-                style={{ width: `${readiness}%` }}
-              />
+          ) : (
+            <div className="p-3 rounded-xl bg-white border border-slate-200/90 shadow-2xs">
+              <div className="flex items-center gap-2 text-xs font-semibold text-slate-900 mb-1">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Platform Core Online</span>
+              </div>
+              <p className="text-[11px] text-slate-500">
+                All intelligence & match engines active.
+              </p>
             </div>
-
-            <div className="flex items-center justify-between text-[11px] text-slate-500">
-              <span className="flex items-center gap-1">
-                <TrendingUp className="w-3 h-3 text-emerald-600" />
-                Readiness Score
-              </span>
-              <span className="text-indigo-600 font-medium group-hover:underline flex items-center gap-0.5">
-                Simulate <Sparkles className="w-2.5 h-2.5" />
-              </span>
-            </div>
-          </div>
-        ) : activeRole === 'company' ? (
-          <div
-            id="sidebar-company-status-card"
-            onClick={() => {
-              onSelectTab('company-dashboard');
-              onCloseMobile();
-            }}
-            className="p-3 rounded-xl bg-white border border-slate-200/90 shadow-2xs hover:border-indigo-300 transition-all cursor-pointer group"
-          >
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-xs font-semibold text-slate-900">
-                Company Hiring Portal
-              </span>
-              <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded">
-                Verified
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-500 leading-snug">
-              {jobsCount} active opening{jobsCount === 1 ? '' : 's'} accepting applications.
-            </p>
-          </div>
-        ) : (
-          <div className="p-3 rounded-xl bg-white border border-slate-200/90 shadow-2xs">
-            <div className="flex items-center gap-2 text-xs font-semibold text-slate-900 mb-1">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Platform Core Online</span>
-            </div>
-            <p className="text-[11px] text-slate-500">
-              All intelligence & match engines active.
-            </p>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   );
 

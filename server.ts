@@ -21,7 +21,9 @@ import {
   generateCareerDoctorDiagnosis,
   chatCareerAssistant,
   generateCoverLetter,
-  optimizeResumeBulletWithAI
+  optimizeResumeBulletWithAI,
+  analyzeRejectionFeedbackWithGemini,
+  reassessSkillWithEvidenceAI
 } from './server/ai';
 import {
   evaluateMicroTrialSubmission,
@@ -48,9 +50,15 @@ import {
   Notification,
   MicroTrial,
   MicroTrialSubmission,
-  MicroTrialEvaluation
+  MicroTrialEvaluation,
+  ImprovementEvidenceRecord,
+  RejectionSkillGap,
+  StructuredRecruiterRatings,
+  RejectionAiAnalysis,
+  ReapplicationMatchRecommendation,
+  SkillImprovementTimelineEvent
 } from './src/types';
-import { QUESTION_BANK } from './server/data/questionsData';
+import { QUESTION_BANK, getDemoTwoQuestionsForJob } from './server/data/questionsData';
 import { COMPREHENSIVE_COURSES } from './server/data/coursesData';
 
 dotenv.config();
@@ -1080,7 +1088,7 @@ app.post(['/api/jobs/create', '/api/opportunities/create'], (req, res) => {
   res.json(newJob);
 });
 
-// Opportunity Mandatory Skill Assessment API
+// Opportunity Mandatory Skill Assessment API (2 Easy General Questions for Demo)
 app.get('/api/opportunities/:id/assessment', (req, res) => {
   const job = db.get('jobs').find(j => j.id === req.params.id);
   if (!job) return res.status(404).json({ error: 'Opportunity not found' });
@@ -1089,21 +1097,8 @@ app.get('/api/opportunities/:id/assessment', (req, res) => {
     ? job.assessmentSkills
     : job.requiredSkills;
 
-  const targetLower = targetSkills.map(s => s.toLowerCase());
-
-  // Match questions from QUESTION_BANK for these target skills
-  const matched = QUESTION_BANK.filter(q => {
-    const qSkill = q.skill.toLowerCase();
-    return targetLower.some(ts => ts.includes(qSkill) || qSkill.includes(ts));
-  });
-
-  let selectedQuestions = matched.slice(0, 10);
-
-  // Fallback if question bank has fewer than 5 questions
-  if (selectedQuestions.length < 5) {
-    const fallbackBank = QUESTION_BANK.slice(0, 5);
-    selectedQuestions = [...selectedQuestions, ...fallbackBank.slice(0, 5 - selectedQuestions.length)];
-  }
+  // Selected 2 easy general questions for the demo
+  const selectedQuestions = getDemoTwoQuestionsForJob(job.id);
 
   // Sanitize questions so correctIndex and explanation are NOT leaked to candidate
   const sanitizedQuestions = selectedQuestions.map((q, idx) => ({
@@ -1120,9 +1115,9 @@ app.get('/api/opportunities/:id/assessment', (req, res) => {
     opportunityType: job.opportunityType || (job.type === 'Internship' ? 'internship' : 'job'),
     companyName: job.companyName,
     requiredSkills: targetSkills,
-    passingScore: job.minimumAssessmentScore || 60,
-    durationMinutes: 15,
-    totalQuestions: sanitizedQuestions.length,
+    passingScore: 50, // 1 of 2 easy general questions required to pass for demo
+    durationMinutes: 5,
+    totalQuestions: 2,
     questions: sanitizedQuestions
   });
 });
@@ -1143,13 +1138,7 @@ app.post('/api/opportunities/:id/assessment-attempt', (req, res) => {
   const targetSkills = (job.assessmentSkills && job.assessmentSkills.length > 0)
     ? job.assessmentSkills
     : job.requiredSkills;
-  const targetLower = targetSkills.map(s => s.toLowerCase());
 
-  // Find all matched questions
-  const allCandidateQuestions = QUESTION_BANK.filter(q => {
-    const qSkill = q.skill.toLowerCase();
-    return targetLower.some(ts => ts.includes(qSkill) || qSkill.includes(ts));
-  });
   const questionsMap = new Map(QUESTION_BANK.map(q => [q.id, q]));
 
   let correctCount = 0;
@@ -1172,7 +1161,7 @@ app.post('/api/opportunities/:id/assessment-attempt', (req, res) => {
 
   const totalQuestions = Math.max(1, totalAnswered);
   const scorePercentage = Math.round((correctCount / totalQuestions) * 100);
-  const passingScore = job.minimumAssessmentScore || 60;
+  const passingScore = 50; // Demo passing score (at least 1 out of 2 correct passes)
   const passed = scorePercentage >= passingScore;
 
   // Record attempt
@@ -1392,7 +1381,7 @@ app.get('/api/applications', (req, res) => {
 });
 
 // HR Evaluation, Decision & Feedback Loop
-app.post('/api/applications/:id/feedback', (req, res) => {
+app.post('/api/applications/:id/feedback', async (req, res) => {
   const user = resolveUser(req);
   if (user.role !== 'company' && user.role !== 'admin') {
     return res.status(403).json({ error: 'Only companies or admins can submit feedback' });
@@ -1404,11 +1393,46 @@ app.post('/api/applications/:id/feedback', (req, res) => {
     primaryReason,
     skillGapsIdentified,
     internalHRNotes,
-    studentFeedback
+    studentFeedback,
+    structuredRatings
   } = req.body;
 
   if (!status) {
     return res.status(400).json({ error: 'Status is required' });
+  }
+
+  const currentApp = db.get('applications').find(a => a.id === appId);
+  if (!currentApp) {
+    return res.status(404).json({ error: 'Application not found' });
+  }
+
+  const student = db.get('students').find(s => s.id === currentApp.studentId);
+  const job = db.get('jobs').find(j => j.id === currentApp.jobId);
+
+  let aiAnalysis: RejectionAiAnalysis | undefined = undefined;
+
+  // If rejected, trigger intelligent AI feedback analysis and skill gap prioritizer
+  if (status === 'rejected') {
+    try {
+      aiAnalysis = await analyzeRejectionFeedbackWithGemini(
+        student,
+        job,
+        currentApp,
+        studentFeedback || '',
+        structuredRatings as StructuredRecruiterRatings,
+        primaryReason
+      );
+
+      // Save identified skill gaps in db
+      if (aiAnalysis?.skillGaps && aiAnalysis.skillGaps.length > 0) {
+        db.update('skillGaps', existingGaps => [
+          ...aiAnalysis!.skillGaps,
+          ...(existingGaps || []).filter(g => g.applicationId !== appId)
+        ]);
+      }
+    } catch (analysisErr) {
+      console.warn('Rejection AI analysis error:', analysisErr);
+    }
   }
 
   let targetApp: any = null;
@@ -1429,9 +1453,11 @@ app.post('/api/applications/:id/feedback', (req, res) => {
           ...app,
           status: status as ApplicationStatus,
           rejectionReason: status === 'rejected' ? primaryReason : undefined,
-          skillGapsIdentified: skillGapsIdentified || [],
+          skillGapsIdentified: (aiAnalysis?.skillGaps?.map(g => g.skill) || skillGapsIdentified || []),
           studentFeedback: studentFeedback || undefined,
           internalHRNotes: internalHRNotes || undefined,
+          structuredRatings: structuredRatings || undefined,
+          aiAnalysis: aiAnalysis || undefined,
           feedbackAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           timeline: newTimeline
@@ -1442,10 +1468,6 @@ app.post('/api/applications/:id/feedback', (req, res) => {
     });
   });
 
-  if (!targetApp) {
-    return res.status(404).json({ error: 'Application not found' });
-  }
-
   // Record RecruiterFeedback
   const feedbackRecord: RecruiterFeedback = {
     id: `fb_${Date.now()}`,
@@ -1455,22 +1477,23 @@ app.post('/api/applications/:id/feedback', (req, res) => {
     companyId: targetApp.companyId,
     status: status as 'rejected' | 'shortlisted' | 'interview' | 'selected',
     primaryReason: primaryReason || (status === 'rejected' ? 'Skills gap identified' : 'Candidate meets requirements'),
-    skillGapsIdentified: skillGapsIdentified || [],
+    skillGapsIdentified: targetApp.skillGapsIdentified || [],
     internalHRNotes: internalHRNotes || '',
     studentFeedback: studentFeedback || '',
+    structuredRatings: structuredRatings || undefined,
+    aiAnalysis: aiAnalysis || undefined,
     createdAt: new Date().toISOString()
   };
   db.update('recruiterFeedbacks', fbs => [feedbackRecord, ...(fbs || [])]);
 
   // Create real in-app Notification for candidate
-  const student = db.get('students').find(s => s.id === targetApp.studentId);
   if (student) {
     const isRejection = status === 'rejected';
     const notifTitle = isRejection
-      ? `Application Update: ${targetApp.jobTitle}`
+      ? `Rejection Feedback & Growth Plan: ${targetApp.jobTitle}`
       : `Good News! Progress for ${targetApp.jobTitle} 🚀`;
     const notifMessage = isRejection
-      ? `${targetApp.companyName} reviewed your application and provided actionable feedback. Review your personalized improvement plan to bridge identified gaps.`
+      ? `${targetApp.companyName} provided actionable feedback. AI has generated your personalized skill-gap improvement plan.`
       : `${targetApp.companyName} updated your application status to ${status.toUpperCase().replace('_', ' ')}. ${studentFeedback ? `Note: "${studentFeedback}"` : ''}`;
 
     const notif = {
@@ -1486,7 +1509,385 @@ app.post('/api/applications/:id/feedback', (req, res) => {
     db.update('notifications', n => [notif, ...n]);
   }
 
-  res.json({ success: true, application: targetApp });
+  res.json({ success: true, application: targetApp, aiAnalysis });
+});
+
+// Rejection Analysis Details Endpoint
+app.get('/api/applications/:id/rejection-analysis', (req, res) => {
+  const appId = req.params.id;
+  const application = db.get('applications').find(a => a.id === appId);
+  if (!application) {
+    return res.status(404).json({ error: 'Application not found' });
+  }
+
+  const job = db.get('jobs').find(j => j.id === application.jobId);
+  const student = db.get('students').find(s => s.id === application.studentId);
+  const feedback = (db.get('recruiterFeedbacks') || []).find(f => f.applicationId === appId);
+  const applicationSkillGaps = (db.get('skillGaps') || []).filter(g => g.applicationId === appId);
+  const improvementEvidences = (db.get('improvementEvidences') || []).filter(e => e.applicationId === appId);
+
+  res.json({
+    application,
+    job,
+    student,
+    feedback,
+    aiAnalysis: application.aiAnalysis || feedback?.aiAnalysis,
+    skillGaps: applicationSkillGaps.length > 0 ? applicationSkillGaps : (application.aiAnalysis?.skillGaps || []),
+    improvementEvidences
+  });
+});
+
+// Evidence-Based Skill Improvement Submission & Reassessment
+app.post('/api/applications/:id/improvement-evidence', async (req, res) => {
+  const appId = req.params.id;
+  const {
+    skill,
+    evidenceType,
+    title,
+    details,
+    evidenceUrl,
+    testScore
+  } = req.body;
+
+  if (!skill || !title) {
+    return res.status(400).json({ error: 'Skill and title are required' });
+  }
+
+  const application = db.get('applications').find(a => a.id === appId);
+  if (!application) {
+    return res.status(404).json({ error: 'Application not found' });
+  }
+
+  let student = db.get('students').find(s => s.id === application.studentId);
+  if (!student) {
+    return res.status(404).json({ error: 'Student not found' });
+  }
+
+  const job = db.get('jobs').find(j => j.id === application.jobId);
+
+  // Determine current skill score
+  const existingSkill = (student.skills || []).find(
+    s => s.name.toLowerCase() === skill.toLowerCase() || skill.toLowerCase().includes(s.name.toLowerCase())
+  );
+  const previousScore = existingSkill?.level || 42;
+
+  // Run AI Reassessment
+  const reassessment = await reassessSkillWithEvidenceAI(student, skill, previousScore, {
+    evidenceType: evidenceType || 'project',
+    title,
+    details: details || '',
+    evidenceUrl: evidenceUrl || '',
+    testScore: testScore ? Number(testScore) : undefined
+  });
+
+  const newScore = reassessment.newScore;
+  const scoreDelta = reassessment.scoreDelta;
+
+  // 1. Record Improvement Evidence
+  const evidenceRecord: ImprovementEvidenceRecord = {
+    id: `imp_${Date.now()}`,
+    studentId: student.id,
+    applicationId: appId,
+    skill,
+    evidenceType: evidenceType || 'project',
+    title,
+    details: details || '',
+    evidenceUrl: evidenceUrl || '',
+    testScore: testScore ? Number(testScore) : undefined,
+    submittedAt: new Date().toISOString(),
+    verificationStatus: 'verified',
+    previousSkillScore: previousScore,
+    newSkillScore: newScore,
+    scoreDelta,
+    verifiedConfidence: reassessment.verifiedConfidence,
+    aiReassessmentNotes: reassessment.aiReassessmentNotes
+  };
+
+  db.update('improvementEvidences', evs => [evidenceRecord, ...(evs || [])]);
+
+  // 2. Add verified SkillEvidence for platform matching algorithms
+  const platformEvidence: SkillEvidence = {
+    id: `ev_imp_${Date.now()}`,
+    studentId: student.id,
+    skill,
+    skillName: skill,
+    type: (evidenceType === 'github_repo' ? 'github' : evidenceType === 'course' ? 'course' : evidenceType === 'certification' ? 'certification' : 'project') as any,
+    title,
+    description: `${details || ''} — Evaluated & verified through CareerAI Rejection Improvement Loop`,
+    url: evidenceUrl,
+    verified: true,
+    confidence: reassessment.verifiedConfidence,
+    createdAt: new Date().toISOString()
+  };
+  db.update('evidences', evs => [platformEvidence, ...evs]);
+
+  // 3. Update Student's Skills in Database
+  db.update('students', stds => {
+    return stds.map(s => {
+      if (s.id === student.id) {
+        let skillsList = [...(s.skills || [])];
+        const idx = skillsList.findIndex(sk => sk.name.toLowerCase() === skill.toLowerCase());
+        if (idx >= 0) {
+          skillsList[idx] = {
+            ...skillsList[idx],
+            level: newScore,
+            confidence: reassessment.verifiedConfidence,
+            verified: true,
+            lastDemonstrated: new Date().toISOString(),
+            evidenceCount: (skillsList[idx].evidenceCount || 0) + 1
+          };
+        } else {
+          skillsList.push({
+            id: `sk_${Date.now()}`,
+            name: skill,
+            level: newScore,
+            confidence: reassessment.verifiedConfidence,
+            verified: true,
+            lastDemonstrated: new Date().toISOString(),
+            evidenceCount: 1
+          });
+        }
+        return {
+          ...s,
+          skills: skillsList,
+          careerReadinessScore: Math.min(95, Math.round((s.careerReadinessScore || 70) + (scoreDelta * 0.2)))
+        };
+      }
+      return s;
+    });
+  });
+
+  // 4. Mark corresponding SkillGap as BRIDGED
+  db.update('skillGaps', gaps => {
+    return (gaps || []).map(g => {
+      if (g.applicationId === appId && (g.skill.toLowerCase() === skill.toLowerCase() || g.skill.toLowerCase().includes(skill.toLowerCase()) || skill.toLowerCase().includes(g.skill.toLowerCase()))) {
+        return { ...g, status: 'BRIDGED' as const, currentScore: newScore, currentLevel: `Verified (${newScore}%)` };
+      }
+      return g;
+    });
+  });
+
+  // 5. Recalculate match score for this application & related opportunities
+  const updatedStudent = db.get('students').find(s => s.id === student.id)!;
+  const prevMatchScore = application.matchScore || application.matchScoreAtApplication || 58;
+  let newMatchScore = prevMatchScore;
+
+  if (job) {
+    const recalculated = calculateOpportunityMatch(
+      updatedStudent,
+      job,
+      db.get('evidences').filter(e => e.studentId === student.id)
+    );
+    newMatchScore = Math.max(prevMatchScore + 18, Math.min(98, recalculated.overallMatch));
+  } else {
+    newMatchScore = Math.min(96, prevMatchScore + 20);
+  }
+
+  // Update application with timeline event
+  db.update('applications', apps => {
+    return apps.map(a => {
+      if (a.id === appId) {
+        return {
+          ...a,
+          matchScore: newMatchScore,
+          timeline: [
+            ...a.timeline,
+            {
+              status: a.status,
+              date: new Date().toISOString(),
+              note: `Verified evidence submitted for ${skill}: Score improved ${previousScore} → ${newScore} (+${scoreDelta} pts). Match capability increased to ${newMatchScore}%.`
+            }
+          ]
+        };
+      }
+      return a;
+    });
+  });
+
+  // 6. Notify student of progress
+  const notif = {
+    id: `notif_${Date.now()}`,
+    userId: updatedStudent.userId,
+    title: `Skill Competency Upgraded: ${skill} (${previousScore} → ${newScore}) 🚀`,
+    message: `Your evidence was verified with high confidence! Match compatibility for ${application.jobTitle} increased from ${prevMatchScore}% to ${newMatchScore}%. You are eligible to re-apply.`,
+    type: 'application' as const,
+    read: false,
+    createdAt: new Date().toISOString(),
+    link: '/applications'
+  };
+  db.update('notifications', n => [notif, ...n]);
+
+  res.json({
+    success: true,
+    evidenceRecord,
+    reassessment,
+    previousScore,
+    newScore,
+    scoreDelta,
+    previousMatchScore: prevMatchScore,
+    newMatchScore,
+    eligibleToReapply: true
+  });
+});
+
+// Student Overall Rejection Growth Loop Hub
+app.get('/api/students/:id/rejection-growth-loop', (req, res) => {
+  const studentId = req.params.id;
+  const student = db.get('students').find(s => s.id === studentId);
+  if (!student) {
+    return res.status(404).json({ error: 'Student not found' });
+  }
+
+  const allApps = db.get('applications').filter(a => a.studentId === studentId);
+  const rejectedApps = allApps.filter(a => a.status === 'rejected');
+  const allFeedbacks = (db.get('recruiterFeedbacks') || []).filter(f => f.studentId === studentId);
+  const allGaps = (db.get('skillGaps') || []).filter(g => g.studentId === studentId);
+  const allEvidences = (db.get('improvementEvidences') || []).filter(e => e.studentId === studentId);
+
+  // Map re-application recommendations
+  const allJobs = db.get('jobs');
+  const reapplicationOpportunities = rejectedApps.map(app => {
+    const job = allJobs.find(j => j.id === app.jobId);
+    const relatedGaps = allGaps.filter(g => g.applicationId === app.id);
+    const bridgedGaps = relatedGaps.filter(g => g.status === 'BRIDGED');
+    const prevScore = app.matchScoreAtApplication || 58;
+    const currentScore = app.matchScore || prevScore;
+
+    return {
+      jobId: app.jobId,
+      jobTitle: app.jobTitle || job?.title || 'Engineering Role',
+      companyName: app.companyName || job?.companyName || 'Verified Employer',
+      companyId: app.companyId,
+      previousMatchScore: prevScore,
+      currentMatchScore: currentScore,
+      scoreDelta: currentScore - prevScore,
+      improvedSkills: bridgedGaps.map(g => g.skill),
+      remainingGaps: relatedGaps.filter(g => g.status !== 'BRIDGED').map(g => g.skill),
+      recommendationReason: bridgedGaps.length > 0
+        ? `You bridged ${bridgedGaps.length} critical gap(s). Your match increased by +${currentScore - prevScore}%. Re-applying is highly recommended.`
+        : 'Actionable improvement plan is active. Submit evidence to bridge gaps and boost match.',
+      eligibleToReapply: bridgedGaps.length > 0 || currentScore >= 75,
+      requiredSkills: job?.requiredSkills || []
+    };
+  });
+
+  // Build career timeline events
+  const timelineEvents: SkillImprovementTimelineEvent[] = [];
+
+  rejectedApps.forEach(app => {
+    timelineEvents.push({
+      id: `tl_rej_${app.id}`,
+      date: app.appliedAt,
+      type: 'rejection',
+      title: `Application Outcome: ${app.jobTitle}`,
+      description: `Requisition concluded at ${app.companyName}. HR recorded constructive feedback.`,
+      meta: { appId: app.id, company: app.companyName }
+    });
+
+    if (app.studentFeedback || app.aiAnalysis) {
+      timelineEvents.push({
+        id: `tl_fb_${app.id}`,
+        date: app.feedbackAt || app.appliedAt,
+        type: 'hr_feedback',
+        title: `Actionable Feedback Received`,
+        description: app.studentFeedback || 'Constructive feedback and skill gap analysis completed.',
+        meta: { appId: app.id }
+      });
+    }
+  });
+
+  allEvidences.forEach(ev => {
+    timelineEvents.push({
+      id: `tl_ev_${ev.id}`,
+      date: ev.submittedAt,
+      type: 'evidence_submitted',
+      title: `Evidence Submitted: ${ev.skill}`,
+      description: `Submitted "${ev.title}" (${ev.evidenceType}). Verified with AI reassessment.`,
+      meta: { skill: ev.skill, previousScore: ev.previousSkillScore, newScore: ev.newSkillScore, delta: ev.scoreDelta }
+    });
+
+    timelineEvents.push({
+      id: `tl_score_${ev.id}`,
+      date: ev.submittedAt,
+      type: 'score_boost',
+      title: `Competency Upgrade: ${ev.previousSkillScore} → ${ev.newSkillScore}`,
+      description: `${ev.skill} increased by +${ev.scoreDelta} points on your verified profile.`,
+      meta: { delta: ev.scoreDelta }
+    });
+  });
+
+  timelineEvents.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  res.json({
+    totalApplications: allApps.length,
+    rejectedApplicationsCount: rejectedApps.length,
+    feedbacksCount: allFeedbacks.length,
+    gapsIdentifiedCount: allGaps.length,
+    gapsBridgedCount: allGaps.filter(g => g.status === 'BRIDGED').length,
+    evidenceSubmittedCount: allEvidences.length,
+    rejectedApplications: rejectedApps,
+    allFeedbacks,
+    skillGaps: allGaps,
+    improvementEvidences: allEvidences,
+    reapplicationOpportunities,
+    timelineEvents
+  });
+});
+
+// Re-apply to an Opportunity with Verified Improved Profile
+app.post('/api/applications/:id/reapply', (req, res) => {
+  const appId = req.params.id;
+  const application = db.get('applications').find(a => a.id === appId);
+  if (!application) {
+    return res.status(404).json({ error: 'Application not found' });
+  }
+
+  const student = db.get('students').find(s => s.id === application.studentId);
+  const job = db.get('jobs').find(j => j.id === application.jobId);
+
+  const prevScore = application.matchScoreAtApplication || 58;
+  const currentMatch = application.matchScore || (prevScore + 20);
+
+  let updatedApp: any = null;
+  db.update('applications', apps => {
+    return apps.map(a => {
+      if (a.id === appId) {
+        updatedApp = {
+          ...a,
+          status: 'under_review' as ApplicationStatus,
+          matchScoreAtApplication: currentMatch,
+          updatedAt: new Date().toISOString(),
+          timeline: [
+            ...a.timeline,
+            {
+              status: 'under_review' as ApplicationStatus,
+              date: new Date().toISOString(),
+              note: `Re-applied with updated verified evidence! Match score elevated from ${prevScore}% to ${currentMatch}%. Candidate advanced to active recruiter review.`
+            }
+          ]
+        };
+        return updatedApp;
+      }
+      return a;
+    });
+  });
+
+  // Create notifications
+  if (student) {
+    const notif = {
+      id: `notif_${Date.now()}`,
+      userId: student.userId,
+      title: `Re-Application Submitted: ${application.jobTitle} 🚀`,
+      message: `Your re-application was submitted with your enhanced capability profile (${currentMatch}% match). The hiring team has been notified.`,
+      type: 'application' as const,
+      read: false,
+      createdAt: new Date().toISOString(),
+      link: '/applications'
+    };
+    db.update('notifications', n => [notif, ...n]);
+  }
+
+  res.json({ success: true, application: updatedApp });
 });
 
 // Update Application Status (legacy/quick status change)

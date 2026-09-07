@@ -8,7 +8,103 @@ export interface QuizQuestionDef {
   explanation: string;
 }
 
+export const DEMO_GENERAL_ASSESSMENT_QUESTIONS: QuizQuestionDef[] = [
+  {
+    id: 'demo_gen_q1',
+    question: 'In software development, what is the primary purpose of version control systems like Git?',
+    options: [
+      'To track code changes, collaborate across branches, and preserve revision history',
+      'To permanently delete older source files from cloud storage',
+      'To convert application code into hardware electrical pulses',
+      'To format and partition hard disk drives'
+    ],
+    correctIndex: 0,
+    skill: 'Version Control & Git',
+    difficulty: 'beginner',
+    explanation: 'Version control systems like Git record code modifications, enabling teams to safely collaborate and track project history.'
+  },
+  {
+    id: 'demo_gen_q2',
+    question: 'What is the primary role of an API (Application Programming Interface) in modern web applications?',
+    options: [
+      'To physically assemble computer monitors and peripherals',
+      'To enable different software systems and services to communicate and exchange data securely',
+      'To erase database records whenever users log in',
+      'To permanently disconnect servers from the internet'
+    ],
+    correctIndex: 1,
+    skill: 'Web APIs & Networking',
+    difficulty: 'beginner',
+    explanation: 'APIs provide standardized contracts and endpoints that enable distinct applications and services to interact and share data.'
+  },
+  {
+    id: 'demo_gen_q3',
+    question: 'Which of the following represents an essential best practice for writing maintainable software?',
+    options: [
+      'Writing modular, readable functions with meaningful variable names and unit tests',
+      'Writing all program logic in a single 50,000-line file without documentation',
+      'Storing secret credentials directly in unencrypted public repositories',
+      'Deploying code directly to production without testing or reviews'
+    ],
+    correctIndex: 0,
+    skill: 'Software Best Practices',
+    difficulty: 'beginner',
+    explanation: 'Modular code design, descriptive naming conventions, and automated testing are fundamental to maintainable systems.'
+  },
+  {
+    id: 'demo_gen_q4',
+    question: 'Which lightweight data format is universally used to transmit structured data between web browsers and servers?',
+    options: [
+      'JSON (JavaScript Object Notation)',
+      'Uncompressed RAW Audio Format',
+      'Kernel Memory Binary Core Dump',
+      'Floppy Disk Partition Map'
+    ],
+    correctIndex: 0,
+    skill: 'Web Standards & JSON',
+    difficulty: 'beginner',
+    explanation: 'JSON is the standard lightweight, human-readable data format used across modern REST and web APIs.'
+  },
+  {
+    id: 'demo_gen_q5',
+    question: 'In database management, what is the primary function of a Primary Key in a relational table?',
+    options: [
+      'To uniquely identify each individual row or record in the table',
+      'To randomly delete rows when table capacity reaches 80%',
+      'To prevent developers from running SQL SELECT queries',
+      'To compress image files into plain text strings'
+    ],
+    correctIndex: 0,
+    skill: 'Database Fundamentals',
+    difficulty: 'beginner',
+    explanation: 'A primary key uniquely identifies each record in a relational database table, enforcing entity integrity.'
+  },
+  {
+    id: 'demo_gen_q6',
+    question: 'What is the primary objective of automated Unit Testing in software engineering?',
+    options: [
+      'To verify that individual functions and components perform as expected and prevent regressions',
+      'To deliberately introduce syntax errors into source code',
+      'To slow down the developer build process without checking functionality',
+      'To disable all error logging in production environments'
+    ],
+    correctIndex: 0,
+    skill: 'Software Testing & Quality',
+    difficulty: 'beginner',
+    explanation: 'Automated unit tests validate that software components work correctly in isolation, catching bugs before deployment.'
+  }
+];
+
+export function getDemoTwoQuestionsForJob(jobId: string): QuizQuestionDef[] {
+  const len = DEMO_GENERAL_ASSESSMENT_QUESTIONS.length;
+  const hash = (jobId || 'demo').split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  const firstIdx = hash % len;
+  const secondIdx = (firstIdx + 1) % len;
+  return [DEMO_GENERAL_ASSESSMENT_QUESTIONS[firstIdx], DEMO_GENERAL_ASSESSMENT_QUESTIONS[secondIdx]];
+}
+
 export const QUESTION_BANK: QuizQuestionDef[] = [
+  ...DEMO_GENERAL_ASSESSMENT_QUESTIONS,
   // =================== 1. PYTHON (6 questions) ===================
   {
     id: 'py_q1',

@@ -87,6 +87,115 @@ export const DEMO_APPLICATIONS: (Application & { isDemo?: boolean; demoSeedVersi
     isDemo: true,
     demoSeedVersion: 'v1'
   },
+  {
+    id: 'app_19',
+    jobId: 'job_03',
+    jobTitle: 'Full Stack Systems Engineer',
+    companyId: 'cmp_01',
+    companyName: 'Nexora Technologies — Demo',
+    studentId: 'std_01',
+    studentName: 'Arjun Kumar',
+    studentEmail: 'demo.student01@nextmind.demo',
+    studentCollege: 'Chennai Institute of Technology — Demo Profile',
+    studentDegree: 'B.Tech Artificial Intelligence & Data Science',
+    status: 'rejected',
+    appliedAt: '2026-01-24T10:00:00.000Z',
+    matchScore: 62,
+    candidateScore: 62,
+    matchScoreAtApplication: 62,
+    assessmentScore: 58,
+    assessmentPassed: false,
+    evidenceStrength: 60,
+    rejectionReason: 'Missing critical production requirements & weak problem-solving performance',
+    studentFeedback: 'Python knowledge is good, but problem-solving skills were weak. Projects were too basic for our enterprise production demands.',
+    internalHRNotes: 'Candidate demonstrated solid Python syntax awareness, but timed problem solving revealed bottlenecks in algorithmic complexity and tree/graph traversals. Existing GitHub projects are starter templates rather than deployed production systems. Strong potential if DSA and real-world project depth are upgraded.',
+    skillGapsIdentified: ['Problem Solving & Algorithmic Foundations', 'Production Systems & Real-World Projects', 'Docker & Cloud Deployment'],
+    structuredRatings: {
+      problemSolving: 'Weak',
+      projectsQuality: 'Needs Improvement',
+      communication: 'Good',
+      resumeQuality: 'Moderate',
+      technicalWeaknesses: ['Problem Solving & DSA', 'Production-Grade Architecture'],
+      missingSkills: ['Docker & Cloud Deployment']
+    },
+    aiAnalysis: {
+      technicalSkills: [
+        { skill: 'Python', level: 'Good' },
+        { skill: 'FastAPI', level: 'Moderate' },
+        { skill: 'Docker & Cloud Deployment', level: 'Missing' }
+      ],
+      problemSolvingLevel: 'Weak',
+      projectsLevel: 'Needs Improvement',
+      communicationLevel: 'Good',
+      constructiveExplanation: 'The hiring team noted solid fundamentals in Python. However, the role requires strong algorithmic problem solving and production-tested architectures. Strengthening these two high-priority competencies will immediately position you as a top candidate.',
+      skillGaps: [
+        {
+          id: 'gap_ps_demo',
+          studentId: 'std_01',
+          applicationId: 'app_10',
+          skill: 'Problem Solving & Algorithmic Foundations',
+          currentLevel: 'Weak (40%)',
+          currentScore: 40,
+          requiredLevel: 'Strong (85%)',
+          requiredScore: 85,
+          gap: 'High',
+          gapScore: 45,
+          priority: 'HIGH',
+          priorityScore: 95,
+          source: 'HR feedback',
+          evidenceSource: 'HR Rejection Feedback',
+          status: 'OPEN',
+          explanation: 'Recruiter noted algorithmic problem-solving speed and depth were insufficient during technical screening.',
+          recommendedActions: [
+            'Solve 20 beginner Data Structures & Algorithms challenges on LeetCode/HackerRank',
+            'Tackle 15 intermediate algorithmic problems focusing on Arrays, HashMaps, and Two-Pointers',
+            'Complete a timed 30-minute benchmark coding assessment',
+            'Implement an algorithmic optimization in an existing project repository',
+            'Upload verified problem-solving evidence (profile / badge / test score)'
+          ]
+        },
+        {
+          id: 'gap_proj_demo',
+          studentId: 'std_01',
+          applicationId: 'app_10',
+          skill: 'Production Systems & Real-World Projects',
+          currentLevel: 'Needs Improvement (45%)',
+          currentScore: 45,
+          requiredLevel: 'Strong (80%)',
+          requiredScore: 80,
+          gap: 'High',
+          gapScore: 35,
+          priority: 'HIGH',
+          priorityScore: 90,
+          source: 'HR feedback',
+          evidenceSource: 'HR Rejection Feedback',
+          status: 'OPEN',
+          explanation: 'Projects evaluated were considered tutorial-level. The team demands real-world architectures with live deployments.',
+          recommendedActions: [
+            'Architect an end-to-end fullstack production application addressing a real problem',
+            'Add production capabilities: authentication, automated unit tests, and CI/CD workflow',
+            'Deploy the application publicly on a cloud platform (Render, Vercel, or Cloud Run)',
+            'Provide a clean GitHub repository with architectural documentation and benchmark tests',
+            'Submit the live deployment URL as verified capability evidence'
+          ]
+        }
+      ],
+      priorityRankings: [
+        { skill: 'Problem Solving & Algorithmic Foundations', priority: 'HIGH', priorityScore: 95, reason: 'Directly cited in HR evaluation as primary blocker' },
+        { skill: 'Production Systems & Real-World Projects', priority: 'HIGH', priorityScore: 90, reason: 'Candidate projects were deemed too basic for production scale' }
+      ],
+      overallActionPlan: 'Focus on your 2 High Priority gaps: complete the 35 DSA algorithmic challenge track and build/deploy a fullstack cloud-native project.',
+      analyzedAt: '2026-02-04T16:00:00.000Z'
+    },
+    feedbackAt: '2026-02-04T16:00:00.000Z',
+    timeline: [
+      { status: 'applied', date: '2026-01-24T10:00:00.000Z', note: 'Application submitted for Full Stack Systems Engineer.' },
+      { status: 'under_review', date: '2026-01-28T14:00:00.000Z', note: 'Technical screening by senior engineering recruiter.' },
+      { status: 'rejected', date: '2026-02-04T16:00:00.000Z', note: 'Decision recorded: Missing critical production requirements & weak problem-solving performance. Actionable feedback provided.' }
+    ],
+    isDemo: true,
+    demoSeedVersion: 'v1'
+  },
 
   // 2. Scenario 3: Rejection with Constructive Feedback & Career GPS (Student 02 - Kavin Raj)
   {

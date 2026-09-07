@@ -28,7 +28,10 @@ import {
   ResumeBulletOptimization,
   MicroTrial,
   MicroTrialSubmission,
-  MicroTrialEvaluation
+  MicroTrialEvaluation,
+  StructuredRecruiterRatings,
+  ImprovementEvidenceRecord,
+  RejectionGrowthLoopData
 } from '../types';
 
 async function getAuthHeaders(): Promise<Record<string, string>> {
@@ -456,6 +459,7 @@ export const api = {
     skillGapsIdentified?: string[];
     internalHRNotes?: string;
     studentFeedback?: string;
+    structuredRatings?: StructuredRecruiterRatings;
   }): Promise<any> {
     const headers = await getAuthHeaders();
     const res = await fetch(`/api/applications/${appId}/feedback`, {
@@ -475,6 +479,64 @@ export const api = {
       feedback as any
     ).catch(e => console.warn('Firestore sync note:', e));
     return result;
+  },
+
+  async getApplicationRejectionAnalysis(appId: string): Promise<any> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`/api/applications/${appId}/rejection-analysis`, { headers });
+    if (!res.ok) throw new Error('Failed to fetch rejection analysis');
+    return res.json();
+  },
+
+  async submitImprovementEvidence(appId: string, evidence: {
+    skill: string;
+    evidenceType: string;
+    title: string;
+    details?: string;
+    evidenceUrl?: string;
+    testScore?: number;
+  }): Promise<{
+    success: boolean;
+    evidenceRecord: ImprovementEvidenceRecord;
+    previousScore: number;
+    newScore: number;
+    scoreDelta: number;
+    previousMatchScore: number;
+    newMatchScore: number;
+    eligibleToReapply: boolean;
+    reassessment: any;
+  }> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`/api/applications/${appId}/improvement-evidence`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(evidence)
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to submit improvement evidence');
+    }
+    return res.json();
+  },
+
+  async getStudentRejectionGrowthLoop(studentId: string): Promise<RejectionGrowthLoopData> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`/api/students/${studentId}/rejection-growth-loop`, { headers });
+    if (!res.ok) throw new Error('Failed to fetch rejection growth loop data');
+    return res.json();
+  },
+
+  async reapplyToApplication(appId: string): Promise<any> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`/api/applications/${appId}/reapply`, {
+      method: 'POST',
+      headers
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to submit re-application');
+    }
+    return res.json();
   },
 
   async getApplicationImprovementPlan(appId: string): Promise<any> {
