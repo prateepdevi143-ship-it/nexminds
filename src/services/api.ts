@@ -24,7 +24,8 @@ import {
   CandidateRankItem,
   CertifiedInternship,
   CertificateRecord,
-  InternshipApplication
+  InternshipApplication,
+  ResumeBulletOptimization
 } from '../types';
 
 async function getAuthHeaders(): Promise<Record<string, string>> {
@@ -275,16 +276,35 @@ export const api = {
     return res.json();
   },
 
-  async uploadResume(resumeText: string, fileName?: string): Promise<{ success: boolean; analysis: ResumeAnalysisResult }> {
+  async uploadResume(
+    resumeText: string,
+    fileName?: string,
+    targetJobId?: string,
+    jobDescription?: string
+  ): Promise<{ success: boolean; analysis: ResumeAnalysisResult }> {
     const headers = await getAuthHeaders();
     const res = await fetch('/api/students/resume/upload', {
       method: 'POST',
       headers,
-      body: JSON.stringify({ resumeText, fileName })
+      body: JSON.stringify({ resumeText, fileName, targetJobId, jobDescription })
     });
     if (!res.ok) {
       const err = await res.json();
       throw new Error(err.error || 'Failed to upload resume');
+    }
+    return res.json();
+  },
+
+  async optimizeResumeBullet(bulletText: string, targetRole?: string): Promise<ResumeBulletOptimization> {
+    const headers = await getAuthHeaders();
+    const res = await fetch('/api/students/resume/optimize-bullet', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ bulletText, targetRole })
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to optimize bullet');
     }
     return res.json();
   },

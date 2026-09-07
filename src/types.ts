@@ -525,6 +525,7 @@ export interface ResumeAnalysisResult {
     name: string;
     confidence: number;
     category?: string;
+    evidence?: string;
   }>;
   projects: Array<{
     name: string;
@@ -547,6 +548,43 @@ export interface ResumeAnalysisResult {
   strengths: string[];
   improvements: string[];
   careerSignals: string[];
+  atsBreakdown?: {
+    atsCompatibility: number;
+    keywordRelevance: number;
+    skillsMatch: number;
+    experienceRelevance: number;
+    projectRelevance: number;
+    achievementQuality: number;
+    resumeStructure: number;
+    readability: number;
+    roleAlignment: number;
+  };
+  skillCategories?: {
+    technical: Array<{ name: string; confidence: number; evidence?: string }>;
+    soft: Array<{ name: string; confidence: number; evidence?: string }>;
+    domain: Array<{ name: string; confidence: number; evidence?: string }>;
+  };
+  jobMatchAnalysis?: {
+    jobTitle?: string;
+    matchPercentage: number;
+    strongMatches: string[];
+    missingSkills: string[];
+    weakSkills: string[];
+    evidenceGaps: string[];
+    recommendations: string[];
+  };
+}
+
+export interface ResumeBulletOptimization {
+  original: string;
+  optimized: string;
+  formulaBreakdown: {
+    action: string;
+    task: string;
+    technology: string;
+    outcome: string;
+  };
+  improvements: string[];
 }
 
 export interface SkillGapAnalysis {

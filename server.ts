@@ -20,7 +20,8 @@ import {
   parseJobDescriptionWithGemini,
   generateCareerDoctorDiagnosis,
   chatCareerAssistant,
-  generateCoverLetter
+  generateCoverLetter,
+  optimizeResumeBulletWithAI
 } from './server/ai';
 import { ApplicationStatus, SkillEvidence, Student, User, UserRole, Company, MandatoryAssessmentAttempt, RecruiterFeedback, PersonalizedImprovementPlan, CertifiedInternship, CertificateRecord, InternshipApplication } from './src/types';
 import { QUESTION_BANK } from './server/data/questionsData';
@@ -636,11 +637,19 @@ app.post('/api/students/resume/upload', async (req, res) => {
   const student = resolveStudent(req);
   if (!student) return res.status(404).json({ error: 'No active student' });
 
-  const { resumeText, fileName } = req.body;
+  const { resumeText, fileName, targetJobId, jobDescription } = req.body;
   if (!resumeText) return res.status(400).json({ error: 'No resume text provided' });
 
   try {
-    const analysis = await analyzeResumeWithGemini(resumeText);
+    let resolvedJobDesc = jobDescription || '';
+    if (targetJobId) {
+      const job = db.get('jobs').find(j => j.id === targetJobId);
+      if (job) {
+        resolvedJobDesc = `${job.title} at ${job.companyName}. Required: ${(job.requiredSkills || []).join(', ')}. Description: ${job.description}`;
+      }
+    }
+
+    const analysis = await analyzeResumeWithGemini(resumeText, resolvedJobDesc);
 
     // Merge extracted skills into student profile
     const existingSkillNames = new Set(
@@ -754,6 +763,20 @@ app.post('/api/students/resume/upload', async (req, res) => {
   } catch (err: any) {
     console.error('Resume upload error:', err);
     res.status(500).json({ error: err.message || 'Failed to process resume' });
+  }
+});
+
+// Resume Bullet Optimizer (Action + Task + Technology + Outcome)
+app.post('/api/students/resume/optimize-bullet', async (req, res) => {
+  const { bulletText, targetRole } = req.body;
+  if (!bulletText || typeof bulletText !== 'string') {
+    return res.status(400).json({ error: 'No bullet text provided' });
+  }
+  try {
+    const result = await optimizeResumeBulletWithAI(bulletText, targetRole);
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Failed to optimize bullet' });
   }
 });
 

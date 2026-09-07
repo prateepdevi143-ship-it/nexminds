@@ -313,10 +313,6 @@ export const SkillGapEngine: React.FC<SkillGapEngineProps> = ({
       description: 'Core accredited university curriculum, semester coursework, and engineering baseline.',
       skills: ['Mathematics', 'DSA', 'Computer Architecture']
     },
-      statusLabel: 'Completed',
-      description: 'Core accredited university curriculum, semester coursework, and engineering baseline.',
-      skills: ['Mathematics', 'DSA', 'Computer Architecture']
-    },
     {
       id: 'node_2',
       title: 'Core Technical Languages',
