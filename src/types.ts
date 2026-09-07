@@ -1,4 +1,4 @@
-export type UserRole = 'student' | 'company' | 'admin' | 'industry';
+export type UserRole = 'student' | 'company' | 'admin';
 
 export interface User {
   id: string;
@@ -550,3 +550,96 @@ export interface CandidateRankItem {
   matchedSkills: string[];
   missingSkills: string[];
 }
+
+export interface CertifiedInternshipProject {
+  title: string;
+  description: string;
+  deliverable: string;
+}
+
+export interface CertifiedInternship {
+  id: string;
+  title: string;
+  description: string;
+  internshipType: string;
+  domain: 'AI/ML' | 'Web Development' | 'Data Science' | 'Cybersecurity' | 'Java Backend' | 'Cloud & DevOps' | 'Data Analytics' | string;
+  skills: string[];
+  learningOutcomes: string[];
+  duration: string;
+  startDate: string;
+  endDate: string;
+  applicationDeadline: string;
+  eligibility: string;
+  education: string;
+  experience: string;
+  location: string;
+  workMode: 'Online' | 'Remote' | 'Hybrid' | 'On-site';
+  cost: 'FREE' | string;
+  currency: string;
+  stipend?: string;
+  certificate: string;
+  certificateIssuer: string;
+  numberOfSeats: number;
+  status: 'DRAFT' | 'REVIEW' | 'PUBLISHED' | 'CLOSED' | 'ARCHIVED';
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+  isCertified: boolean;
+  isFree: boolean;
+  assessmentRequired?: boolean;
+  assessmentSkill?: string;
+  minAssessmentScore?: number;
+  enrolledCount?: number;
+  completedCount?: number;
+  certificatesIssuedCount?: number;
+  projects?: CertifiedInternshipProject[];
+}
+
+export type InternshipAppStatus =
+  | 'Available'
+  | 'Applied'
+  | 'Accepted'
+  | 'In Progress'
+  | 'Completed'
+  | 'Certificate Issued'
+  | 'Rejected';
+
+export interface InternshipApplication {
+  id: string;
+  studentId: string;
+  studentName: string;
+  studentEmail: string;
+  internshipId: string;
+  internshipTitle: string;
+  opportunityType: 'INTERNSHIP';
+  isCertified: boolean;
+  matchScore: number;
+  matchedSkills: string[];
+  missingSkills: string[];
+  appliedAt: string;
+  status: InternshipAppStatus;
+  assessmentScore?: number;
+  certificateId?: string;
+  completedAt?: string;
+  certificateIssuedAt?: string;
+  enrolledAt?: string;
+  updatedAt?: string;
+  notes?: string;
+}
+
+export interface CertificateRecord {
+  id: string;
+  certificateId: string; // e.g. "NMAI-CERT-2026-00001"
+  studentId: string;
+  internshipId: string;
+  studentName: string;
+  internshipTitle: string;
+  domain: string;
+  skills: string[];
+  issueDate: string;
+  issuer: string;
+  verificationCode: string;
+  status: 'VALID' | 'REVOKED';
+  gradeOrScore?: string;
+}
+

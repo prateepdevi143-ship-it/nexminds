@@ -481,9 +481,20 @@ export const AuthModal: React.FC = () => {
                   setPassword('Nexminds@2026');
                   setMode('signin');
                 }}
-                className="px-2 py-0.5 rounded bg-white border border-slate-200 text-[10px] font-medium text-slate-700 hover:text-indigo-600 hover:border-indigo-300 transition-colors"
+                className="px-2 py-0.5 rounded bg-white border border-slate-200 text-[10px] font-medium text-slate-700 hover:text-indigo-600 hover:border-indigo-300 transition-colors cursor-pointer"
               >
-                Fill Student 01
+                Student 01 (Arjun)
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('student02@nexminds.demo');
+                  setPassword('Nexminds@2026');
+                  setMode('signin');
+                }}
+                className="px-2 py-0.5 rounded bg-white border border-slate-200 text-[10px] font-medium text-slate-700 hover:text-indigo-600 hover:border-indigo-300 transition-colors cursor-pointer"
+              >
+                Student 02 (Kavin)
               </button>
               <button
                 type="button"
@@ -492,9 +503,20 @@ export const AuthModal: React.FC = () => {
                   setPassword('Nexminds@2026');
                   setMode('signin');
                 }}
-                className="px-2 py-0.5 rounded bg-white border border-slate-200 text-[10px] font-medium text-slate-700 hover:text-indigo-600 hover:border-indigo-300 transition-colors"
+                className="px-2 py-0.5 rounded bg-white border border-slate-200 text-[10px] font-medium text-slate-700 hover:text-indigo-600 hover:border-indigo-300 transition-colors cursor-pointer"
               >
-                Fill Company 01
+                Company 01 (Nexora)
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('company02@nexminds.demo');
+                  setPassword('Nexminds@2026');
+                  setMode('signin');
+                }}
+                className="px-2 py-0.5 rounded bg-white border border-slate-200 text-[10px] font-medium text-slate-700 hover:text-indigo-600 hover:border-indigo-300 transition-colors cursor-pointer"
+              >
+                Company 02 (DataForge)
               </button>
               <button
                 type="button"
@@ -503,9 +525,9 @@ export const AuthModal: React.FC = () => {
                   setPassword('Nexminds@2026');
                   setMode('signin');
                 }}
-                className="px-2 py-0.5 rounded bg-white border border-slate-200 text-[10px] font-medium text-slate-700 hover:text-indigo-600 hover:border-indigo-300 transition-colors"
+                className="px-2 py-0.5 rounded bg-white border border-slate-200 text-[10px] font-medium text-slate-700 hover:text-indigo-600 hover:border-indigo-300 transition-colors cursor-pointer"
               >
-                Fill Admin
+                Admin
               </button>
             </div>
           </div>

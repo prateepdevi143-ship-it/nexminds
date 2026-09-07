@@ -22,7 +22,7 @@ import {
   chatCareerAssistant,
   generateCoverLetter
 } from './server/ai';
-import { ApplicationStatus, SkillEvidence, Student, User, Company, MandatoryAssessmentAttempt, RecruiterFeedback, PersonalizedImprovementPlan } from './src/types';
+import { ApplicationStatus, SkillEvidence, Student, User, UserRole, Company, MandatoryAssessmentAttempt, RecruiterFeedback, PersonalizedImprovementPlan, CertifiedInternship, CertificateRecord, InternshipApplication } from './src/types';
 import { QUESTION_BANK } from './server/data/questionsData';
 import { COMPREHENSIVE_COURSES } from './server/data/coursesData';
 
@@ -33,18 +33,19 @@ const PORT = 3000;
 
 app.use(express.json({ limit: '15mb' }));
 
-// Dynamic user resolution supporting Firebase Auth UID headers
-let currentUserId = 'usr_student_01';
-
+// Dynamic user resolution supporting Firebase Auth and header-based session isolation
 function resolveUser(req: express.Request): User {
   const customStudentId = (req.headers['x-student-id'] as string) || (req.query.studentId as string);
-  const customUid = req.headers['x-user-id'] as string;
-  const customEmail = req.headers['x-user-email'] as string;
+  const customUid = (req.headers['x-user-id'] as string) || (req.query.userId as string);
+  const customEmail = ((req.headers['x-user-email'] as string) || (req.query.userEmail as string) || '').toLowerCase().trim();
+  const customRole = ((req.headers['x-user-role'] as string) || (req.query.userRole as string) || '').toLowerCase().trim();
   const customName = req.headers['x-user-name'] ? decodeURIComponent(req.headers['x-user-name'] as string) : '';
 
   const users = db.get('users');
   const students = db.get('students');
+  const companies = db.get('companies');
 
+  // 1. By explicit student ID
   if (customStudentId) {
     const student = students.find(s => s.id === customStudentId || s.userId === customStudentId);
     if (student) {
@@ -60,31 +61,107 @@ function resolveUser(req: express.Request): User {
     }
   }
 
+  // 2. By User ID (UID)
   if (customUid) {
     let user = users.find(u => u.id === customUid);
-    if (!user) {
-      // Check if student profile exists for this UID or create just-in-time user
-      const student = students.find(s => s.userId === customUid || s.id === customUid);
-      const companies = db.get('companies');
-      const company = companies.find(c => c.userId === customUid || c.id === customUid);
-
-      const determinedRole = student ? 'student' : company ? 'company' : 'student';
-      user = {
-        id: customUid,
-        email: customEmail || (student?.email || 'user@careerai.dev'),
-        name: customName || (student?.name || company?.name || 'User'),
-        role: determinedRole,
-        createdAt: new Date().toISOString()
-      };
-      db.update('users', u => [...u, user!]);
+    if (user) {
+      if (customRole && ['student', 'company', 'admin'].includes(customRole) && user.role !== customRole) {
+        user.role = customRole as UserRole;
+        db.update('users', list => list.map(u => u.id === user!.id ? user! : u));
+      }
+      return user;
     }
+
+    // Check if UID is in students collection
+    const student = students.find(s => s.userId === customUid || s.id === customUid);
+    if (student) {
+      const u = users.find(u => u.id === student.userId);
+      if (u) return u;
+    }
+
+    // Check if UID is in companies collection
+    const company = companies.find(c => c.userId === customUid || c.id === customUid);
+    if (company) {
+      const u = users.find(u => u.id === company.userId);
+      if (u) return u;
+    }
+
+    // Check if customEmail matches an existing user
+    if (customEmail) {
+      user = users.find(u => u.email.toLowerCase() === customEmail);
+      if (user) return user;
+    }
+
+    // Create user just-in-time for this unique UID
+    let determinedRole: UserRole = 'student';
+    if (customRole && ['student', 'company', 'admin'].includes(customRole)) {
+      determinedRole = customRole as UserRole;
+    } else if (customEmail.includes('company') || customEmail.includes('recruiter') || customUid.includes('company')) {
+      determinedRole = 'company';
+    } else if (customEmail.includes('admin') || customUid.includes('admin')) {
+      determinedRole = 'admin';
+    }
+
+    user = {
+      id: customUid,
+      email: customEmail || `${customUid}@nexminds.dev`,
+      name: customName || (customEmail ? customEmail.split('@')[0] : 'User'),
+      role: determinedRole,
+      createdAt: new Date().toISOString()
+    };
+    db.update('users', u => [...u, user!]);
     return user;
   }
 
-  return users.find(u => u.id === currentUserId) || users[0];
+  // 3. By Email
+  if (customEmail) {
+    let user = users.find(u => u.email.toLowerCase() === customEmail);
+    if (user) return user;
+
+    const stdNumMatch = customEmail.match(/student0?(\d+)/i) || customEmail.match(/std_?0?(\d+)/i);
+    if (stdNumMatch) {
+      const idx = parseInt(stdNumMatch[1], 10);
+      const padded = idx < 10 ? `0${idx}` : `${idx}`;
+      user = users.find(u => u.id === `usr_student_${padded}` || u.email.includes(`student${padded}`));
+      if (user) return user;
+    }
+
+    const compMatch = customEmail.match(/company0?(\d+)/i) || customEmail.match(/cmp_?0?(\d+)/i);
+    if (compMatch) {
+      const idx = parseInt(compMatch[1], 10);
+      const padded = idx < 10 ? `0${idx}` : `${idx}`;
+      user = users.find(u => u.id === `usr_company_${padded}` || u.email.includes(`company${padded}`));
+      if (user) return user;
+    }
+
+    let determinedRole: UserRole = 'student';
+    if (customRole && ['student', 'company', 'admin'].includes(customRole)) {
+      determinedRole = customRole as UserRole;
+    } else if (customEmail.includes('company') || customEmail.includes('recruiter')) {
+      determinedRole = 'company';
+    } else if (customEmail.includes('admin')) {
+      determinedRole = 'admin';
+    }
+
+    user = {
+      id: `usr_${customEmail.replace(/[^a-zA-Z0-9]/g, '_')}`,
+      email: customEmail,
+      name: customName || customEmail.split('@')[0],
+      role: determinedRole,
+      createdAt: new Date().toISOString()
+    };
+    db.update('users', u => [...u, user!]);
+    return user;
+  }
+
+  // 4. Default fallback only if request has no identifying headers
+  return users[0];
 }
 
 function resolveStudent(req: express.Request): Student | undefined {
+  const user = resolveUser(req);
+  if (user.role !== 'student') return undefined;
+
   const students = db.get('students');
   const customStudentId = (req.headers['x-student-id'] as string) || (req.query.studentId as string);
   if (customStudentId) {
@@ -92,32 +169,34 @@ function resolveStudent(req: express.Request): Student | undefined {
     if (s) return s;
   }
 
-  const user = resolveUser(req);
-
-  if (user.role !== 'student') {
-    // Return primary student profile so recruiters and admins can still preview/test student views safely
-    return students[0];
-  }
-
-  let student = students.find(s => s.userId === user.id || s.id === user.id);
+  let student = students.find(s => s.userId === user.id || s.email?.toLowerCase() === user.email?.toLowerCase() || s.id === user.id);
 
   if (!student) {
-    // Automatically bootstrap empty/custom profile for new authenticated Firebase student
-    const careers = db.get('careers');
+    // Automatically bootstrap profile for new authenticated student
+    const studentId = `std_${user.id.replace(/[^a-zA-Z0-9]/g, '_')}`;
     student = {
-      id: user.id,
+      id: studentId,
       userId: user.id,
-      name: user.name || 'New Student',
+      name: user.name || 'New Student Candidate',
       email: user.email,
-      college: 'University',
+      college: 'University Campus',
       degree: 'Computer Science & Engineering',
       graduationYear: 2026,
-      cgpa: 8.0,
-      careerGoal: 'AI Engineer',
-      targetCareerId: 'career_ai_eng',
+      cgpa: 8.5,
+      careerGoal: 'AI / Machine Learning Engineer',
+      targetCareerId: 'cg_ai_eng',
       profileCompletion: 60,
-      careerReadinessScore: 50,
-      skills: [],
+      careerReadinessScore: 65,
+      skills: [
+        {
+          id: `sk_${Date.now()}_1`,
+          name: 'Python',
+          confidence: 0.8,
+          verified: true,
+          lastDemonstrated: new Date().toISOString(),
+          evidenceCount: 1
+        }
+      ],
       education: [],
       projects: [],
       experience: [],
@@ -135,19 +214,24 @@ function resolveCompany(req: express.Request): Company | undefined {
   if (user.role !== 'company') return undefined;
 
   const companies = db.get('companies');
-  let company = companies.find(c => c.userId === user.id || c.id === user.id);
+  let company = companies.find(c => c.userId === user.id || c.email?.toLowerCase() === user.email?.toLowerCase() || c.id === user.id);
 
   if (!company) {
+    const companyId = `cmp_${user.id.replace(/[^a-zA-Z0-9]/g, '_')}`;
+    const cleanName = user.name && user.name !== 'User' && user.name !== 'Company Recruiter'
+      ? user.name
+      : `${user.email.split('@')[0].replace(/[^a-zA-Z0-9]/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} Technologies`;
+
     company = {
-      id: user.id,
+      id: companyId,
       userId: user.id,
-      name: user.name || 'Company Recruiter',
+      name: cleanName,
       email: user.email,
-      industry: 'Artificial Intelligence & Software',
-      location: 'San Francisco, CA',
-      website: 'https://example.com',
+      industry: 'Software Development & Systems',
+      location: 'Chennai, Tamil Nadu',
+      website: 'https://nexminds.dev',
       size: '50-250',
-      description: 'Engineering and technical innovation organization.',
+      description: 'Enterprise innovation and technology partner.',
       verified: true,
       createdAt: new Date().toISOString()
     };
@@ -177,9 +261,10 @@ app.get('/api/auth/me', (req, res) => {
 });
 
 app.post('/api/auth/switch-demo', (req, res) => {
-  const { role, email, studentId } = req.body;
+  const { role, email, studentId, companyId } = req.body;
   const users = db.get('users');
   const students = db.get('students');
+  const companies = db.get('companies');
   let targetUser: User | undefined;
   let profile: any = null;
 
@@ -193,13 +278,41 @@ app.post('/api/auth/switch-demo', (req, res) => {
         role: 'student',
         createdAt: new Date().toISOString()
       };
-      currentUserId = targetUser.id;
       return res.json({ user: targetUser, profile: student });
     }
   }
 
+  if (companyId) {
+    const company = companies.find(c => c.id === companyId || c.userId === companyId);
+    if (company) {
+      targetUser = users.find(u => u.id === company.userId) || {
+        id: company.userId,
+        email: company.email,
+        name: company.name,
+        role: 'company',
+        createdAt: new Date().toISOString()
+      };
+      return res.json({ user: targetUser, profile: company });
+    }
+  }
+
   if (email) {
-    targetUser = users.find(u => u.email.toLowerCase() === email.toLowerCase().trim());
+    const cleanEmail = email.toLowerCase().trim();
+    targetUser = users.find(u => u.email.toLowerCase() === cleanEmail);
+    if (!targetUser) {
+      const stdNumMatch = cleanEmail.match(/student0?(\d+)/i) || cleanEmail.match(/std_?0?(\d+)/i);
+      if (stdNumMatch) {
+        const idx = parseInt(stdNumMatch[1], 10);
+        const padded = idx < 10 ? `0${idx}` : `${idx}`;
+        targetUser = users.find(u => u.id === `usr_student_${padded}` || u.email.includes(`student${padded}`));
+      }
+      const compMatch = cleanEmail.match(/company0?(\d+)/i) || cleanEmail.match(/cmp_?0?(\d+)/i);
+      if (compMatch) {
+        const cidx = parseInt(compMatch[1], 10);
+        const cpadded = cidx < 10 ? `0${cidx}` : `${cidx}`;
+        targetUser = users.find(u => u.id === `usr_company_${cpadded}` || u.email.includes(`company${cpadded}`));
+      }
+    }
   }
 
   if (!targetUser && role) {
@@ -211,11 +324,10 @@ app.post('/api/auth/switch-demo', (req, res) => {
   }
 
   if (targetUser) {
-    currentUserId = targetUser.id;
     if (targetUser.role === 'student') {
-      profile = students.find(s => s.userId === targetUser!.id) || students[0];
+      profile = students.find(s => s.userId === targetUser!.id || s.email?.toLowerCase() === targetUser!.email?.toLowerCase()) || students[0];
     } else if (targetUser.role === 'company') {
-      profile = db.get('companies').find(c => c.userId === targetUser!.id);
+      profile = companies.find(c => c.userId === targetUser!.id || c.email?.toLowerCase() === targetUser!.email?.toLowerCase()) || companies[0];
     }
     return res.json({ user: targetUser, profile });
   }
@@ -228,6 +340,8 @@ app.post('/api/auth/login', (req, res) => {
   const cleanEmail = (email || '').toLowerCase().trim();
   const users = db.get('users');
   const students = db.get('students');
+  const companies = db.get('companies');
+
   let user = users.find(u => u.email.toLowerCase() === cleanEmail);
 
   if (!user) {
@@ -239,7 +353,7 @@ app.post('/api/auth/login', (req, res) => {
       if (!user) {
         const matchingStudent = students.find(s => s.id === `std_${padded}` || s.userId === `usr_student_${padded}`);
         if (matchingStudent) {
-          user = users.find(u => u.id === matchingStudent.userId) || {
+          user = {
             id: matchingStudent.userId,
             email: matchingStudent.email,
             name: matchingStudent.name,
@@ -250,29 +364,107 @@ app.post('/api/auth/login', (req, res) => {
       }
     } else if (cleanEmail.includes('admin')) {
       user = users.find(u => u.role === 'admin') || users.find(u => u.id === 'usr_admin');
-    } else if (cleanEmail.includes('company') || cleanEmail.includes('recruiter')) {
-      const compMatch = cleanEmail.match(/company0?(\d+)/i);
+    } else if (cleanEmail.includes('company') || cleanEmail.includes('recruiter') || cleanEmail.includes('cmp_')) {
+      const compMatch = cleanEmail.match(/company0?(\d+)/i) || cleanEmail.match(/cmp_?0?(\d+)/i);
       if (compMatch) {
         const cidx = parseInt(compMatch[1], 10);
         const cpadded = cidx < 10 ? `0${cidx}` : `${cidx}`;
         user = users.find(u => u.id === `usr_company_${cpadded}` || u.email.includes(`company${cpadded}`));
+        if (!user) {
+          const matchingComp = companies.find(c => c.id === `cmp_${cpadded}` || c.userId === `usr_company_${cpadded}`);
+          if (matchingComp) {
+            user = {
+              id: matchingComp.userId,
+              email: matchingComp.email,
+              name: matchingComp.name,
+              role: 'company',
+              createdAt: new Date().toISOString()
+            };
+          }
+        }
       }
-      if (!user) user = users.find(u => u.role === 'company');
-    } else if (cleanEmail.includes('student')) {
-      user = users.find(u => u.role === 'student');
     }
   }
 
+  // If user is still not in DB, dynamically create a dedicated account for this credential!
   if (!user) {
-    return res.status(404).json({ error: 'User with this email not found in demo environment' });
+    let role: UserRole = 'student';
+    if (cleanEmail.includes('company') || cleanEmail.includes('recruiter') || cleanEmail.includes('corp')) {
+      role = 'company';
+    } else if (cleanEmail.includes('admin')) {
+      role = 'admin';
+    }
+
+    const userId = `usr_${cleanEmail.replace(/[^a-zA-Z0-9]/g, '_')}`;
+    const cleanName = cleanEmail.split('@')[0].replace(/[^a-zA-Z0-9]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+    user = {
+      id: userId,
+      email: cleanEmail,
+      name: cleanName,
+      role,
+      createdAt: new Date().toISOString()
+    };
+    db.update('users', uList => [...uList, user!]);
   }
-  currentUserId = user.id;
+
   let profile: any = null;
   if (user.role === 'student') {
-    profile = db.get('students').find(s => s.userId === user.id) || db.get('students')[0];
+    profile = students.find(s => s.userId === user!.id || s.email?.toLowerCase() === user!.email?.toLowerCase());
+    if (!profile) {
+      // Create dedicated student profile for this user
+      profile = {
+        id: `std_${user.id.replace(/[^a-zA-Z0-9]/g, '_')}`,
+        userId: user.id,
+        name: user.name,
+        email: user.email,
+        college: 'University Campus',
+        degree: 'Computer Science',
+        graduationYear: 2026,
+        cgpa: 8.5,
+        careerGoal: 'AI / Machine Learning Engineer',
+        targetCareerId: 'cg_ai_eng',
+        profileCompletion: 60,
+        careerReadinessScore: 65,
+        skills: [
+          {
+            id: `sk_${Date.now()}_1`,
+            name: 'Python',
+            confidence: 0.8,
+            verified: true,
+            lastDemonstrated: new Date().toISOString(),
+            evidenceCount: 1
+          }
+        ],
+        education: [],
+        projects: [],
+        experience: [],
+        certifications: [],
+        updatedAt: new Date().toISOString()
+      };
+      db.update('students', sList => [...sList, profile]);
+    }
   } else if (user.role === 'company') {
-    profile = db.get('companies').find(c => c.userId === user.id) || db.get('companies')[0];
+    profile = companies.find(c => c.userId === user!.id || c.email?.toLowerCase() === user!.email?.toLowerCase());
+    if (!profile) {
+      // Create dedicated company profile for this user
+      profile = {
+        id: `cmp_${user.id.replace(/[^a-zA-Z0-9]/g, '_')}`,
+        userId: user.id,
+        name: user.name,
+        email: user.email,
+        industry: 'Software & Technology',
+        location: 'Chennai, Tamil Nadu',
+        website: 'https://nexminds.dev',
+        size: '50-250',
+        description: 'Enterprise technology and intelligence company.',
+        verified: true,
+        createdAt: new Date().toISOString()
+      };
+      db.update('companies', cList => [...cList, profile]);
+    }
   }
+
   res.json({ user, profile });
 });
 
@@ -282,36 +474,42 @@ app.post('/api/auth/register', (req, res) => {
     return res.status(400).json({ error: 'Missing email, name, or role' });
   }
 
-  const userId = `usr_${Date.now()}`;
+  const cleanEmail = email.toLowerCase().trim();
+  const userId = `usr_${cleanEmail.replace(/[^a-zA-Z0-9]/g, '_')}`;
   const newUser: User = {
     id: userId,
-    email,
+    email: cleanEmail,
     name,
     role: role as any,
     createdAt: new Date().toISOString()
   };
 
-  db.update('users', users => [...users, newUser]);
-  currentUserId = userId;
+  db.update('users', users => [...users.filter(u => u.email.toLowerCase() !== cleanEmail), newUser]);
 
   let profile: any = null;
   if (role === 'student') {
     const newStudent: Student = {
-      id: `std_${Date.now()}`,
+      id: `std_${userId.replace(/[^a-zA-Z0-9]/g, '_')}`,
       userId,
       name,
-      email,
-      college: 'University Candidate',
+      email: cleanEmail,
+      college: 'University Campus',
       degree: 'Computer Science',
       graduationYear: 2026,
       cgpa: 8.5,
-      careerGoal: 'AI Engineer',
-      targetCareerId: 'career_ai_eng',
-      profileCompletion: 50,
-      careerReadinessScore: 60,
+      careerGoal: 'AI / Machine Learning Engineer',
+      targetCareerId: 'cg_ai_eng',
+      profileCompletion: 60,
+      careerReadinessScore: 65,
       skills: [
-        { skillId: 'sk_py', name: 'Python', level: 75, confidence: 0.8, lastDemonstrated: new Date().toISOString(), evidenceCount: 1, freshness: 'recent' },
-        { skillId: 'sk_git', name: 'Git', level: 70, confidence: 0.8, lastDemonstrated: new Date().toISOString(), evidenceCount: 1, freshness: 'recent' }
+        {
+          id: `sk_${Date.now()}_1`,
+          name: 'Python',
+          confidence: 0.8,
+          verified: true,
+          lastDemonstrated: new Date().toISOString(),
+          evidenceCount: 1
+        }
       ],
       education: [],
       projects: [],
@@ -319,27 +517,59 @@ app.post('/api/auth/register', (req, res) => {
       certifications: [],
       updatedAt: new Date().toISOString()
     };
-    db.update('students', students => [...students, newStudent]);
+    db.update('students', students => [...students.filter(s => s.userId !== userId && s.email?.toLowerCase() !== cleanEmail), newStudent]);
     profile = newStudent;
   } else if (role === 'company') {
-    const newComp = {
-      id: `comp_${Date.now()}`,
+    const newComp: Company = {
+      id: `cmp_${userId.replace(/[^a-zA-Z0-9]/g, '_')}`,
       userId,
       name,
-      email,
-      industry: 'Technology',
-      location: 'Remote',
-      website: 'https://example.com',
-      size: '10-50',
-      description: 'Innovative technology enterprise.',
+      email: cleanEmail,
+      industry: 'Software & Technology',
+      location: 'Chennai, Tamil Nadu',
+      website: 'https://nexminds.dev',
+      size: '50-250',
+      description: 'Enterprise technology partner.',
       verified: true,
       createdAt: new Date().toISOString()
     };
-    db.update('companies', comps => [...comps, newComp]);
+    db.update('companies', comps => [...comps.filter(c => c.userId !== userId && c.email?.toLowerCase() !== cleanEmail), newComp]);
     profile = newComp;
   }
 
   res.json({ user: newUser, profile });
+});
+
+// Company Profile Routes
+app.get('/api/company/profile', (req, res) => {
+  const user = resolveUser(req);
+  if (user.role !== 'company' && user.role !== 'admin') {
+    return res.status(403).json({ error: 'Company profile only accessible by company accounts' });
+  }
+  const company = resolveCompany(req);
+  if (!company) return res.status(404).json({ error: 'Company profile not found' });
+  res.json(company);
+});
+
+app.put('/api/company/profile', (req, res) => {
+  const user = resolveUser(req);
+  if (user.role !== 'company' && user.role !== 'admin') {
+    return res.status(403).json({ error: 'Company profile only accessible by company accounts' });
+  }
+  const company = resolveCompany(req);
+  if (!company) return res.status(404).json({ error: 'Company not found' });
+
+  const updates = req.body;
+  let updatedCompany = company;
+  db.update('companies', list => list.map(c => {
+    if (c.id === company.id) {
+      updatedCompany = { ...c, ...updates, id: c.id, userId: c.userId };
+      return updatedCompany;
+    }
+    return c;
+  }));
+
+  res.json(updatedCompany);
 });
 
 // Student Profile Endpoints
@@ -621,13 +851,28 @@ app.post('/api/students/evidence/add', (req, res) => {
 app.get(['/api/jobs', '/api/opportunities'], (req, res) => {
   const jobs = db.get('jobs');
   const typeFilter = req.query.type as string; // 'all' | 'job' | 'internship'
+  const companyOnly = req.query.companyOnly === 'true';
+  const companyId = req.query.companyId as string;
+  const user = resolveUser(req);
+  const company = user.role === 'company' ? resolveCompany(req) : undefined;
   const student = resolveStudent(req);
   const evidences = student ? db.get('evidences').filter(e => e.studentId === student.id) : [];
   const attempts = db.get('assessmentAttempts') || [];
 
   let filteredJobs = jobs;
+
+  if (companyId) {
+    filteredJobs = filteredJobs.filter(j => j.companyId === companyId);
+  } else if (companyOnly) {
+    if (company) {
+      filteredJobs = filteredJobs.filter(j => j.companyId === company.id || j.companyName?.toLowerCase() === company.name?.toLowerCase());
+    } else {
+      filteredJobs = [];
+    }
+  }
+
   if (typeFilter && typeFilter !== 'all') {
-    filteredJobs = jobs.filter(j => {
+    filteredJobs = filteredJobs.filter(j => {
       const oppType = j.opportunityType || (j.type === 'Internship' ? 'internship' : 'job');
       return oppType.toLowerCase() === typeFilter.toLowerCase();
     });
@@ -1054,35 +1299,20 @@ app.get('/api/applications', (req, res) => {
     if (!student) return res.json([]);
     // CRITICAL: Students must NEVER see internalHRNotes
     const safeApps = allApps
-      .filter(a => a.studentId === student.id)
+      .filter(a => a.studentId === student.id || (student.email && a.studentEmail?.toLowerCase() === student.email?.toLowerCase()))
       .map(app => {
         const { internalHRNotes, ...sanitized } = app as any;
         return sanitized;
       });
     return res.json(safeApps);
   } else if (user.role === 'company') {
-    const company = resolveCompany(req) || db.get('companies')[0];
-    return res.json(allApps.filter(a => a.companyId === company.id));
+    const company = resolveCompany(req);
+    if (!company) return res.json([]);
+    return res.json(allApps.filter(a => a.companyId === company.id || (company.name && a.companyName?.toLowerCase() === company.name?.toLowerCase())));
   }
 
   // Admin gets all
   res.json(allApps);
-});
-
-// Company Candidate Ranking for a Job/Opportunity
-app.get(['/api/company/jobs/:id/candidates', '/api/companies/jobs/:id/candidates'], (req, res) => {
-  const job = db.get('jobs').find(j => j.id === req.params.id);
-  if (!job) return res.status(404).json({ error: 'Opportunity not found' });
-
-  const students = db.get('students');
-  const allEvidences = db.get('evidences');
-
-  const rankedCandidates = students.map(std => {
-    const studentEvidences = allEvidences.filter(e => e.studentId === std.id);
-    return calculateCandidateRank(std, job, studentEvidences);
-  }).sort((a, b) => b.overallScore - a.overallScore);
-
-  res.json(rankedCandidates);
 });
 
 // HR Evaluation, Decision & Feedback Loop
@@ -1287,6 +1517,486 @@ app.get('/api/applications/:id/improvement-plan', (req, res) => {
   res.json(plan);
 });
 
+// ==========================================
+// CERTIFIED INTERNSHIPS API (ADMIN-MANAGED & FREE)
+// ==========================================
+
+// List all certified internships (with optional student match decoration)
+app.get('/api/certified-internships', (req, res) => {
+  const user = resolveUser(req);
+  const student = user.role === 'student' ? resolveStudent(req) : null;
+  let internships = db.get('certifiedInternships') || [];
+
+  // For non-admin, show only PUBLISHED internships
+  if (user.role !== 'admin') {
+    internships = internships.filter(ci => ci.status === 'PUBLISHED');
+  }
+
+  // Get applications to enrich with status if student
+  const studentApps = student
+    ? (db.get('internshipApplications') || []).filter(a => a.studentId === student.id)
+    : [];
+
+  const studentSkills = (student?.skills || []).map(s => s.name.toLowerCase());
+
+  const enriched = internships.map(internship => {
+    let matchScore = 0;
+    let matchedSkills: string[] = [];
+    let missingSkills: string[] = [];
+    let whyThisInternship = 'Industry-standard structured curriculum with verified certification.';
+    const studentApplication = studentApps.find(a => a.internshipId === internship.id);
+
+    if (student) {
+      const reqSkills = internship.skills || [];
+      matchedSkills = reqSkills.filter(sk => studentSkills.some(s => s.includes(sk.toLowerCase()) || sk.toLowerCase().includes(s)));
+      missingSkills = reqSkills.filter(sk => !matchedSkills.includes(sk));
+
+      const rawMatch = reqSkills.length > 0 ? Math.round((matchedSkills.length / reqSkills.length) * 100) : 80;
+      matchScore = Math.min(100, Math.max(35, rawMatch));
+
+      if (matchedSkills.length >= 3) {
+        whyThisInternship = `Strong alignment with your verified ${matchedSkills.slice(0, 2).join(' & ')} proficiency. Completing this program will directly validate your ${missingSkills.slice(0, 2).join(' & ') || 'production-readiness'}.`;
+      } else if (matchedSkills.length > 0) {
+        whyThisInternship = `Builds upon your knowledge of ${matchedSkills.join(', ')} while bridging essential domain competencies in ${missingSkills.slice(0, 2).join(' & ')}.`;
+      } else {
+        whyThisInternship = `Expands your career horizons into ${internship.domain} by providing 100% free structured projects and direct certification.`;
+      }
+    }
+
+    return {
+      ...internship,
+      matchScore: student ? matchScore : undefined,
+      matchedSkills: student ? matchedSkills : undefined,
+      missingSkills: student ? missingSkills : undefined,
+      whyThisInternship: student ? whyThisInternship : undefined,
+      applied: !!studentApplication,
+      applicationStatus: studentApplication ? studentApplication.status : undefined,
+      applicationId: studentApplication ? studentApplication.id : undefined,
+      certificateId: studentApplication ? studentApplication.certificateId : undefined
+    };
+  });
+
+  res.json(enriched);
+});
+
+// Get single certified internship by ID
+app.get('/api/certified-internships/:id', (req, res) => {
+  const user = resolveUser(req);
+  const student = user.role === 'student' ? resolveStudent(req) : null;
+  const internship = (db.get('certifiedInternships') || []).find(ci => ci.id === req.params.id);
+
+  if (!internship) {
+    return res.status(404).json({ error: 'Certified internship not found' });
+  }
+
+  // If student or guest, ensure published
+  if (user.role !== 'admin' && internship.status !== 'PUBLISHED') {
+    return res.status(403).json({ error: 'Internship is not published' });
+  }
+
+  let studentApplication = null;
+  if (student) {
+    studentApplication = (db.get('internshipApplications') || []).find(
+      a => a.studentId === student.id && a.internshipId === internship.id
+    );
+  }
+
+  res.json({
+    ...internship,
+    applied: !!studentApplication,
+    application: studentApplication || null
+  });
+});
+
+// Admin: Create new certified internship
+app.post('/api/certified-internships', (req, res) => {
+  const user = resolveUser(req);
+  if (user.role !== 'admin') {
+    return res.status(403).json({ error: 'Only administrators can create certified internships' });
+  }
+
+  const {
+    title,
+    description,
+    internshipType,
+    domain,
+    skills,
+    learningOutcomes,
+    duration,
+    startDate,
+    endDate,
+    applicationDeadline,
+    eligibility,
+    education,
+    experience,
+    location,
+    workMode,
+    numberOfSeats,
+    status,
+    assessmentRequired,
+    assessmentSkill,
+    minAssessmentScore,
+    projects
+  } = req.body;
+
+  const newInternship: CertifiedInternship = {
+    id: `ci_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+    title: title || 'Certified Internship',
+    description: description || '',
+    internshipType: internshipType || 'Certified Professional Internship',
+    domain: domain || 'AI/ML',
+    skills: Array.isArray(skills) ? skills : (skills ? String(skills).split(',').map(s => s.trim()) : ['Python']),
+    learningOutcomes: Array.isArray(learningOutcomes) ? learningOutcomes : [
+      'Gain hands-on industry project experience',
+      'Receive direct verified credential from NextMind AI'
+    ],
+    duration: duration || '8 Weeks',
+    startDate: startDate || new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
+    endDate: endDate || new Date(Date.now() + 70 * 86400000).toISOString().split('T')[0],
+    applicationDeadline: applicationDeadline || new Date(Date.now() + 10 * 86400000).toISOString().split('T')[0],
+    eligibility: eligibility || 'Open to all enrolled students and recent graduates',
+    education: education || 'Bachelor or Master degree in any discipline',
+    experience: experience || 'Fresher / Student (No prior experience required)',
+    location: location || 'Remote / Virtual Lab',
+    workMode: workMode || 'Online',
+    cost: 'FREE',
+    currency: 'INR',
+    stipend: 'Unpaid Skill Acceleration Program (100% Free Tuition)',
+    certificate: 'NextMind AI Certified Internship Certificate',
+    certificateIssuer: 'NextMind AI',
+    numberOfSeats: Number(numberOfSeats) || 50,
+    status: status || 'PUBLISHED',
+    createdBy: user.id,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    isCertified: true,
+    isFree: true,
+    assessmentRequired: !!assessmentRequired,
+    assessmentSkill: assessmentSkill || undefined,
+    minAssessmentScore: minAssessmentScore ? Number(minAssessmentScore) : 60,
+    enrolledCount: 0,
+    completedCount: 0,
+    certificatesIssuedCount: 0,
+    projects: projects || [
+      {
+        title: 'Capstone Domain Project',
+        description: 'Implement a comprehensive real-world project demonstrating full lifecycle development.',
+        deliverable: 'GitHub repository and deployment link.'
+      }
+    ]
+  };
+
+  db.update('certifiedInternships', list => [newInternship, ...(list || [])]);
+  res.status(201).json(newInternship);
+});
+
+// Admin: Update certified internship (status, seats, details, etc.)
+app.put('/api/certified-internships/:id', (req, res) => {
+  const user = resolveUser(req);
+  if (user.role !== 'admin') {
+    return res.status(403).json({ error: 'Only administrators can update certified internships' });
+  }
+
+  const id = req.params.id;
+  let updatedInternship: CertifiedInternship | null = null;
+
+  db.update('certifiedInternships', list => {
+    return (list || []).map(ci => {
+      if (ci.id === id) {
+        updatedInternship = {
+          ...ci,
+          ...req.body,
+          id: ci.id, // Immutable ID
+          updatedAt: new Date().toISOString()
+        };
+        return updatedInternship;
+      }
+      return ci;
+    });
+  });
+
+  if (!updatedInternship) {
+    return res.status(404).json({ error: 'Certified internship not found' });
+  }
+
+  res.json(updatedInternship);
+});
+
+// Student: Apply to Certified Internship
+app.post('/api/certified-internships/:id/apply', (req, res) => {
+  const user = resolveUser(req);
+  if (user.role !== 'student') {
+    return res.status(403).json({ error: 'Only students can apply to certified internships' });
+  }
+
+  const student = resolveStudent(req);
+  if (!student) {
+    return res.status(404).json({ error: 'Active student profile not found' });
+  }
+
+  const internship = (db.get('certifiedInternships') || []).find(ci => ci.id === req.params.id);
+  if (!internship) {
+    return res.status(404).json({ error: 'Certified internship not found' });
+  }
+
+  if (internship.status !== 'PUBLISHED') {
+    return res.status(400).json({ error: 'This certified internship is not currently accepting applications' });
+  }
+
+  // Check if already applied
+  const existingApp = (db.get('internshipApplications') || []).find(
+    a => a.studentId === student.id && a.internshipId === internship.id
+  );
+
+  if (existingApp) {
+    return res.json({ success: true, application: existingApp, alreadyApplied: true });
+  }
+
+  // Calculate skill match
+  const studentSkills = (student.skills || []).map(s => s.name.toLowerCase());
+  const reqSkills = internship.skills || [];
+  const matchedSkills = reqSkills.filter(sk => studentSkills.some(s => s.includes(sk.toLowerCase()) || sk.toLowerCase().includes(s)));
+  const missingSkills = reqSkills.filter(sk => !matchedSkills.includes(sk));
+  const rawMatch = reqSkills.length > 0 ? Math.round((matchedSkills.length / reqSkills.length) * 100) : 80;
+  const matchScore = Math.min(100, Math.max(45, rawMatch));
+
+  const newApplication: InternshipApplication = {
+    id: `ci_app_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+    studentId: student.id,
+    studentName: student.name,
+    studentEmail: student.email,
+    internshipId: internship.id,
+    internshipTitle: internship.title,
+    opportunityType: 'INTERNSHIP',
+    isCertified: true,
+    matchScore,
+    matchedSkills,
+    missingSkills,
+    appliedAt: new Date().toISOString(),
+    status: 'Applied',
+    updatedAt: new Date().toISOString()
+  };
+
+  db.update('internshipApplications', list => [newApplication, ...(list || [])]);
+
+  // Update internship enrolled / applicant count
+  db.update('certifiedInternships', list =>
+    (list || []).map(ci => ci.id === internship.id ? { ...ci, enrolledCount: (ci.enrolledCount || 0) + 1 } : ci)
+  );
+
+  // In-app notification
+  const notif = {
+    id: `notif_${Date.now()}`,
+    userId: student.userId,
+    title: `Enrolled in NextMind AI Certified Internship 🎓`,
+    message: `Application submitted for "${internship.title}". Free access granted. Track your curriculum and upcoming milestones in your dashboard.`,
+    type: 'application' as const,
+    read: false,
+    createdAt: new Date().toISOString(),
+    link: '/student/certified-internships'
+  };
+  db.update('notifications', n => [notif, ...n]);
+
+  res.status(201).json({ success: true, application: newApplication });
+});
+
+// List Certified Internship Applications
+app.get('/api/certified-internships/applications', (req, res) => {
+  const user = resolveUser(req);
+  const applications = db.get('internshipApplications') || [];
+
+  if (user.role === 'student') {
+    const student = resolveStudent(req);
+    if (!student) return res.json([]);
+    const studentApps = applications.filter(a => a.studentId === student.id);
+    return res.json(studentApps);
+  }
+
+  if (user.role === 'admin') {
+    return res.json(applications);
+  }
+
+  // Company: forbidden from managing platform certified internships
+  return res.status(403).json({ error: 'Unauthorized to view certified internship applications' });
+});
+
+// Admin: Update Internship Application Status & Issue Certificates
+app.put('/api/certified-internships/applications/:id/status', (req, res) => {
+  const user = resolveUser(req);
+  if (user.role !== 'admin') {
+    return res.status(403).json({ error: 'Only administrators can update certified internship application status' });
+  }
+
+  const { status, assessmentScore, notes } = req.body;
+  const appId = req.params.id;
+
+  let targetApp: InternshipApplication | null = null;
+  let issuedCert: CertificateRecord | null = null;
+
+  db.update('internshipApplications', list => {
+    return (list || []).map(app => {
+      if (app.id === appId) {
+        const now = new Date().toISOString();
+        let certId = app.certificateId;
+
+        // If status changes to 'Certificate Issued', generate official certificate
+        if (status === 'Certificate Issued' && !certId) {
+          const randNum = Math.floor(10000 + Math.random() * 90000);
+          certId = `NMAI-CERT-2026-${randNum}`;
+
+          const internship = (db.get('certifiedInternships') || []).find(ci => ci.id === app.internshipId);
+
+          issuedCert = {
+            id: `cert_rec_${Date.now()}`,
+            certificateId: certId,
+            studentId: app.studentId,
+            internshipId: app.internshipId,
+            studentName: app.studentName,
+            internshipTitle: app.internshipTitle,
+            domain: internship?.domain || 'Software Engineering',
+            skills: internship?.skills || app.matchedSkills || ['Problem Solving'],
+            issueDate: now.split('T')[0],
+            issuer: 'NextMind AI',
+            verificationCode: `NM-${(internship?.domain || 'AI').slice(0, 3).toUpperCase()}-${randNum}-V`,
+            status: 'VALID',
+            gradeOrScore: `Grade A+ (${assessmentScore || app.assessmentScore || 92}%)`
+          };
+
+          db.update('certificates', certs => [issuedCert!, ...(certs || [])]);
+
+          // Also automatically add a verified SkillEvidence record to student's digital twin
+          const newEvidence: SkillEvidence = {
+            id: `ev_cert_internship_${Date.now()}`,
+            studentId: app.studentId,
+            skillName: internship?.skills[0] || 'Software Engineering',
+            type: 'internship',
+            title: `NextMind AI Certified Internship: ${app.internshipTitle}`,
+            description: `Successfully completed rigorous 8-week NextMind AI Certified Internship in ${internship?.domain}. Demonstrated production deliverables and verified domain competency.`,
+            confidence: 96,
+            verified: true,
+            verifiedBy: 'NextMind AI Admin Certification Board',
+            verifiedAt: now,
+            evidenceUrl: `/certificates/verify/${certId}`,
+            impactMetrics: `Verified Certificate ID: ${certId} | Score: ${assessmentScore || 92}%`
+          };
+          db.update('evidences', evs => [newEvidence, ...(evs || [])]);
+
+          // Update internship certificates issued count
+          db.update('certifiedInternships', ciList =>
+            (ciList || []).map(ci => ci.id === app.internshipId ? {
+              ...ci,
+              certificatesIssuedCount: (ci.certificatesIssuedCount || 0) + 1,
+              completedCount: (ci.completedCount || 0) + 1
+            } : ci)
+          );
+        }
+
+        targetApp = {
+          ...app,
+          status,
+          assessmentScore: assessmentScore !== undefined ? Number(assessmentScore) : app.assessmentScore,
+          notes: notes !== undefined ? notes : app.notes,
+          certificateId: certId,
+          completedAt: (status === 'Completed' || status === 'Certificate Issued') ? (app.completedAt || now) : app.completedAt,
+          certificateIssuedAt: status === 'Certificate Issued' ? now : app.certificateIssuedAt,
+          enrolledAt: (status === 'Accepted' || status === 'In Progress') ? (app.enrolledAt || now) : app.enrolledAt,
+          updatedAt: now
+        };
+        return targetApp;
+      }
+      return app;
+    });
+  });
+
+  if (!targetApp) {
+    return res.status(404).json({ error: 'Internship application not found' });
+  }
+
+  // Notify student
+  const student = db.get('students').find(s => s.id === (targetApp as any).studentId);
+  if (student) {
+    const isCertIssued = status === 'Certificate Issued';
+    const notif = {
+      id: `notif_${Date.now()}`,
+      userId: student.userId,
+      title: isCertIssued ? `🎉 Certificate Issued: ${(targetApp as any).internshipTitle}` : `Internship Status: ${status}`,
+      message: isCertIssued
+        ? `Congratulations! Your NextMind AI Certified Internship Certificate has been officially issued with verified digital credentials.`
+        : `Your certified internship application for "${(targetApp as any).internshipTitle}" is now marked as "${status}".`,
+      type: 'application' as const,
+      read: false,
+      createdAt: new Date().toISOString(),
+      link: '/student/certified-internships'
+    };
+    db.update('notifications', n => [notif, ...n]);
+  }
+
+  res.json({ success: true, application: targetApp, certificate: issuedCert });
+});
+
+// Public / Controlled Certificate Verification Endpoint
+app.get('/api/certificates/verify/:certificateId', (req, res) => {
+  const certId = req.params.certificateId.trim();
+  const cert = (db.get('certificates') || []).find(
+    c => c.certificateId.toLowerCase() === certId.toLowerCase() || c.verificationCode.toLowerCase() === certId.toLowerCase()
+  );
+
+  if (!cert) {
+    return res.status(404).json({ verified: false, error: 'Certificate not found or invalid' });
+  }
+
+  const internship = (db.get('certifiedInternships') || []).find(ci => ci.id === cert.internshipId);
+
+  res.json({
+    verified: true,
+    certificate: cert,
+    internship: internship ? {
+      title: internship.title,
+      domain: internship.domain,
+      duration: internship.duration,
+      skills: internship.skills,
+      learningOutcomes: internship.learningOutcomes
+    } : null
+  });
+});
+
+// Admin: Analytics for Certified Internships
+app.get('/api/admin/certified-internships-analytics', (req, res) => {
+  const user = resolveUser(req);
+  if (user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+
+  const internships = db.get('certifiedInternships') || [];
+  const applications = db.get('internshipApplications') || [];
+  const certificates = db.get('certificates') || [];
+
+  const totalInternships = internships.length;
+  const activeCount = internships.filter(ci => ci.status === 'PUBLISHED').length;
+  const upcomingCount = internships.filter(ci => ci.status === 'REVIEW' || ci.status === 'DRAFT').length;
+  const completedCount = internships.filter(ci => ci.status === 'CLOSED').length;
+  const totalSeats = internships.reduce((acc, ci) => acc + (ci.numberOfSeats || 0), 0);
+  const totalEnrolled = applications.filter(a => ['Accepted', 'In Progress', 'Completed', 'Certificate Issued'].includes(a.status)).length;
+  const totalCertificatesIssued = certificates.length;
+
+  const domainBreakdown: Record<string, number> = {};
+  internships.forEach(ci => {
+    domainBreakdown[ci.domain] = (domainBreakdown[ci.domain] || 0) + 1;
+  });
+
+  res.json({
+    totalInternships,
+    activeCount,
+    upcomingCount,
+    completedCount,
+    totalSeats,
+    totalApplications: applications.length,
+    totalEnrolled,
+    totalCertificatesIssued,
+    domainBreakdown
+  });
+});
+
 // Student Capability Profile Update API
 app.put('/api/students/profile', (req, res) => {
   const student = resolveStudent(req);
@@ -1365,12 +2075,25 @@ app.put('/api/students/profile', (req, res) => {
   res.json({ success: true, student: updatedStudent });
 });
 
-// Admin Recruitment Analytics API
+// Admin & Company Recruitment Analytics API
 app.get('/api/admin/recruitment-analytics', (req, res) => {
-  const jobs = db.get('jobs');
-  const applications = db.get('applications');
+  const user = resolveUser(req);
+  let jobs = db.get('jobs');
+  let applications = db.get('applications');
   const attempts = db.get('assessmentAttempts') || [];
   const feedbacks = db.get('recruiterFeedbacks') || [];
+
+  if (user.role === 'company') {
+    const company = resolveCompany(req);
+    if (company) {
+      jobs = jobs.filter(j => j.companyId === company.id || (company.name && j.companyName?.toLowerCase() === company.name?.toLowerCase()));
+      const jobIds = new Set(jobs.map(j => j.id));
+      applications = applications.filter(a => jobIds.has(a.jobId) || a.companyId === company.id || (company.name && a.companyName?.toLowerCase() === company.name?.toLowerCase()));
+    } else {
+      jobs = [];
+      applications = [];
+    }
+  }
 
   const totalOpportunities = jobs.length;
   const jobsCount = jobs.filter(j => (j.opportunityType || (j.type === 'Internship' ? 'internship' : 'job')) === 'job').length;
@@ -1875,7 +2598,6 @@ app.get('/api/industry/insights', (req, res) => {
 // Reset demo state
 app.post('/api/system/reset-seed', (req, res) => {
   db.resetToSeed();
-  currentUserId = 'usr_demo_student_1';
   res.json({ success: true, message: 'Database reset to initial demo seed' });
 });
 

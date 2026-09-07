@@ -1,12 +1,13 @@
 import fs from 'fs';
 import path from 'path';
-import { User, Student, Company, Job, Application, SkillEvidence, CanonicalSkill, CareerGoal, Course, Assessment, Notification, MandatoryAssessmentAttempt, RecruiterFeedback } from '../src/types';
+import { User, Student, Company, Job, Application, SkillEvidence, CanonicalSkill, CareerGoal, Course, Assessment, Notification, MandatoryAssessmentAttempt, RecruiterFeedback, CertifiedInternship, CertificateRecord, InternshipApplication } from '../src/types';
 import { DEMO_USERS, DEMO_STUDENTS, DEMO_COMPANIES, DEMO_JOBS, DEMO_EVIDENCES, CAREER_GOALS, ADMIN_INDUSTRIES_SEED, AdminIndustryData } from './data/demoAccountsData';
 import { DEMO_APPLICATIONS } from './data/applicationsData';
 import { COMPREHENSIVE_COURSES } from './data/coursesData';
 import { SKILL_ASSESSMENTS_SEED } from './data/questionsData';
 import { DEMO_NOTIFICATIONS } from './data/notificationsData';
 import { DEMO_RECRUITER_FEEDBACKS } from './data/recruiterFeedbacksData';
+import { PREDEFINED_CERTIFIED_INTERNSHIPS, INITIAL_CERTIFICATES, INITIAL_INTERNSHIP_APPLICATIONS } from './data/certifiedInternshipsData';
 
 export interface DatabaseSchema {
   users: User[];
@@ -23,6 +24,9 @@ export interface DatabaseSchema {
   industries: AdminIndustryData[];
   assessmentAttempts: MandatoryAssessmentAttempt[];
   recruiterFeedbacks: RecruiterFeedback[];
+  certifiedInternships: CertifiedInternship[];
+  certificates: CertificateRecord[];
+  internshipApplications: InternshipApplication[];
 }
 
 const DB_DIR = path.join(process.cwd(), 'data');
@@ -110,7 +114,10 @@ export const INITIAL_SEED: DatabaseSchema = {
   notifications: DEMO_NOTIFICATIONS,
   industries: ADMIN_INDUSTRIES_SEED,
   assessmentAttempts: [],
-  recruiterFeedbacks: DEMO_RECRUITER_FEEDBACKS as any
+  recruiterFeedbacks: DEMO_RECRUITER_FEEDBACKS as any,
+  certifiedInternships: PREDEFINED_CERTIFIED_INTERNSHIPS,
+  certificates: INITIAL_CERTIFICATES,
+  internshipApplications: INITIAL_INTERNSHIP_APPLICATIONS
 };
 
 class DatabaseStore {
@@ -144,7 +151,10 @@ class DatabaseStore {
             notifications: parsed.notifications || INITIAL_SEED.notifications,
             industries: parsed.industries || INITIAL_SEED.industries,
             assessmentAttempts: parsed.assessmentAttempts || [],
-            recruiterFeedbacks: parsed.recruiterFeedbacks || INITIAL_SEED.recruiterFeedbacks
+            recruiterFeedbacks: parsed.recruiterFeedbacks || INITIAL_SEED.recruiterFeedbacks,
+            certifiedInternships: (parsed.certifiedInternships && parsed.certifiedInternships.length >= 8) ? parsed.certifiedInternships : INITIAL_SEED.certifiedInternships,
+            certificates: parsed.certificates || INITIAL_SEED.certificates,
+            internshipApplications: parsed.internshipApplications || INITIAL_SEED.internshipApplications
           };
         }
       }

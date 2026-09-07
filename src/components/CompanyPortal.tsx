@@ -23,12 +23,14 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { Job, Application, ApplicationStatus, CandidateRankItem } from '../types';
 import { api } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 
 interface CompanyPortalProps {
   onRefreshData: () => void;
 }
 
 export const CompanyPortal: React.FC<CompanyPortalProps> = ({ onRefreshData }) => {
+  const { user, companyProfile } = useAuth();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
   const [candidates, setCandidates] = useState<CandidateRankItem[]>([]);
@@ -73,7 +75,7 @@ export const CompanyPortal: React.FC<CompanyPortalProps> = ({ onRefreshData }) =
     setLoading(true);
     try {
       const [jobsData, appsData, analyticsData] = await Promise.all([
-        api.getJobs(),
+        api.getJobs({ companyOnly: true }),
         api.getApplications(),
         api.getRecruitmentAnalytics().catch(() => null)
       ]);
@@ -193,9 +195,14 @@ export const CompanyPortal: React.FC<CompanyPortalProps> = ({ onRefreshData }) =
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-            Recruiter & Talent Portal
-          </h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+              {companyProfile?.name || user?.name || 'Recruiter & Talent Portal'}
+            </h2>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
+              Verified Organization
+            </span>
+          </div>
           <p className="text-sm text-slate-500 mt-0.5">
             Evidence-based applicant screening with verified competencies and structured HR feedback.
           </p>

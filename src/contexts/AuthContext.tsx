@@ -269,10 +269,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         role = 'admin';
         name = 'Nexminds System Administrator';
         id = 'usr_admin';
-      } else if (cleanEmail.includes('company') || cleanEmail.includes('recruiter')) {
+      } else if (cleanEmail.includes('company') || cleanEmail.includes('recruiter') || cleanEmail.includes('cmp_') || cleanEmail.includes('nexora') || cleanEmail.includes('dataforge') || cleanEmail.includes('cloudaxis') || cleanEmail.includes('securestack') || cleanEmail.includes('appnova')) {
         role = 'company';
-        name = 'Company Recruiter';
-        id = 'usr_company_01';
+        const companyDirectory: Record<string, { id: string; name: string }> = {
+          '01': { id: 'usr_company_01', name: 'Nexora Technologies' },
+          '1': { id: 'usr_company_01', name: 'Nexora Technologies' },
+          '02': { id: 'usr_company_02', name: 'DataForge Analytics' },
+          '2': { id: 'usr_company_02', name: 'DataForge Analytics' },
+          '03': { id: 'usr_company_03', name: 'CloudAxis Systems' },
+          '3': { id: 'usr_company_03', name: 'CloudAxis Systems' },
+          '04': { id: 'usr_company_04', name: 'SecureStack Labs' },
+          '4': { id: 'usr_company_04', name: 'SecureStack Labs' },
+          '05': { id: 'usr_company_05', name: 'AppNova Digital' },
+          '5': { id: 'usr_company_05', name: 'AppNova Digital' }
+        };
+
+        const cmpMatch = cleanEmail.match(/company0?(\d+)/i) || cleanEmail.match(/cmp_?0?(\d+)/i);
+        if (cmpMatch && companyDirectory[cmpMatch[1]]) {
+          id = companyDirectory[cmpMatch[1]].id;
+          name = companyDirectory[cmpMatch[1]].name;
+        } else if (cleanEmail.includes('dataforge')) {
+          id = 'usr_company_02';
+          name = 'DataForge Analytics';
+        } else if (cleanEmail.includes('cloudaxis')) {
+          id = 'usr_company_03';
+          name = 'CloudAxis Systems';
+        } else if (cleanEmail.includes('securestack')) {
+          id = 'usr_company_04';
+          name = 'SecureStack Labs';
+        } else if (cleanEmail.includes('appnova')) {
+          id = 'usr_company_05';
+          name = 'AppNova Digital';
+        } else if (cleanEmail.includes('nexora')) {
+          id = 'usr_company_01';
+          name = 'Nexora Technologies';
+        } else {
+          id = `usr_${cleanEmail.replace(/[^a-zA-Z0-9]/g, '_')}`;
+          name = cleanEmail.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        }
       } else if (cleanEmail.includes('student') || cleanEmail.includes('std_')) {
         role = 'student';
         const studentDirectory: Record<string, { id: string; stdId: string; name: string }> = {
@@ -304,9 +338,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           name = match.name;
           studentId = match.stdId;
         } else {
-          name = 'Arjun Kumar';
-          id = 'usr_student_01';
-          studentId = 'std_01';
+          name = cleanEmail.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+          id = `usr_${cleanEmail.replace(/[^a-zA-Z0-9]/g, '_')}`;
+          studentId = `std_${Date.now()}`;
         }
         localStorage.setItem('careerai_student_id', studentId);
       }
@@ -428,7 +462,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const loginAsDemoUser = async (demoRole: UserRole, studentIndex: number = 1) => {
+  const loginAsDemoUser = async (demoRole: UserRole, entityIndex: number = 1) => {
     const studentList = [
       { id: 'usr_student_01', stdId: 'std_01', name: 'Arjun Kumar', email: 'demo.student01@nextmind.demo' },
       { id: 'usr_student_02', stdId: 'std_02', name: 'Kavin Raj', email: 'demo.student02@nextmind.demo' },
@@ -442,32 +476,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       { id: 'usr_student_10', stdId: 'std_10', name: 'Rahul Manikandan', email: 'demo.student10@nextmind.demo' }
     ];
 
-    const safeIdx = Math.max(1, Math.min(10, studentIndex)) - 1;
-    const selectedStd = studentList[safeIdx];
+    const companyList = [
+      { id: 'usr_company_01', cmpId: 'cmp_01', name: 'Nexora Technologies', email: 'demo.company01@nextmind.demo' },
+      { id: 'usr_company_02', cmpId: 'cmp_02', name: 'DataForge Analytics', email: 'demo.company02@nextmind.demo' },
+      { id: 'usr_company_03', cmpId: 'cmp_03', name: 'CloudAxis Systems', email: 'demo.company03@nextmind.demo' },
+      { id: 'usr_company_04', cmpId: 'cmp_04', name: 'SecureStack Labs', email: 'demo.company04@nextmind.demo' },
+      { id: 'usr_company_05', cmpId: 'cmp_05', name: 'AppNova Digital', email: 'demo.company05@nextmind.demo' }
+    ];
 
-    const demoEmail =
-      demoRole === 'student'
-        ? selectedStd.email
-        : demoRole === 'company'
-        ? 'company01@careerai.demo'
-        : 'admin@careerai.demo';
-    const demoPass = 'CareerAI@2026';
-    const name =
-      demoRole === 'student'
-        ? selectedStd.name
-        : demoRole === 'company'
-        ? 'Chennai AI Labs'
-        : 'Nexminds System Administrator';
-    const userId =
-      demoRole === 'student'
-        ? selectedStd.id
-        : demoRole === 'company'
-        ? 'usr_company_01'
-        : 'usr_admin';
+    let demoEmail = 'admin@nexminds.demo';
+    let name = 'Nexminds System Administrator';
+    let userId = 'usr_admin';
 
     if (demoRole === 'student') {
+      const safeIdx = Math.max(1, Math.min(10, entityIndex)) - 1;
+      const selectedStd = studentList[safeIdx];
+      demoEmail = selectedStd.email;
+      name = selectedStd.name;
+      userId = selectedStd.id;
       localStorage.setItem('careerai_student_id', selectedStd.stdId);
+    } else if (demoRole === 'company') {
+      const safeIdx = Math.max(1, Math.min(5, entityIndex)) - 1;
+      const selectedCmp = companyList[safeIdx];
+      demoEmail = selectedCmp.email;
+      name = selectedCmp.name;
+      userId = selectedCmp.id;
     }
+
+    const demoPass = 'Nexminds@2026';
     localStorage.setItem('careerai_user_role', demoRole);
 
     // Attempt Firebase sign in or creation in background
@@ -506,7 +542,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setNeedsOnboarding(false);
 
     try {
-      await fetch('/api/auth/switch-demo', {
+      const res = await fetch('/api/auth/switch-demo', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -519,6 +555,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           email: demoEmail
         })
       });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.profile) {
+          if (demoRole === 'student') {
+            setStudentProfile(data.profile);
+            setCompanyProfile(null);
+          } else if (demoRole === 'company') {
+            setCompanyProfile(data.profile);
+            setStudentProfile(null);
+          }
+        }
+      }
     } catch (e) {
       console.warn('Backend switch demo notice:', e);
     }

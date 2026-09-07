@@ -21,41 +21,55 @@ import {
   ResumeAnalysisResult,
   SkillGapAnalysis,
   OneSkillAwaySimulation,
-  CandidateRankItem
+  CandidateRankItem,
+  CertifiedInternship,
+  CertificateRecord,
+  InternshipApplication
 } from '../types';
 
 async function getAuthHeaders(): Promise<Record<string, string>> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json'
   };
+
+  try {
+    const savedSession = localStorage.getItem('careerai_demo_session');
+    if (savedSession) {
+      const u = JSON.parse(savedSession);
+      if (u.id) headers['x-user-id'] = u.id;
+      if (u.email) headers['x-user-email'] = u.email;
+      if (u.name) headers['x-user-name'] = encodeURIComponent(u.name);
+      if (u.role) headers['x-user-role'] = u.role;
+    }
+  } catch {}
+
+  if (!headers['x-user-id']) {
+    const savedId = localStorage.getItem('careerai_user_id');
+    const savedEmail = localStorage.getItem('careerai_user_email');
+    const savedName = localStorage.getItem('careerai_user_name');
+    const savedRole = localStorage.getItem('careerai_user_role');
+    if (savedId) headers['x-user-id'] = savedId;
+    if (savedEmail) headers['x-user-email'] = savedEmail;
+    if (savedName) headers['x-user-name'] = encodeURIComponent(savedName);
+    if (savedRole) headers['x-user-role'] = savedRole;
+  }
+
   const currentUser = auth.currentUser;
-  if (currentUser) {
+  if (!headers['x-user-id'] && currentUser) {
     headers['x-user-id'] = currentUser.uid;
     headers['x-user-email'] = currentUser.email || '';
     if (currentUser.displayName) {
       headers['x-user-name'] = encodeURIComponent(currentUser.displayName);
     }
-  } else {
-    try {
-      const savedSession = localStorage.getItem('careerai_demo_session');
-      if (savedSession) {
-        const u = JSON.parse(savedSession);
-        if (u.id) headers['x-user-id'] = u.id;
-        if (u.email) headers['x-user-email'] = u.email;
-        if (u.name) headers['x-user-name'] = encodeURIComponent(u.name);
-      } else {
-        const savedId = localStorage.getItem('careerai_user_id');
-        const savedEmail = localStorage.getItem('careerai_user_email');
-        const savedName = localStorage.getItem('careerai_user_name');
-        if (savedId) headers['x-user-id'] = savedId;
-        if (savedEmail) headers['x-user-email'] = savedEmail;
-        if (savedName) headers['x-user-name'] = encodeURIComponent(savedName);
-      }
-    } catch {}
+  }
+
+  const savedRole = localStorage.getItem('careerai_user_role');
+  if (savedRole && !headers['x-user-role']) {
+    headers['x-user-role'] = savedRole;
   }
 
   const savedStudentId = localStorage.getItem('careerai_student_id');
-  if (savedStudentId) {
+  if (savedStudentId && !headers['x-student-id']) {
     headers['x-student-id'] = savedStudentId;
   }
 
@@ -170,25 +184,27 @@ export const api = {
       console.warn('Network or server error fetching student profile:', e);
     }
 
-    // Safe fallback profile to keep app running smoothly
+    const currentUserId = localStorage.getItem('careerai_user_id') || 'usr_student';
+    const currentUserName = localStorage.getItem('careerai_user_name') || 'Student Member';
+    const currentUserEmail = localStorage.getItem('careerai_user_email') || 'student@nexminds.dev';
+
     return {
       student: {
-        id: 'std_01',
-        userId: 'usr_student_01',
-        name: 'Aarav Sharma',
-        email: 'aarav.sharma@campus.edu',
-        college: 'Indian Institute of Information Technology',
-        degree: 'B.Tech in Computer Science and Engineering',
+        id: `std_${currentUserId.replace(/[^a-zA-Z0-9]/g, '_')}`,
+        userId: currentUserId,
+        name: currentUserName,
+        email: currentUserEmail,
+        college: 'Campus Technical Institute',
+        degree: 'B.Tech in Computer Science',
         graduationYear: 2026,
-        cgpa: 8.7,
+        cgpa: 8.5,
         careerGoal: 'AI Engineer',
         targetCareerId: 'career_ai_eng',
-        profileCompletion: 85,
-        careerReadinessScore: 78,
+        profileCompletion: 50,
+        careerReadinessScore: 60,
         skills: [
-          { name: 'Python', level: 90, confidence: 0.9, verified: true, evidenceCount: 3, freshness: 'recent', lastDemonstrated: new Date().toISOString() },
-          { name: 'Machine Learning', level: 85, confidence: 0.85, verified: true, evidenceCount: 2, freshness: 'recent', lastDemonstrated: new Date().toISOString() },
-          { name: 'PyTorch', level: 75, confidence: 0.75, verified: false, evidenceCount: 1, freshness: 'recent', lastDemonstrated: new Date().toISOString() }
+          { skillId: 'sk_py', name: 'Python', level: 75, confidence: 0.8, lastDemonstrated: new Date().toISOString(), evidenceCount: 1, freshness: 'recent' },
+          { skillId: 'sk_ml', name: 'Machine Learning', level: 70, confidence: 0.75, lastDemonstrated: new Date().toISOString(), evidenceCount: 1, freshness: 'recent' }
         ],
         education: [],
         projects: [],
@@ -241,6 +257,24 @@ export const api = {
     return data;
   },
 
+  async getCompanyProfile(): Promise<Company> {
+    const headers = await getAuthHeaders();
+    const res = await fetch('/api/company/profile', { headers });
+    if (!res.ok) throw new Error('Failed to fetch company profile');
+    return res.json();
+  },
+
+  async updateCompanyProfile(updates: Partial<Company>): Promise<Company> {
+    const headers = await getAuthHeaders();
+    const res = await fetch('/api/company/profile', {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(updates)
+    });
+    if (!res.ok) throw new Error('Failed to update company profile');
+    return res.json();
+  },
+
   async uploadResume(resumeText: string, fileName?: string): Promise<{ success: boolean; analysis: ResumeAnalysisResult }> {
     const headers = await getAuthHeaders();
     const res = await fetch('/api/students/resume/upload', {
@@ -288,9 +322,14 @@ export const api = {
   },
 
   // Jobs
-  async getJobs(): Promise<Array<Job & { matchResult?: any }>> {
+  async getJobs(options?: { companyOnly?: boolean; companyId?: string; type?: string }): Promise<Array<Job & { matchResult?: any }>> {
     const headers = await getAuthHeaders();
-    const res = await fetch('/api/jobs', { headers });
+    const params = new URLSearchParams();
+    if (options?.companyOnly) params.append('companyOnly', 'true');
+    if (options?.companyId) params.append('companyId', options.companyId);
+    if (options?.type) params.append('type', options.type);
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+    const res = await fetch(`/api/jobs${queryString}`, { headers });
     return res.json();
   },
 
@@ -567,6 +606,94 @@ export const api = {
       method: 'DELETE',
       headers
     });
+    return res.json();
+  },
+
+  async getCertifiedInternships(): Promise<CertifiedInternship[]> {
+    const headers = await getAuthHeaders();
+    const res = await fetch('/api/certified-internships', { headers });
+    if (!res.ok) throw new Error('Failed to fetch certified internships');
+    return res.json();
+  },
+
+  async getCertifiedInternship(id: string): Promise<CertifiedInternship> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`/api/certified-internships/${id}`, { headers });
+    if (!res.ok) throw new Error('Failed to fetch certified internship');
+    return res.json();
+  },
+
+  async applyCertifiedInternship(id: string): Promise<{ success: boolean; application: InternshipApplication }> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`/api/certified-internships/${id}/apply`, {
+      method: 'POST',
+      headers
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Failed to apply for certified internship');
+    }
+    return res.json();
+  },
+
+  async getCertifiedInternshipApplications(): Promise<InternshipApplication[]> {
+    const headers = await getAuthHeaders();
+    const res = await fetch('/api/certified-internships/applications', { headers });
+    if (!res.ok) throw new Error('Failed to fetch internship applications');
+    return res.json();
+  },
+
+  async updateCertifiedInternshipAppStatus(
+    id: string,
+    status: string,
+    assessmentScore?: number,
+    notes?: string
+  ): Promise<{ success: boolean; application: InternshipApplication; certificate?: CertificateRecord }> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`/api/certified-internships/applications/${id}/status`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ status, assessmentScore, notes })
+    });
+    if (!res.ok) throw new Error('Failed to update application status');
+    return res.json();
+  },
+
+  async createCertifiedInternship(data: Partial<CertifiedInternship>): Promise<CertifiedInternship> {
+    const headers = await getAuthHeaders();
+    const res = await fetch('/api/certified-internships', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) throw new Error('Failed to create certified internship');
+    return res.json();
+  },
+
+  async updateCertifiedInternship(id: string, data: Partial<CertifiedInternship>): Promise<CertifiedInternship> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`/api/certified-internships/${id}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) throw new Error('Failed to update certified internship');
+    return res.json();
+  },
+
+  async verifyCertificate(certificateId: string): Promise<{ verified: boolean; certificate: CertificateRecord; internship: any }> {
+    const res = await fetch(`/api/certificates/verify/${encodeURIComponent(certificateId)}`);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Certificate not found or invalid');
+    }
+    return res.json();
+  },
+
+  async getCertifiedInternshipsAnalytics(): Promise<any> {
+    const headers = await getAuthHeaders();
+    const res = await fetch('/api/admin/certified-internships-analytics', { headers });
+    if (!res.ok) throw new Error('Failed to fetch certified internship analytics');
     return res.json();
   },
 

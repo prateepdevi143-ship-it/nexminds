@@ -11,6 +11,28 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && getUserData().role == 'admin') ||
+        (request.auth.token.email != null && (request.auth.token.email.matches('.*admin.*') || request.auth.uid == 'usr_admin'))
+      );
+    }
+
+    function isCompany() {
+      return isAuthenticated() && (
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && getUserData().role == 'company') ||
+        (request.auth.token.email != null && (request.auth.token.email.matches('.*company.*') || request.auth.token.email.matches('.*recruiter.*') || request.auth.uid.matches('.*company.*')))
+      );
+    }
+
+    function isStudent() {
+      return isAuthenticated() && !isAdmin() && !isCompany();
+    }
+
     // Health check / connection test document
     match /test/{docId} {
       allow read, write: if true;
@@ -18,71 +40,159 @@ service cloud.firestore {
 
     // USERS collection
     match /users/{userId} {
-      allow read, write: if true;
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId) || isAdmin();
     }
 
     // STUDENTS collection
     match /students/{studentId} {
-      allow read, write: if true;
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (
+        isAdmin() ||
+        request.auth.uid == studentId ||
+        (resource != null && resource.data.userId == request.auth.uid) ||
+        (request.resource != null && request.resource.data.userId == request.auth.uid)
+      );
 
       match /evidence/{evidenceId} {
-        allow read, write: if true;
+        allow read: if isAuthenticated();
+        allow write: if isAuthenticated() && (isAdmin() || request.auth.uid == studentId);
       }
 
       match /assessmentAttempts/{attemptId} {
-        allow read, write: if true;
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated() && (isAdmin() || request.auth.uid == studentId);
+        allow update, delete: if isAdmin();
       }
     }
 
     // COMPANIES collection
     match /companies/{companyId} {
-      allow read, write: if true;
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() || (isCompany() && (
+        request.auth.uid == companyId ||
+        (resource != null && resource.data.userId == request.auth.uid) ||
+        (request.resource != null && request.resource.data.userId == request.auth.uid)
+      ));
     }
 
     // JOBS collection (Job & Internship Postings)
     match /jobs/{jobId} {
-      allow read, write: if true;
+      allow read: if true; // Public listings
+      allow create: if isAdmin() || isCompany();
+      allow update: if isAdmin() || (isCompany() && resource.data.companyId == request.auth.uid);
+      allow delete: if isAdmin() || (isCompany() && resource.data.companyId == request.auth.uid);
     }
 
-    // APPLICATIONS collection (Real-Time Candidate Pipeline)
+    // APPLICATIONS collection (Candidate Pipeline)
     match /applications/{applicationId} {
-      allow read, write: if true;
+      allow read: if isAuthenticated() && (
+        isAdmin() ||
+        resource.data.studentId == request.auth.uid ||
+        (resource.data.student != null && resource.data.student.userId == request.auth.uid) ||
+        resource.data.companyId == request.auth.uid ||
+        isCompany()
+      );
+      // Student can submit new applications
+      allow create: if isAuthenticated();
+      // Only Company or Admin can update status, feedback, internalHRNotes
+      allow update: if isAuthenticated() && (isAdmin() || isCompany());
+      allow delete: if isAdmin();
+    }
+
+    // CERTIFIED INTERNSHIPS collection (NextMind AI Admin-Managed Free Programs)
+    match /certifiedInternships/{internshipId} {
+      // Students and public can view published certified internships
+      allow read: if true;
+      // ONLY Admin can create, update, or delete certified internships
+      allow create, update, delete: if isAdmin();
+    }
+
+    // INTERNSHIP APPLICATIONS collection
+    match /internshipApplications/{appId} {
+      allow read: if isAuthenticated() && (
+        isAdmin() ||
+        resource.data.studentId == request.auth.uid ||
+        (resource.data.studentEmail != null && resource.data.studentEmail == request.auth.token.email)
+      );
+      // Student can apply
+      allow create: if isAuthenticated() && (
+        request.resource.data.studentId == request.auth.uid ||
+        request.resource.data.studentEmail == request.auth.token.email ||
+        isAdmin()
+      );
+      // ONLY Admin can update application status or issue certificates
+      allow update, delete: if isAdmin();
+    }
+
+    // CERTIFICATES collection
+    match /certificates/{certificateId} {
+      // Public verification allowed for issued certificates
+      allow read: if true;
+      // ONLY Admin can issue or revoke official NextMind AI certificates
+      allow create, update, delete: if isAdmin();
     }
 
     // EVIDENCE collection (Skill Proofs & Verified Artifacts)
     match /evidence/{evidenceId} {
-      allow read, write: if true;
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (
+        isAdmin() ||
+        (resource.data.studentId == request.auth.uid && request.resource.data.verified == resource.data.verified)
+      );
+      allow delete: if isAdmin() || (isAuthenticated() && resource.data.studentId == request.auth.uid);
     }
 
     // NOTIFICATIONS collection (Real-Time In-App Alerts)
     match /notifications/{notificationId} {
-      allow read, write: if true;
+      allow read: if isAuthenticated() && (
+        isAdmin() ||
+        resource.data.userId == request.auth.uid
+      );
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (
+        isAdmin() ||
+        resource.data.userId == request.auth.uid
+      );
+      allow delete: if isAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
     }
 
-    // RECRUITER FEEDBACKS collection (Evaluation & Constructive Notes)
+    // RECRUITER FEEDBACKS collection
     match /recruiterFeedbacks/{feedbackId} {
-      allow read, write: if true;
+      allow read: if isAuthenticated() && (
+        isAdmin() ||
+        isCompany() ||
+        resource.data.studentId == request.auth.uid
+      );
+      // Only companies and admin can write recruiter feedback
+      allow write: if isAdmin() || isCompany();
     }
 
     // REFERENCE CATALOGS: Skills, Careers, Courses, Assessments, Questions
     match /skills/{skillId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
     match /careers/{careerId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
     match /courses/{courseId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
     match /assessments/{assessmentId} {
-      allow read, write: if true;
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
     }
 
     match /questions/{questionId} {
-      allow read, write: if true;
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
     }
   }
 }

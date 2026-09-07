@@ -92,12 +92,11 @@ export default function App() {
     }
   }, [firebaseUser, authUser, needsRoleSelection, needsOnboarding, authLoading]);
 
-  const loadAllData = async (targetStudentId?: string) => {
+  const loadAllData = async () => {
     setLoading(true);
     try {
-      const activeStudentId = targetStudentId || localStorage.getItem('careerai_student_id') || undefined;
       const results = await Promise.allSettled([
-        api.getStudentProfile(activeStudentId),
+        api.getStudentProfile(),
         api.getJobs(),
         api.getApplications(),
         api.getNotifications(),
@@ -204,18 +203,6 @@ export default function App() {
     if (role === 'student') setActiveTab('dashboard');
     else if (role === 'company') setActiveTab('company-dashboard');
     else if (role === 'admin') setActiveTab('admin-portal');
-  };
-
-  const handleSwitchStudent = async (studentId: string) => {
-    try {
-      setLoading(true);
-      await api.switchStudent(studentId);
-      await loadAllData(studentId);
-    } catch (e) {
-      console.error('Failed to switch student', e);
-    } finally {
-      setLoading(false);
-    }
   };
 
   const handleApplyJob = async (jobId: string) => {
@@ -371,9 +358,7 @@ export default function App() {
         user={currentUser}
         activeRole={activeRole}
         onSwitchRole={handleRoleSwitch}
-        students={allStudents}
         currentStudent={currentStudent}
-        onSwitchStudent={handleSwitchStudent}
         notifications={notifications}
         onMarkNotificationRead={handleMarkNotificationRead}
         onResetSeed={handleResetSeed}
@@ -414,8 +399,6 @@ export default function App() {
                 {activeTab === 'dashboard' && (
                   <StudentDashboard
                     student={currentStudent}
-                    allStudents={allStudents}
-                    onSwitchStudent={handleSwitchStudent}
                     evidences={evidences}
                     targetCareer={currentCareerGoal}
                     jobs={jobs}
