@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { User, Student, Company, Job, Application, SkillEvidence, CanonicalSkill, CareerGoal, Course, Assessment, Notification, MandatoryAssessmentAttempt, RecruiterFeedback, CertifiedInternship, CertificateRecord, InternshipApplication } from '../src/types';
+import { User, Student, Company, Job, Application, SkillEvidence, CanonicalSkill, CareerGoal, Course, Assessment, Notification, MandatoryAssessmentAttempt, RecruiterFeedback, CertifiedInternship, CertificateRecord, InternshipApplication, MicroTrial, MicroTrialSubmission, MicroTrialEvaluation } from '../src/types';
 import { DEMO_USERS, DEMO_STUDENTS, DEMO_COMPANIES, DEMO_JOBS, DEMO_EVIDENCES, CAREER_GOALS, ADMIN_INDUSTRIES_SEED, AdminIndustryData } from './data/demoAccountsData';
 import { DEMO_APPLICATIONS } from './data/applicationsData';
 import { COMPREHENSIVE_COURSES } from './data/coursesData';
@@ -8,6 +8,7 @@ import { SKILL_ASSESSMENTS_SEED } from './data/questionsData';
 import { DEMO_NOTIFICATIONS } from './data/notificationsData';
 import { DEMO_RECRUITER_FEEDBACKS } from './data/recruiterFeedbacksData';
 import { PREDEFINED_CERTIFIED_INTERNSHIPS, INITIAL_CERTIFICATES, INITIAL_INTERNSHIP_APPLICATIONS } from './data/certifiedInternshipsData';
+import { INITIAL_MICRO_TRIALS, INITIAL_MICRO_TRIAL_SUBMISSIONS, INITIAL_MICRO_TRIAL_EVALUATIONS } from './data/microTrialsData';
 
 export interface DatabaseSchema {
   users: User[];
@@ -27,6 +28,9 @@ export interface DatabaseSchema {
   certifiedInternships: CertifiedInternship[];
   certificates: CertificateRecord[];
   internshipApplications: InternshipApplication[];
+  microTrials: MicroTrial[];
+  microTrialSubmissions: MicroTrialSubmission[];
+  microTrialEvaluations: MicroTrialEvaluation[];
 }
 
 const DB_DIR = path.join(process.cwd(), 'data');
@@ -117,7 +121,10 @@ export const INITIAL_SEED: DatabaseSchema = {
   recruiterFeedbacks: DEMO_RECRUITER_FEEDBACKS as any,
   certifiedInternships: PREDEFINED_CERTIFIED_INTERNSHIPS,
   certificates: INITIAL_CERTIFICATES,
-  internshipApplications: INITIAL_INTERNSHIP_APPLICATIONS
+  internshipApplications: INITIAL_INTERNSHIP_APPLICATIONS,
+  microTrials: INITIAL_MICRO_TRIALS,
+  microTrialSubmissions: INITIAL_MICRO_TRIAL_SUBMISSIONS,
+  microTrialEvaluations: INITIAL_MICRO_TRIAL_EVALUATIONS
 };
 
 class DatabaseStore {
@@ -137,13 +144,48 @@ class DatabaseStore {
         const parsed = JSON.parse(raw);
         // Verify database is populated with the updated seed (check for student 10)
         if (parsed.users && parsed.users.some((u: any) => u.id === 'usr_student_10') && parsed.applications && parsed.applications.length >= 18) {
+          const evidencesList = parsed.evidences || INITIAL_SEED.evidences;
+          // Ensure student_01 has verified micro-trial evidence seeded
+          if (!evidencesList.some((e: any) => e.id === 'ev_trial_ml_01')) {
+            evidencesList.push(
+              {
+                id: 'ev_trial_ml_01',
+                studentId: 'student_01',
+                skill: 'Machine Learning',
+                sourceType: 'micro-trial',
+                type: 'micro-trial',
+                sourceTitle: 'Micro-Trial: Build ML Inference & Model Evaluation Pipeline',
+                title: 'Micro-Trial: Build ML Inference & Model Evaluation Pipeline',
+                confidence: 0.92,
+                date: '2026-03-05T14:35:00Z',
+                details: 'Demonstrated practical ML feature validation and vectorized sigmoid inference with 88% Proof-of-Work score.',
+                verified: true,
+                verificationScore: 88
+              },
+              {
+                id: 'ev_trial_py_01',
+                studentId: 'student_01',
+                skill: 'Python',
+                sourceType: 'micro-trial',
+                type: 'micro-trial',
+                sourceTitle: 'Micro-Trial: Build ML Inference & Model Evaluation Pipeline',
+                title: 'Micro-Trial: Build ML Inference & Model Evaluation Pipeline',
+                confidence: 0.94,
+                date: '2026-03-05T14:35:00Z',
+                details: 'Demonstrated robust exception handling, NumPy vectorization, and type-hinted methods with 88% Proof-of-Work score.',
+                verified: true,
+                verificationScore: 88
+              }
+            );
+          }
+
           return {
             users: parsed.users || INITIAL_SEED.users,
             students: parsed.students || INITIAL_SEED.students,
             companies: parsed.companies || INITIAL_SEED.companies,
             jobs: parsed.jobs || INITIAL_SEED.jobs,
             applications: parsed.applications || INITIAL_SEED.applications,
-            evidences: parsed.evidences || INITIAL_SEED.evidences,
+            evidences: evidencesList,
             canonicalSkills: parsed.canonicalSkills || INITIAL_SEED.canonicalSkills,
             careers: parsed.careers || INITIAL_SEED.careers,
             courses: parsed.courses || INITIAL_SEED.courses,
@@ -154,7 +196,10 @@ class DatabaseStore {
             recruiterFeedbacks: parsed.recruiterFeedbacks || INITIAL_SEED.recruiterFeedbacks,
             certifiedInternships: (parsed.certifiedInternships && parsed.certifiedInternships.length >= 8) ? parsed.certifiedInternships : INITIAL_SEED.certifiedInternships,
             certificates: parsed.certificates || INITIAL_SEED.certificates,
-            internshipApplications: parsed.internshipApplications || INITIAL_SEED.internshipApplications
+            internshipApplications: parsed.internshipApplications || INITIAL_SEED.internshipApplications,
+            microTrials: (parsed.microTrials && parsed.microTrials.length >= 4) ? parsed.microTrials : INITIAL_SEED.microTrials,
+            microTrialSubmissions: (parsed.microTrialSubmissions && parsed.microTrialSubmissions.length >= 2) ? parsed.microTrialSubmissions : INITIAL_SEED.microTrialSubmissions,
+            microTrialEvaluations: (parsed.microTrialEvaluations && parsed.microTrialEvaluations.length >= 2) ? parsed.microTrialEvaluations : INITIAL_SEED.microTrialEvaluations
           };
         }
       }

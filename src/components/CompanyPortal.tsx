@@ -18,12 +18,14 @@ import {
   ChevronDown,
   Lock,
   MessageSquare,
-  FileText
+  FileText,
+  Code2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Job, Application, ApplicationStatus, CandidateRankItem } from '../types';
 import { api } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import { CompanyMicroTrialManager } from './CompanyMicroTrialManager';
 
 interface CompanyPortalProps {
   onRefreshData: () => void;
@@ -38,7 +40,7 @@ export const CompanyPortal: React.FC<CompanyPortalProps> = ({ onRefreshData }) =
   const [showPostJobModal, setShowPostJobModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [analytics, setAnalytics] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<'pipeline' | 'analytics'>('pipeline');
+  const [activeTab, setActiveTab] = useState<'pipeline' | 'micro-trials' | 'analytics'>('pipeline');
 
   // Evaluation / Feedback Modal
   const [evaluatingApp, setEvaluatingApp] = useState<Application | null>(null);
@@ -220,6 +222,15 @@ export const CompanyPortal: React.FC<CompanyPortalProps> = ({ onRefreshData }) =
               Candidates Pipeline
             </button>
             <button
+              onClick={() => setActiveTab('micro-trials')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1 ${
+                activeTab === 'micro-trials' ? 'bg-white text-indigo-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Code2 className="w-3.5 h-3.5" />
+              <span>Micro-Trials & PoW</span>
+            </button>
+            <button
               onClick={() => setActiveTab('analytics')}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1 ${
                 activeTab === 'analytics' ? 'bg-white text-indigo-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
@@ -329,6 +340,14 @@ export const CompanyPortal: React.FC<CompanyPortalProps> = ({ onRefreshData }) =
             </div>
           </div>
         </div>
+      )}
+
+      {activeTab === 'micro-trials' && (
+        <CompanyMicroTrialManager
+          jobs={jobs}
+          companyId={companyProfile?.id}
+          onRefreshData={onRefreshData}
+        />
       )}
 
       {activeTab === 'pipeline' && (

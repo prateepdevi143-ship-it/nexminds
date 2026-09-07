@@ -23,7 +23,33 @@ import {
   generateCoverLetter,
   optimizeResumeBulletWithAI
 } from './server/ai';
-import { ApplicationStatus, SkillEvidence, Student, User, UserRole, Company, MandatoryAssessmentAttempt, RecruiterFeedback, PersonalizedImprovementPlan, CertifiedInternship, CertificateRecord, InternshipApplication } from './src/types';
+import {
+  evaluateMicroTrialSubmission,
+  generateMicroTrialWithAI
+} from './server/microTrialEvaluator';
+import {
+  calculateProofOfWorkScore,
+  calculateUpdatedSkillConfidence,
+  calculateMatchImprovement
+} from './src/algorithms/microTrial';
+import {
+  ApplicationStatus,
+  SkillEvidence,
+  Student,
+  User,
+  UserRole,
+  Company,
+  MandatoryAssessmentAttempt,
+  RecruiterFeedback,
+  PersonalizedImprovementPlan,
+  CertifiedInternship,
+  CertificateRecord,
+  InternshipApplication,
+  Notification,
+  MicroTrial,
+  MicroTrialSubmission,
+  MicroTrialEvaluation
+} from './src/types';
 import { QUESTION_BANK } from './server/data/questionsData';
 import { COMPREHENSIVE_COURSES } from './server/data/coursesData';
 
@@ -2125,6 +2151,522 @@ app.put('/api/students/profile', (req, res) => {
   res.json({ success: true, student: updatedStudent });
 });
 
+// =============================================================
+// MICRO-TRIAL HIRING ENGINE API ENDPOINTS
+// =============================================================
+
+// List Micro-Trials with student-specific status
+app.get('/api/micro-trials', (req, res) => {
+  const user = resolveUser(req);
+  const student = resolveStudent(req);
+  const { jobId, companyId, type, status } = req.query;
+
+  let trials = db.get('microTrials') || [];
+  if (jobId) trials = trials.filter(t => t.jobId === jobId);
+  if (companyId) trials = trials.filter(t => t.companyId === companyId);
+  if (type) trials = trials.filter(t => t.trialType === type);
+  if (status) trials = trials.filter(t => t.status === status);
+
+  const submissions = db.get('microTrialSubmissions') || [];
+  const evaluations = db.get('microTrialEvaluations') || [];
+
+  const enhancedTrials = trials.map(trial => {
+    if (student) {
+      const studentSubs = submissions.filter(s => s.trialId === trial.id && s.candidateId === student.id);
+      const studentEvals = evaluations.filter(e => e.trialId === trial.id && e.candidateId === student.id);
+      const latestSub = studentSubs[studentSubs.length - 1];
+      const latestEval = studentEvals[studentEvals.length - 1];
+
+      let studentStatus: 'available' | 'in_progress' | 'passed' | 'review' | 'retry_recommended' = 'available';
+      if (latestEval) {
+        if (latestEval.passed) studentStatus = 'passed';
+        else if (latestEval.proofOfWorkScore >= 50) studentStatus = 'review';
+        else studentStatus = 'retry_recommended';
+      } else if (latestSub) {
+        studentStatus = 'in_progress';
+      }
+
+      return {
+        ...trial,
+        userStatus: studentStatus,
+        attemptCount: studentSubs.length,
+        proofOfWorkScore: latestEval?.proofOfWorkScore,
+        latestEvaluation: latestEval || null,
+        latestSubmission: latestSub || null
+      };
+    }
+    return trial;
+  });
+
+  res.json(enhancedTrials);
+});
+
+// Single Micro-Trial details
+app.get('/api/micro-trials/:id', (req, res) => {
+  const { id } = req.params;
+  const trial = (db.get('microTrials') || []).find(t => t.id === id);
+  if (!trial) return res.status(404).json({ error: 'Micro-trial not found' });
+
+  const student = resolveStudent(req);
+  let userContext = null;
+  if (student) {
+    const studentSubs = (db.get('microTrialSubmissions') || []).filter(s => s.trialId === trial.id && s.candidateId === student.id);
+    const studentEvals = (db.get('microTrialEvaluations') || []).filter(e => e.trialId === trial.id && e.candidateId === student.id);
+    userContext = {
+      attemptCount: studentSubs.length,
+      submissions: studentSubs,
+      latestEvaluation: studentEvals[studentEvals.length - 1] || null
+    };
+  }
+
+  res.json({ trial, userContext });
+});
+
+// Recruiter / Admin: Create new Micro-Trial
+app.post('/api/micro-trials/create', (req, res) => {
+  const user = resolveUser(req);
+  const company = resolveCompany(req);
+
+  const {
+    title,
+    description,
+    jobId,
+    trialType,
+    difficulty,
+    timeLimitMinutes,
+    requiredSkills,
+    preferredSkills,
+    taskInstructions,
+    starterCode,
+    inputFiles,
+    expectedOutput,
+    evaluationCriteria,
+    testCases,
+    maxAttempts,
+    allowedTechnologies,
+    submissionType,
+    aiEvaluationEnabled,
+    manualReviewRequired
+  } = req.body;
+
+  if (!title || !requiredSkills || !taskInstructions) {
+    return res.status(400).json({ error: 'Title, required skills, and task instructions are mandatory' });
+  }
+
+  const jobs = db.get('jobs') || [];
+  const matchedJob = jobId ? jobs.find(j => j.id === jobId) : null;
+
+  const newTrial: MicroTrial = {
+    id: `trial_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+    companyId: company?.id || matchedJob?.companyId || 'comp_01',
+    companyName: company?.name || matchedJob?.companyName || 'Verified Partner',
+    jobId: jobId || matchedJob?.id,
+    jobTitle: matchedJob?.title,
+    title,
+    description: description || `Hands-on capability trial for ${title}`,
+    trialType: trialType || 'coding',
+    difficulty: difficulty || 'Intermediate',
+    timeLimitMinutes: Number(timeLimitMinutes) || 45,
+    requiredSkills: Array.isArray(requiredSkills) ? requiredSkills : [requiredSkills],
+    preferredSkills: preferredSkills || [],
+    taskInstructions,
+    starterCode: starterCode || '',
+    inputFiles: inputFiles || [],
+    expectedOutput: expectedOutput || '',
+    evaluationCriteria: evaluationCriteria && evaluationCriteria.length > 0 ? evaluationCriteria : ['Correctness', 'Task Completion', 'Problem Solving'],
+    testCases: testCases || [],
+    maxAttempts: Number(maxAttempts) || 3,
+    allowedTechnologies: allowedTechnologies || [],
+    submissionType: submissionType || 'code',
+    aiEvaluationEnabled: aiEvaluationEnabled !== false,
+    manualReviewRequired: manualReviewRequired || false,
+    status: 'published',
+    createdAt: new Date().toISOString(),
+    matchImprovementEstimate: 10
+  };
+
+  db.update('microTrials', list => [newTrial, ...list]);
+
+  res.status(201).json({ success: true, microTrial: newTrial });
+});
+
+// Update Micro-Trial
+app.put('/api/micro-trials/:id', (req, res) => {
+  const { id } = req.params;
+  const updates = req.body;
+
+  let updatedTrial: MicroTrial | null = null;
+  db.update('microTrials', list => {
+    return list.map(t => {
+      if (t.id === id) {
+        updatedTrial = { ...t, ...updates, id: t.id };
+        return updatedTrial;
+      }
+      return t;
+    });
+  });
+
+  if (!updatedTrial) return res.status(404).json({ error: 'Trial not found' });
+  res.json({ success: true, microTrial: updatedTrial });
+});
+
+// Archive / Delete Micro-Trial
+app.delete('/api/micro-trials/:id', (req, res) => {
+  const { id } = req.params;
+  db.update('microTrials', list => list.filter(t => t.id !== id));
+  res.json({ success: true, message: 'Trial removed' });
+});
+
+// Student starts a Micro-Trial attempt
+app.post('/api/micro-trials/:id/start', (req, res) => {
+  const { id } = req.params;
+  const trial = (db.get('microTrials') || []).find(t => t.id === id);
+  if (!trial) return res.status(404).json({ error: 'Trial not found' });
+
+  const student = resolveStudent(req);
+  if (!student) return res.status(403).json({ error: 'Student login required to attempt micro-trials' });
+
+  const studentSubs = (db.get('microTrialSubmissions') || []).filter(s => s.trialId === trial.id && s.candidateId === student.id);
+  if (studentSubs.length >= trial.maxAttempts) {
+    return res.status(400).json({ error: `Maximum attempt limit (${trial.maxAttempts}) reached for this micro-trial.` });
+  }
+
+  res.json({
+    success: true,
+    attemptNumber: studentSubs.length + 1,
+    timeLimitMinutes: trial.timeLimitMinutes,
+    startedAt: new Date().toISOString(),
+    trial
+  });
+});
+
+// Student submits solution to Micro-Trial (evaluates & creates verified evidence)
+app.post('/api/micro-trials/:id/submit', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const trial = (db.get('microTrials') || []).find(t => t.id === id);
+    if (!trial) return res.status(404).json({ error: 'Trial not found' });
+
+    const student = resolveStudent(req);
+    if (!student) return res.status(403).json({ error: 'Student credentials required' });
+
+    const {
+      content,
+      repositoryUrl,
+      submissionType = 'code',
+      executionTimeSeconds = 600,
+      integritySignals = { tabSwitches: 0, fullscreenExits: 0, pasteEvents: 0, riskLevel: 'low' }
+    } = req.body;
+
+    const studentSubs = (db.get('microTrialSubmissions') || []).filter(s => s.trialId === trial.id && s.candidateId === student.id);
+    const attemptNumber = studentSubs.length + 1;
+
+    const submissionId = `sub_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    const submission: MicroTrialSubmission = {
+      id: submissionId,
+      trialId: trial.id,
+      trialTitle: trial.title,
+      candidateId: student.id,
+      studentName: student.name,
+      studentEmail: student.email,
+      jobId: trial.jobId,
+      jobTitle: trial.jobTitle,
+      companyId: trial.companyId,
+      companyName: trial.companyName,
+      submittedAt: new Date().toISOString(),
+      executionTimeSeconds: Number(executionTimeSeconds),
+      attemptNumber,
+      submissionType,
+      content: content || '',
+      repositoryUrl: repositoryUrl || '',
+      status: 'completed',
+      evaluationStatus: 'completed',
+      integritySignals
+    };
+
+    // Run objective capability evaluation
+    const evaluation = await evaluateMicroTrialSubmission(trial, submission, student.name);
+    submission.evaluationId = evaluation.id;
+
+    // Calculate match score improvement against associated job
+    let matchImprovement = {
+      matchBefore: 70,
+      matchAfter: 82,
+      improvement: 12,
+      strengthenedSkills: [] as any[]
+    };
+
+    const jobs = db.get('jobs') || [];
+    const targetJob = trial.jobId ? jobs.find(j => j.id === trial.jobId) : jobs[0];
+    const existingEvs = (db.get('evidences') || []).filter(e => e.studentId === student.id);
+
+    if (targetJob) {
+      matchImprovement = calculateMatchImprovement(student, targetJob, trial, evaluation, existingEvs);
+      evaluation.matchScoreBefore = matchImprovement.matchBefore;
+      evaluation.matchScoreAfter = matchImprovement.matchAfter;
+      evaluation.matchImprovement = matchImprovement.improvement;
+    }
+
+    // Save submission and evaluation to DB
+    db.update('microTrialSubmissions', list => [submission, ...list]);
+    db.update('microTrialEvaluations', list => [evaluation, ...list]);
+
+    // If passed or substantial capability demonstrated (PoW >= 60), issue verified SkillEvidence
+    if (evaluation.proofOfWorkScore >= 60) {
+      const newEvidences: SkillEvidence[] = trial.requiredSkills.map((sk, idx) => ({
+        id: `ev_trial_${trial.id}_${student.id}_${idx}_${Date.now()}`,
+        studentId: student.id,
+        skill: normalizeSkill(sk),
+        sourceType: 'micro-trial',
+        type: 'micro-trial',
+        sourceTitle: `Micro-Trial: ${trial.title}`,
+        title: `Micro-Trial: ${trial.title}`,
+        confidence: Math.min(1.0, Math.max(0.70, (evaluation.proofOfWorkScore || 80) / 100)),
+        date: new Date().toISOString(),
+        details: `Demonstrated ${sk} in practical task with Proof-of-Work score of ${evaluation.proofOfWorkScore}% [${evaluation.passed ? 'PASSED' : 'VERIFIED'}]`,
+        verified: true,
+        verificationScore: evaluation.proofOfWorkScore
+      }));
+
+      // Add evidence to student
+      db.update('evidences', list => [...newEvidences, ...list]);
+
+      // Update student skills with Bayesian aggregation
+      db.update('students', list => {
+        return list.map(s => {
+          if (s.id === student.id) {
+            const currentSkills = s.skills || [];
+            const updatedSkills = currentSkills.map(sk => {
+              const skName = typeof sk === 'string' ? sk : sk.name;
+              const isTrialSkill = trial.requiredSkills.some(ts => normalizeSkill(ts).toLowerCase() === normalizeSkill(skName).toLowerCase());
+              if (isTrialSkill) {
+                const sScore = evaluation.skillScores[skName] || evaluation.proofOfWorkScore;
+                const oldConf = typeof sk === 'string' ? 0.6 : (sk.confidence || 0.6);
+                const { newConfidence } = calculateUpdatedSkillConfidence(oldConf, sScore, 2);
+                return typeof sk === 'string'
+                  ? { id: `sk_${skName}`, name: skName, confidence: newConfidence, level: Math.round(newConfidence * 100), freshness: 'recent' as const, evidenceCount: 3, lastDemonstrated: new Date().toISOString() }
+                  : { ...sk, confidence: newConfidence, level: Math.round(newConfidence * 100), freshness: 'recent' as const, evidenceCount: (sk.evidenceCount || 1) + 1, lastDemonstrated: new Date().toISOString() };
+              }
+              return sk;
+            });
+
+            // Recalculate Career Readiness score
+            const studentAllEvs = db.get('evidences').filter(e => e.studentId === s.id);
+            const careers = db.get('careers');
+            const targetCareer = careers.find(c => c.id === s.targetCareerId) || careers[0];
+            const newReadiness = calculateCareerReadiness({ ...s, skills: updatedSkills }, targetCareer.requiredSkills, studentAllEvs);
+
+            return {
+              ...s,
+              skills: updatedSkills,
+              careerReadinessScore: Math.max(s.careerReadinessScore || 70, newReadiness)
+            };
+          }
+          return s;
+        });
+      });
+    }
+
+    // Send notification to Student
+    const studentNotification: Notification = {
+      id: `notif_${Date.now()}_std`,
+      userId: student.id,
+      title: `Micro-Trial Evaluated: ${trial.title}`,
+      message: `Your Proof-of-Work score is ${evaluation.proofOfWorkScore}%. ${evaluation.passed ? 'Verified badge issued! Job match improved by +' + matchImprovement.improvement + '%.' : 'Review feedback suggestions to retry.'}`,
+      type: evaluation.passed ? 'evidence' : 'application',
+      createdAt: new Date().toISOString(),
+      read: false,
+      link: '/micro-trials'
+    };
+    db.update('notifications', list => [studentNotification, ...list]);
+
+    // Send notification to Company
+    const companyNotification: Notification = {
+      id: `notif_${Date.now()}_comp`,
+      userId: trial.companyId,
+      title: `Candidate Completed Micro-Trial: ${trial.title}`,
+      message: `${student.name} submitted their practical solution with Proof-of-Work score of ${evaluation.proofOfWorkScore}% (${evaluation.passed ? 'PASSED' : 'REVIEW'}).`,
+      type: 'application',
+      createdAt: new Date().toISOString(),
+      read: false,
+      link: '/company-dashboard'
+    };
+    db.update('notifications', list => [companyNotification, ...list]);
+
+    res.json({
+      success: true,
+      submission,
+      evaluation,
+      matchImprovement
+    });
+  } catch (err: any) {
+    console.error('Failed to process micro-trial submission:', err);
+    res.status(500).json({ error: 'Failed to process submission', details: err?.message || String(err) });
+  }
+});
+
+// Recruiter: Get all submissions for a trial
+app.get('/api/micro-trials/:id/submissions', (req, res) => {
+  const { id } = req.params;
+  const submissions = (db.get('microTrialSubmissions') || []).filter(s => s.trialId === id);
+  const evaluations = db.get('microTrialEvaluations') || [];
+  const students = db.get('students') || [];
+
+  const enriched = submissions.map(sub => {
+    const evaluation = evaluations.find(e => e.submissionId === sub.id || e.id === sub.evaluationId);
+    const student = students.find(st => st.id === sub.candidateId);
+    return {
+      ...sub,
+      evaluation,
+      student
+    };
+  });
+
+  res.json(enriched);
+});
+
+// Get single submission evaluation details
+app.get('/api/micro-trials/submissions/:id/evaluation', (req, res) => {
+  const { id } = req.params;
+  const evaluation = (db.get('microTrialEvaluations') || []).find(e => e.submissionId === id || e.id === id);
+  if (!evaluation) return res.status(404).json({ error: 'Evaluation not found' });
+
+  const submission = (db.get('microTrialSubmissions') || []).find(s => s.id === evaluation.submissionId);
+  const trial = (db.get('microTrials') || []).find(t => t.id === evaluation.trialId);
+
+  res.json({ evaluation, submission, trial });
+});
+
+// Recruiter Review & Decision on Candidate Submission
+app.post('/api/micro-trials/submissions/:id/review', (req, res) => {
+  const { id } = req.params;
+  const { decision, notes, candidateFeedback } = req.body; // decision: 'SHORTLIST' | 'REJECT' | 'REQUEST_RETRY' | 'OFFER_INTERVIEW'
+
+  let updatedEval: MicroTrialEvaluation | null = null;
+  db.update('microTrialEvaluations', list => {
+    return list.map(ev => {
+      if (ev.submissionId === id || ev.id === id) {
+        updatedEval = {
+          ...ev,
+          recruiterNotes: notes || ev.recruiterNotes,
+          evaluatorType: 'recruiter_reviewed'
+        };
+        return updatedEval;
+      }
+      return ev;
+    });
+  });
+
+  if (!updatedEval) return res.status(404).json({ error: 'Evaluation not found' });
+
+  // If candidate applied to the corresponding job, update application status
+  const targetEval = updatedEval as MicroTrialEvaluation;
+  if (targetEval.jobId && targetEval.candidateId) {
+    db.update('applications', list => {
+      return list.map(app => {
+        if (app.jobId === targetEval.jobId && app.studentId === targetEval.candidateId) {
+          let newStatus = app.status;
+          if (decision === 'SHORTLIST' || decision === 'OFFER_INTERVIEW') {
+            newStatus = 'INTERVIEW_SCHEDULED';
+          } else if (decision === 'REJECT') {
+            newStatus = 'REJECTED';
+          } else if (decision === 'REQUEST_RETRY') {
+            newStatus = 'UNDER_REVIEW';
+          }
+          return {
+            ...app,
+            status: newStatus,
+            notes: notes ? `Recruiter review: ${notes}` : app.notes
+          };
+        }
+        return app;
+      });
+    });
+  }
+
+  // Send feedback notification to student with targeted skill suggestions
+  const student = (db.get('students') || []).find(s => s.id === targetEval.candidateId);
+  if (student) {
+    const feedbackNotif: Notification = {
+      id: `notif_${Date.now()}_rev`,
+      userId: student.id,
+      title: `Recruiter Update on ${targetEval.trialTitle || 'Micro-Trial'}`,
+      message: candidateFeedback || `Recruiter decision: ${decision}. ${notes ? `Feedback: "${notes}"` : ''}`,
+      type: 'application',
+      createdAt: new Date().toISOString(),
+      read: false,
+      link: '/applications'
+    };
+    db.update('notifications', list => [feedbackNotif, ...list]);
+  }
+
+  res.json({ success: true, evaluation: updatedEval });
+});
+
+// AI Generator: Recruiter generates structured micro-trial from job specs
+app.post('/api/ai/micro-trial/generate', async (req, res) => {
+  try {
+    const { jobTitle, jobDescription, requiredSkills } = req.body;
+    const company = resolveCompany(req);
+
+    if (!jobTitle || !requiredSkills) {
+      return res.status(400).json({ error: 'jobTitle and requiredSkills are required' });
+    }
+
+    const skillsArray = Array.isArray(requiredSkills) ? requiredSkills : [requiredSkills];
+    const generated = await generateMicroTrialWithAI(
+      jobTitle,
+      jobDescription || `Standard technical requirements for ${jobTitle}`,
+      skillsArray,
+      company?.name || 'Verified Tech Partner'
+    );
+
+    res.json({ success: true, draftTrial: generated });
+  } catch (err: any) {
+    console.error('Failed to generate micro-trial with AI:', err);
+    res.status(500).json({ error: 'AI generation failed', details: err?.message || String(err) });
+  }
+});
+
+// Micro-Trial Platform Analytics
+app.get('/api/micro-trials/analytics', (req, res) => {
+  const trials = db.get('microTrials') || [];
+  const submissions = db.get('microTrialSubmissions') || [];
+  const evaluations = db.get('microTrialEvaluations') || [];
+
+  const totalTrials = trials.length;
+  const totalSubmissions = submissions.length;
+  const passedEvaluations = evaluations.filter(e => e.passed).length;
+  const passRate = totalSubmissions > 0 ? Math.round((passedEvaluations / totalSubmissions) * 100) : 0;
+  const avgProofOfWork = evaluations.length > 0
+    ? Math.round(evaluations.reduce((acc, e) => acc + (e.proofOfWorkScore || 0), 0) / evaluations.length)
+    : 0;
+
+  // Skills verified counts
+  const skillCountMap: Record<string, number> = {};
+  evaluations.forEach(ev => {
+    if (ev.passed && ev.skillScores) {
+      Object.keys(ev.skillScores).forEach(sk => {
+        skillCountMap[sk] = (skillCountMap[sk] || 0) + 1;
+      });
+    }
+  });
+
+  const topVerifiedSkills = Object.entries(skillCountMap)
+    .map(([skill, count]) => ({ skill, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 6);
+
+  res.json({
+    totalTrials,
+    totalSubmissions,
+    passedEvaluations,
+    passRate,
+    avgProofOfWork,
+    topVerifiedSkills
+  });
+});
+
 // Admin & Company Recruitment Analytics API
 app.get('/api/admin/recruitment-analytics', (req, res) => {
   const user = resolveUser(req);
@@ -2259,7 +2801,23 @@ app.get('/api/company/jobs/:id/candidates', (req, res) => {
 
     const studentEvs = evidences.filter(e => e.studentId === student.id);
     const candidateAttempt = attempts.find(a => a.studentId === student.id && a.opportunityId === job.id);
-    const scoreBreakdown = calculateCandidateRank(student, job, studentEvs);
+    
+    // Find candidate's micro-trial evaluation for this job or general domain
+    const evaluations = db.get('microTrialEvaluations') || [];
+    const submissions = db.get('microTrialSubmissions') || [];
+    const candidateEvals = evaluations.filter(ev => ev.candidateId === student.id && (ev.jobId === job.id || !ev.jobId));
+    const latestEval = candidateEvals.length > 0 ? candidateEvals[candidateEvals.length - 1] : null;
+    const candidateSubs = submissions.filter(sub => sub.candidateId === student.id && (sub.jobId === job.id || !sub.jobId));
+    
+    const powScore = latestEval ? latestEval.proofOfWorkScore : undefined;
+    let trialStatus: 'PASS' | 'REVIEW' | 'FAIL' | 'NOT_STARTED' = 'NOT_STARTED';
+    if (latestEval) {
+      trialStatus = latestEval.passed ? 'PASS' : (latestEval.proofOfWorkScore >= 50 ? 'REVIEW' : 'FAIL');
+    } else if (candidateSubs.length > 0) {
+      trialStatus = 'REVIEW';
+    }
+
+    const scoreBreakdown = calculateCandidateRank(student, job, studentEvs, candidateAttempt?.score || 80, powScore);
     const matchDetails = calculateSkillMatch(student.skills, job.requiredSkills, job.preferredSkills);
     const opportunityMatch = calculateOpportunityMatch(student, job, studentEvs, candidateAttempt);
 
@@ -2274,6 +2832,10 @@ app.get('/api/company/jobs/:id/candidates', (req, res) => {
       overallCandidateScore: opportunityMatch.overallMatch || scoreBreakdown.overallScore,
       matchedSkills: matchDetails.matchedSkills,
       missingSkills: matchDetails.missingSkills,
+      proofOfWorkScore: powScore,
+      microTrialStatus: trialStatus,
+      microTrialTitle: latestEval?.trialTitle,
+      microTrialEvaluationId: latestEval?.id,
       opportunityMatch,
       evidenceSummary: {
         projectsCount: (student.projects || []).length,
@@ -2588,7 +3150,7 @@ app.post('/api/ai/chat', async (req, res) => {
   const student = resolveStudent(req);
   if (!student) return res.status(404).json({ error: 'No active student' });
 
-  const { messages } = req.body;
+  const { messages, taskMode, roleType } = req.body;
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ error: 'Messages array required' });
   }
@@ -2596,8 +3158,8 @@ app.post('/api/ai/chat', async (req, res) => {
   const careers = db.get('careers');
   const targetCareer = careers.find(c => c.id === student.targetCareerId) || careers[0];
 
-  const reply = await chatCareerAssistant(messages, student, targetCareer);
-  res.json({ message: reply });
+  const result = await chatCareerAssistant(messages, student, targetCareer, taskMode, roleType);
+  res.json(result);
 });
 
 app.post('/api/ai/cover-letter', async (req, res) => {

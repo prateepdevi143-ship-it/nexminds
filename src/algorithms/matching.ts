@@ -362,13 +362,16 @@ export function calculateCandidateRank(
   student: Student,
   job: Job,
   evidences: SkillEvidence[] = [],
-  assessmentAverageScore: number = 80
+  assessmentAverageScore: number = 80,
+  microTrialPoW?: number
 ): {
   overallScore: number;
   skillMatch: number;
   evidenceConfidence: number;
   experienceYears: number;
   assessmentScore: number;
+  proofOfWorkScore?: number;
+  microTrialStatus?: 'PASS' | 'REVIEW' | 'FAIL' | 'NOT_STARTED';
 } {
   const matchResult = calculateSkillMatch(student.skills, job.requiredSkills, job.preferredSkills, job.skillWeights);
   const skillMatch = matchResult.matchScore;
@@ -380,25 +383,53 @@ export function calculateCandidateRank(
     ? (matchingEvidences.reduce((acc, ev) => acc + (ev.confidence || 0.8), 0) / matchingEvidences.length) * 100
     : 65;
 
+  // Check if candidate has micro-trial evidence
+  const trialEvidences = evidences.filter(e => e.sourceType === 'micro-trial' || e.type === 'micro-trial');
+  const powScore = microTrialPoW !== undefined
+    ? microTrialPoW
+    : (trialEvidences.length > 0
+        ? Math.round(trialEvidences.reduce((acc, ev) => acc + (ev.verificationScore || 85), 0) / trialEvidences.length)
+        : undefined);
+
+  let trialStatus: 'PASS' | 'REVIEW' | 'FAIL' | 'NOT_STARTED' = 'NOT_STARTED';
+  if (powScore !== undefined) {
+    if (powScore >= 70) trialStatus = 'PASS';
+    else if (powScore >= 50) trialStatus = 'REVIEW';
+    else trialStatus = 'FAIL';
+  }
+
   // Experience calculation
   const totalExpMonths = (student.experience || []).length * 6; // approximate or real
   const experienceYears = Math.min(5, Math.round((totalExpMonths / 12) * 10) / 10);
   const experienceScore = Math.min(100, experienceYears * 25 + (student.projects?.length || 0) * 15);
 
-  // Multi-factor formula
-  const overall = Math.round(
-    skillMatch * 0.50 +
-    avgConfidence * 0.20 +
-    assessmentAverageScore * 0.15 +
-    experienceScore * 0.15
-  );
+  // Multi-factor formula with practical Proof-of-Work prioritization when present
+  let overall: number;
+  if (powScore !== undefined) {
+    overall = Math.round(
+      skillMatch * 0.40 +
+      powScore * 0.25 +
+      avgConfidence * 0.15 +
+      assessmentAverageScore * 0.10 +
+      experienceScore * 0.10
+    );
+  } else {
+    overall = Math.round(
+      skillMatch * 0.50 +
+      avgConfidence * 0.20 +
+      assessmentAverageScore * 0.15 +
+      experienceScore * 0.15
+    );
+  }
 
   return {
     overallScore: Math.min(100, Math.max(0, overall)),
     skillMatch,
     evidenceConfidence: Math.round(avgConfidence),
     experienceYears,
-    assessmentScore: Math.round(assessmentAverageScore)
+    assessmentScore: Math.round(assessmentAverageScore),
+    proofOfWorkScore: powScore,
+    microTrialStatus: trialStatus
   };
 }
 
@@ -457,13 +488,17 @@ export function calculateSkillConfidenceFromEvidence(
     reasons.push(`Verified credential: ${matchingCerts[0].name}`);
   }
 
-  // 5. Check Evidence Collection (Assessments, GitHub repos, etc.)
+  // 5. Check Evidence Collection (Assessments, Micro-Trials, GitHub repos, etc.)
   const directEvidences = evidences.filter(e =>
     normalizeSkill(e.skill || e.skillName || '').toLowerCase() === norm
   );
   directEvidences.forEach(e => {
     evidenceCount++;
-    if (e.sourceType === 'assessment') {
+    if (e.sourceType === 'micro-trial' || e.type === 'micro-trial') {
+      score += 0.35;
+      const powScore = e.verificationScore ? ` (Proof-of-Work: ${e.verificationScore}%)` : '';
+      reasons.push(`Practical micro-trial demonstration${powScore}`);
+    } else if (e.sourceType === 'assessment') {
       score += 0.25;
       reasons.push(`Passed platform skill assessment`);
     } else if (e.sourceType === 'github') {
@@ -566,7 +601,12 @@ export function calculateOpportunityMatch(
   const projectCount = (student.projects || []).length;
   const hackathonCount = (student.hackathons || []).length;
   const certCount = (student.certifications || []).length;
-  evidenceScore = Math.min(100, Math.round(verifiedCount * 12 + projectCount * 10 + hackathonCount * 15 + certCount * 12));
+  const microTrialEvidences = evidences.filter(e => e.sourceType === 'micro-trial' || e.type === 'micro-trial');
+  evidenceScore = Math.min(100, Math.round(verifiedCount * 12 + projectCount * 10 + hackathonCount * 15 + certCount * 12 + microTrialEvidences.length * 20));
+  if (microTrialEvidences.length > 0) {
+    const avgPoW = Math.round(microTrialEvidences.reduce((acc, ev) => acc + (ev.verificationScore || 85), 0) / microTrialEvidences.length);
+    explanations.push(`${microTrialEvidences.length} verified practical micro-trial(s) [Avg Proof-of-Work: ${avgPoW}%]`);
+  }
   if (projectCount >= 2) explanations.push(`${projectCount} projects verified against required tech stack`);
   if (hackathonCount > 0) explanations.push(`${hackathonCount} hackathon build(s) showcasing applied execution`);
 

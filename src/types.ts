@@ -621,6 +621,9 @@ export interface CandidateRankItem {
   overallCandidateScore: number;
   matchedSkills: string[];
   missingSkills: string[];
+  proofOfWorkScore?: number;
+  microTrialStatus?: 'PASS' | 'REVIEW' | 'FAIL' | 'NOT_STARTED';
+  microTrialTitle?: string;
 }
 
 export interface CertifiedInternshipProject {
@@ -714,4 +717,149 @@ export interface CertificateRecord {
   status: 'VALID' | 'REVOKED';
   gradeOrScore?: string;
 }
+
+// -------------------------------------------------------------
+// MICRO-TRIAL HIRING ENGINE DATA TYPES & MODELS
+// -------------------------------------------------------------
+
+export type MicroTrialType = 'coding' | 'data' | 'ai_ml' | 'sql' | 'frontend' | 'general';
+export type MicroTrialDifficulty = 'Beginner' | 'Intermediate' | 'Advanced';
+export type MicroTrialSubmissionType = 'code' | 'text' | 'github_url' | 'project_url' | 'file_upload' | 'structured';
+
+export interface MicroTrialTestCase {
+  id: string;
+  name: string;
+  input?: string;
+  expectedOutput?: string;
+  weight?: number;
+  description?: string;
+}
+
+export interface MicroTrialInputFile {
+  name: string;
+  content: string;
+  description?: string;
+}
+
+export interface MicroTrial {
+  id: string;
+  companyId: string;
+  companyName: string;
+  jobId?: string;
+  jobTitle?: string;
+  title: string;
+  description: string;
+  trialType: MicroTrialType;
+  difficulty: MicroTrialDifficulty;
+  timeLimitMinutes: number;
+  requiredSkills: string[];
+  preferredSkills?: string[];
+  taskInstructions: string;
+  starterCode?: string;
+  inputFiles?: MicroTrialInputFile[];
+  expectedOutput?: string;
+  evaluationCriteria: string[];
+  testCases?: MicroTrialTestCase[];
+  maxAttempts: number;
+  deadline?: string;
+  allowedTechnologies?: string[];
+  submissionType: MicroTrialSubmissionType;
+  aiEvaluationEnabled: boolean;
+  manualReviewRequired: boolean;
+  status: 'draft' | 'published' | 'archived';
+  createdAt: string;
+  matchImprovementEstimate?: number; // e.g. 8 for +8%
+}
+
+export interface ProofOfWorkBreakdown {
+  correctness: number; // 35% weight
+  taskCompletion: number; // 20% weight
+  problemSolving: number; // 20% weight
+  codeQuality: number; // 15% weight
+  technicalReasoning: number; // 10% weight
+  proofOfWorkScore: number; // 0 - 100
+}
+
+export interface MicroTrialIntegritySignals {
+  tabSwitches: number;
+  fullscreenExits: number;
+  pasteEvents: number;
+  riskLevel: 'low' | 'medium' | 'high';
+  notes?: string;
+}
+
+export interface MicroTrialSubmission {
+  id: string;
+  trialId: string;
+  trialTitle?: string;
+  candidateId: string;
+  studentName?: string;
+  studentEmail?: string;
+  jobId?: string;
+  jobTitle?: string;
+  companyId?: string;
+  companyName?: string;
+  submittedAt: string;
+  executionTimeSeconds?: number;
+  attemptNumber: number;
+  submissionType: MicroTrialSubmissionType;
+  content: string;
+  repositoryUrl?: string;
+  status: 'submitted' | 'evaluating' | 'completed' | 'failed';
+  evaluationStatus: 'pending' | 'completed' | 'flagged';
+  evaluationId?: string;
+  proofOfWorkScore?: number;
+  recruiterDecision?: string;
+  recruiterNotes?: string;
+  integritySignals: MicroTrialIntegritySignals;
+}
+
+export interface DeterministicEvaluationResult {
+  check: string;
+  passed: boolean;
+  details: string;
+  score: number;
+}
+
+export interface MicroTrialEvaluation {
+  id: string;
+  submissionId: string;
+  trialId: string;
+  trialTitle?: string;
+  candidateId: string;
+  studentName?: string;
+  jobId?: string;
+  jobTitle?: string;
+  overallScore: number;
+  proofOfWorkScore: number;
+  proofOfWorkBreakdown: ProofOfWorkBreakdown;
+  skillScores: Record<string, number>;
+  passed: boolean;
+  strengths: string[];
+  weaknesses: string[];
+  qualitativeFeedback: string;
+  deterministicResults?: DeterministicEvaluationResult[];
+  evaluatedAt: string;
+  evaluatorType: 'automated' | 'ai_assisted' | 'hybrid' | 'recruiter_reviewed';
+  recommendedActions?: string[];
+  recruiterNotes?: string;
+  matchScoreBefore?: number;
+  matchScoreAfter?: number;
+  matchImprovement?: number;
+}
+
+export interface MicroTrialEvidenceItem {
+  id: string;
+  studentId: string;
+  trialId: string;
+  trialTitle: string;
+  jobId?: string;
+  jobTitle?: string;
+  proofOfWorkScore: number;
+  verifiedSkills: Array<{ skill: string; score: number; confidence: number }>;
+  timestamp: string;
+  verificationStatus: 'verified' | 'provisional';
+  details: string;
+}
+
 

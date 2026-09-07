@@ -38,6 +38,7 @@ import { CompanyPortal } from './components/CompanyPortal';
 import { AdminPortal } from './components/AdminPortal';
 import { CertifiedInternshipsStudent } from './components/CertifiedInternshipsStudent';
 import { CertificateVerificationView } from './components/CertificateVerificationView';
+import { MicroTrialWorkspace } from './components/MicroTrialWorkspace';
 import { AccessDeniedScreen } from './components/AccessDeniedScreen';
 import { Student, SkillEvidence, CareerGoal, Job, Application, Notification, User, UserRole } from './types';
 import { api } from './services/api';
@@ -72,6 +73,7 @@ export default function App() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [assessmentTargetSkill, setAssessmentTargetSkill] = useState<string | undefined>(undefined);
+  const [targetMicroTrialId, setTargetMicroTrialId] = useState<string | undefined>(undefined);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [viewingCertId, setViewingCertId] = useState<string | null>(() => {
@@ -457,6 +459,15 @@ export default function App() {
                     targetCareer={currentCareerGoal}
                     onTakeAssessment={handleTakeAssessment}
                     onSelectTab={setActiveTab}
+                  />
+                )}
+                {activeTab === 'micro-trials' && (
+                  <MicroTrialWorkspace
+                    student={currentStudent}
+                    jobs={jobs}
+                    onSelectTab={setActiveTab}
+                    initialTrialId={targetMicroTrialId}
+                    onRefreshProfile={loadAllData}
                   />
                 )}
                 {activeTab === 'certified-internships' && (

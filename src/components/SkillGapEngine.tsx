@@ -22,7 +22,8 @@ import {
   ShieldCheck,
   Building,
   Check,
-  Lightbulb
+  Lightbulb,
+  Code2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Student, CareerGoal, SkillGapAnalysis, OneSkillAwaySimulation, Job } from '../types';
@@ -1111,6 +1112,17 @@ export const SkillGapEngine: React.FC<SkillGapEngineProps> = ({
 
                     {/* Actions */}
                     <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedSkillForDrawer(null);
+                          onSelectTab('micro-trials');
+                        }}
+                        className="px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-2xs flex items-center gap-1.5"
+                      >
+                        <Code2 className="w-3.5 h-3.5" />
+                        <span>Solve Micro-Trial (PoW)</span>
+                      </button>
                       <button
                         type="button"
                         onClick={() => {

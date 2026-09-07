@@ -25,7 +25,10 @@ import {
   CertifiedInternship,
   CertificateRecord,
   InternshipApplication,
-  ResumeBulletOptimization
+  ResumeBulletOptimization,
+  MicroTrial,
+  MicroTrialSubmission,
+  MicroTrialEvaluation
 } from '../types';
 
 async function getAuthHeaders(): Promise<Record<string, string>> {
@@ -567,15 +570,26 @@ export const api = {
     return res.json();
   },
 
-  async sendChatMessage(messages: Array<{ role: string; content: string }>): Promise<string> {
+  async sendChatMessage(
+    messages: Array<{ role: string; content: string }>,
+    options?: { taskMode?: 'general' | 'fast' | 'complex'; roleType?: string }
+  ): Promise<{ message: string; modelUsed?: string; taskMode?: string }> {
     const headers = await getAuthHeaders();
     const res = await fetch('/api/ai/chat', {
       method: 'POST',
       headers,
-      body: JSON.stringify({ messages })
+      body: JSON.stringify({
+        messages,
+        taskMode: options?.taskMode || 'general',
+        roleType: options?.roleType || 'advisor'
+      })
     });
     const data = await res.json();
-    return data.message;
+    return {
+      message: data.message || 'No response from AI copilot.',
+      modelUsed: data.modelUsed,
+      taskMode: data.taskMode
+    };
   },
 
   async generateCoverLetter(jobId: string, customNotes?: string): Promise<string> {
@@ -740,6 +754,148 @@ export const api = {
     const headers = await getAuthHeaders();
     const res = await fetch('/api/admin/certified-internships-analytics', { headers });
     if (!res.ok) throw new Error('Failed to fetch certified internship analytics');
+    return res.json();
+  },
+
+  // Micro-Trial Hiring Engine APIs
+  async getMicroTrials(params?: { jobId?: string; companyId?: string; type?: string; status?: string }): Promise<MicroTrial[]> {
+    const headers = await getAuthHeaders();
+    const query = new URLSearchParams();
+    if (params?.jobId) query.set('jobId', params.jobId);
+    if (params?.companyId) query.set('companyId', params.companyId);
+    if (params?.type) query.set('type', params.type);
+    if (params?.status) query.set('status', params.status);
+    const qs = query.toString();
+    const res = await fetch(`/api/micro-trials${qs ? `?${qs}` : ''}`, { headers });
+    if (!res.ok) throw new Error('Failed to fetch micro-trials');
+    return res.json();
+  },
+
+  async getMicroTrial(id: string): Promise<{ trial: MicroTrial; userContext: any }> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`/api/micro-trials/${encodeURIComponent(id)}`, { headers });
+    if (!res.ok) throw new Error('Failed to fetch micro-trial');
+    return res.json();
+  },
+
+  async createMicroTrial(trialData: Partial<MicroTrial>): Promise<{ success: boolean; microTrial: MicroTrial }> {
+    const headers = await getAuthHeaders();
+    const res = await fetch('/api/micro-trials/create', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(trialData)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Failed to create micro-trial');
+    }
+    return res.json();
+  },
+
+  async updateMicroTrial(id: string, updates: Partial<MicroTrial>): Promise<{ success: boolean; microTrial: MicroTrial }> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`/api/micro-trials/${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(updates)
+    });
+    if (!res.ok) throw new Error('Failed to update micro-trial');
+    return res.json();
+  },
+
+  async deleteMicroTrial(id: string): Promise<void> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`/api/micro-trials/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+      headers
+    });
+    if (!res.ok) throw new Error('Failed to delete micro-trial');
+  },
+
+  async startMicroTrial(id: string): Promise<{ success: boolean; attemptNumber: number; timeLimitMinutes: number; startedAt: string; trial: MicroTrial }> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`/api/micro-trials/${encodeURIComponent(id)}/start`, {
+      method: 'POST',
+      headers
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Failed to start micro-trial');
+    }
+    return res.json();
+  },
+
+  async submitMicroTrial(
+    id: string,
+    submissionData: {
+      content: string;
+      repositoryUrl?: string;
+      submissionType?: 'code' | 'repository' | 'file_bundle';
+      executionTimeSeconds?: number;
+      integritySignals?: any;
+    }
+  ): Promise<{
+    success: boolean;
+    submission: MicroTrialSubmission;
+    evaluation: MicroTrialEvaluation;
+    matchImprovement: { matchBefore: number; matchAfter: number; improvement: number; strengthenedSkills: any[] };
+  }> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`/api/micro-trials/${encodeURIComponent(id)}/submit`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(submissionData)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Failed to submit micro-trial');
+    }
+    return res.json();
+  },
+
+  async getTrialSubmissions(trialId: string): Promise<any[]> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`/api/micro-trials/${encodeURIComponent(trialId)}/submissions`, { headers });
+    if (!res.ok) throw new Error('Failed to fetch submissions');
+    return res.json();
+  },
+
+  async getTrialSubmissionEvaluation(id: string): Promise<{ evaluation: MicroTrialEvaluation; submission: MicroTrialSubmission; trial: MicroTrial }> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`/api/micro-trials/submissions/${encodeURIComponent(id)}/evaluation`, { headers });
+    if (!res.ok) throw new Error('Failed to fetch submission evaluation');
+    return res.json();
+  },
+
+  async reviewTrialSubmission(id: string, reviewData: { decision: string; notes?: string; candidateFeedback?: string }): Promise<{ success: boolean; evaluation: MicroTrialEvaluation }> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`/api/micro-trials/submissions/${encodeURIComponent(id)}/review`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(reviewData)
+    });
+    if (!res.ok) throw new Error('Failed to submit review');
+    return res.json();
+  },
+
+  async generateMicroTrialWithAI(specs: { jobTitle: string; jobDescription?: string; requiredSkills: string[] }): Promise<{ success: boolean; draftTrial: Partial<MicroTrial> }> {
+    const headers = await getAuthHeaders();
+    const res = await fetch('/api/ai/micro-trial/generate', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(specs)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Failed to generate trial');
+    }
+    return res.json();
+  },
+
+  async getMicroTrialAnalytics(): Promise<any> {
+    const headers = await getAuthHeaders();
+    const res = await fetch('/api/micro-trials/analytics', { headers });
+    if (!res.ok) throw new Error('Failed to fetch micro-trial analytics');
     return res.json();
   },
 

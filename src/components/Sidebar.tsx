@@ -23,7 +23,10 @@ import {
   ShieldAlert,
   UserCheck,
   Check,
-  AlertCircle
+  AlertCircle,
+  Bot,
+  ArrowRight,
+  Code2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Student, CareerGoal, User } from '../types';
@@ -228,9 +231,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isOpenMobile,
   onCloseMobile
 }) => {
-  const [showCompletionDetails, setShowCompletionDetails] = useState(false);
-  const profileCompletion = useMemo(() => calculateProfileCompletion(student), [student]);
-
   // Prevent background scrolling on mobile when drawer is open
   useEffect(() => {
     if (isOpenMobile) {
@@ -287,6 +287,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
           description: 'Career pathway simulator'
         },
         {
+          id: 'micro-trials',
+          label: 'Micro-Trial Trials',
+          icon: Code2,
+          badge: 'PoW',
+          badgeColor: 'emerald',
+          description: 'Hands-on practical code proof-of-work'
+        },
+        {
           id: 'assessments',
           label: 'Skill Assessments',
           icon: Award,
@@ -340,8 +348,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
       items: [
         {
           id: 'chat',
-          label: 'AI Advisor',
-          icon: MessageSquare,
+          label: 'AI Copilot (Advisor)',
+          icon: Sparkles,
+          badge: 'Gemini',
+          badgeColor: 'indigo',
           description: 'Personal 24/7 career strategist'
         }
       ]
@@ -467,161 +477,74 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </button>
       </div>
 
-      {/* Dynamic Profile Completion Progress Bar (Student Role Only) */}
-      {activeRole === 'student' && student && (
-        <div className="p-3 border-b border-slate-100 bg-white">
-          <div
-            id="sidebar-profile-completion-card"
-            className="p-3 rounded-xl bg-slate-50/90 border border-slate-200/80 shadow-2xs space-y-2.5 transition-all"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-slate-900 font-semibold text-xs">
-                <UserCheck className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
-                <span>Profile Completion</span>
+      {/* AI Copilot (AI Advisor) Card Widget - Replaces Profile Completion */}
+      {activeRole === 'student' && (
+        <div className="mx-3 mt-2.5 p-3 rounded-2xl bg-gradient-to-br from-indigo-50/90 via-slate-50 to-purple-50/60 border border-indigo-100/90 shadow-2xs">
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white flex items-center justify-center shadow-xs shrink-0">
+                <Sparkles className="w-3.5 h-3.5" />
               </div>
-              <div className="flex items-center gap-1">
-                <span
-                  id="profile-completion-percentage-badge"
-                  className={`text-[11px] font-bold px-1.5 py-0.5 rounded-md border ${
-                    profileCompletion.percentage === 100
-                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                      : profileCompletion.percentage >= 70
-                      ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
-                      : profileCompletion.percentage >= 40
-                      ? 'bg-amber-50 text-amber-700 border-amber-200'
-                      : 'bg-rose-50 text-rose-700 border-rose-200'
-                  }`}
-                >
-                  {profileCompletion.percentage}%
-                </span>
-                <button
-                  type="button"
-                  id="toggle-profile-completion-breakdown"
-                  onClick={() => setShowCompletionDetails(prev => !prev)}
-                  className="p-1 text-slate-400 hover:text-slate-700 rounded-md hover:bg-slate-200/60 transition-colors cursor-pointer"
-                  title={showCompletionDetails ? 'Hide breakdown' : 'View missing data items'}
-                  aria-label="Toggle profile completion details"
-                >
-                  {showCompletionDetails ? (
-                    <ChevronUp className="w-3.5 h-3.5" />
-                  ) : (
-                    <ChevronDown className="w-3.5 h-3.5" />
-                  )}
-                </button>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-slate-900 truncate">AI Copilot</span>
+                  <span className="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-semibold bg-indigo-100 text-indigo-700 shrink-0">
+                    AI Advisor
+                  </span>
+                </div>
+                <p className="text-[10px] text-slate-500 truncate">Gemini 3.5 & 3.1 Pro</p>
               </div>
             </div>
-
-            {/* Dynamic Progress Bar */}
-            <div
-              id="profile-completion-progress-bar-track"
-              role="progressbar"
-              aria-valuenow={profileCompletion.percentage}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              className="w-full bg-slate-200/80 rounded-full h-1.5 overflow-hidden"
-            >
-              <div
-                id="profile-completion-progress-bar-fill"
-                className={`h-full rounded-full transition-all duration-500 ease-out ${
-                  profileCompletion.percentage === 100
-                    ? 'bg-emerald-500'
-                    : profileCompletion.percentage >= 70
-                    ? 'bg-indigo-600'
-                    : profileCompletion.percentage >= 40
-                    ? 'bg-amber-500'
-                    : 'bg-rose-500'
-                }`}
-                style={{ width: `${profileCompletion.percentage}%` }}
-              />
-            </div>
-
-            {/* Next Action or Completion Status */}
-            {profileCompletion.percentage === 100 ? (
-              <div className="flex items-center gap-1.5 text-[11px] text-emerald-700 font-medium">
-                <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
-                <span>All profile data complete!</span>
-              </div>
-            ) : profileCompletion.nextSuggestedAction ? (
-              <div className="flex items-center justify-between text-[11px] gap-1">
-                <span
-                  className="text-slate-500 truncate text-[11px]"
-                  title={profileCompletion.nextSuggestedAction.hint}
-                >
-                  Need: {profileCompletion.nextSuggestedAction.label}
-                </span>
-                <button
-                  type="button"
-                  id={`btn-complete-${profileCompletion.nextSuggestedAction.id}`}
-                  onClick={() => {
-                    if (profileCompletion.nextSuggestedAction?.tabId) {
-                      onSelectTab(profileCompletion.nextSuggestedAction.tabId);
-                      onCloseMobile();
-                    }
-                  }}
-                  className="text-indigo-600 font-semibold hover:text-indigo-800 hover:underline shrink-0 text-[10px] flex items-center gap-0.5 cursor-pointer"
-                >
-                  <span>Fix (+{profileCompletion.nextSuggestedAction.points}%)</span>
-                  <ChevronRight className="w-2.5 h-2.5" />
-                </button>
-              </div>
-            ) : null}
-
-            {/* Expandable Checklist Details */}
-            <AnimatePresence>
-              {showCompletionDetails && (
-                <motion.div
-                  id="profile-completion-checklist-container"
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="pt-2 border-t border-slate-200/70 space-y-1.5 overflow-hidden"
-                >
-                  <div className="flex items-center justify-between text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
-                    <span>Missing Data Check</span>
-                    <span>{profileCompletion.items.filter(i => i.completed).length}/{profileCompletion.items.length} Done</span>
-                  </div>
-                  <div className="space-y-1 max-h-48 overflow-y-auto pr-0.5">
-                    {profileCompletion.items.map(item => (
-                      <div
-                        key={item.id}
-                        id={`completion-item-${item.id}`}
-                        onClick={() => {
-                          if (!item.completed) {
-                            onSelectTab(item.tabId);
-                            onCloseMobile();
-                          }
-                        }}
-                        className={`flex items-center justify-between p-1.5 rounded-md text-[11px] transition-colors ${
-                          item.completed
-                            ? 'bg-emerald-50/50 text-slate-600'
-                            : 'bg-white hover:bg-indigo-50/70 text-slate-800 border border-slate-200/80 cursor-pointer group'
-                        }`}
-                      >
-                        <div className="flex items-center gap-1.5 truncate">
-                          {item.completed ? (
-                            <Check className="w-3 h-3 text-emerald-600 shrink-0" />
-                          ) : (
-                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
-                          )}
-                          <span className={`truncate ${item.completed ? 'text-slate-500 line-through' : 'font-medium'}`}>
-                            {item.label}
-                          </span>
-                        </div>
-                        {!item.completed ? (
-                          <span className="text-[10px] font-semibold text-indigo-600 group-hover:underline shrink-0 ml-1">
-                            +{item.points}%
-                          </span>
-                        ) : (
-                          <span className="text-[10px] text-emerald-600 font-semibold shrink-0 ml-1">✓</span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            <span className="flex h-2 w-2 relative shrink-0" title="AI Advisor Online">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
           </div>
+
+          <p className="text-[11px] text-slate-600 mb-2 leading-relaxed line-clamp-2">
+            {student?.careerGoal
+              ? `Targeting ${student.careerGoal}. Ask about 7-factor match or request a mock interview.`
+              : 'Ask about ATS bullet optimization, high-demand skills, or interview prep.'}
+          </p>
+
+          <div className="space-y-1 mb-2.5">
+            <button
+              onClick={() => {
+                onSelectTab('chat');
+                onCloseMobile();
+              }}
+              className="w-full text-left text-[10px] px-2 py-1 rounded-lg bg-white/90 hover:bg-indigo-50/80 border border-slate-200/70 hover:border-indigo-200 text-slate-700 hover:text-indigo-900 transition-colors flex items-center justify-between group cursor-pointer"
+            >
+              <span className="truncate">"How do I reach 90% readiness?"</span>
+              <ArrowRight className="w-2.5 h-2.5 text-slate-400 group-hover:text-indigo-600 shrink-0 ml-1" />
+            </button>
+            <button
+              onClick={() => {
+                onSelectTab('chat');
+                onCloseMobile();
+              }}
+              className="w-full text-left text-[10px] px-2 py-1 rounded-lg bg-white/90 hover:bg-indigo-50/80 border border-slate-200/70 hover:border-indigo-200 text-slate-700 hover:text-indigo-900 transition-colors flex items-center justify-between group cursor-pointer"
+            >
+              <span className="truncate">"Start technical mock interview"</span>
+              <ArrowRight className="w-2.5 h-2.5 text-slate-400 group-hover:text-indigo-600 shrink-0 ml-1" />
+            </button>
+          </div>
+
+          <button
+            id="sidebar-launch-copilot-btn"
+            onClick={() => {
+              onSelectTab('chat');
+              onCloseMobile();
+            }}
+            className={`w-full py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer ${
+              activeTab === 'chat'
+                ? 'bg-indigo-600 text-white shadow-indigo-600/20'
+                : 'bg-slate-900 hover:bg-indigo-700 text-white'
+            }`}
+          >
+            <Bot className="w-3.5 h-3.5" />
+            <span>Launch AI Advisor</span>
+          </button>
         </div>
       )}
 

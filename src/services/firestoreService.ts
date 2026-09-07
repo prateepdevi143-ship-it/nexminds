@@ -52,8 +52,9 @@ export interface FirestoreErrorInfo {
 }
 
 export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null): void {
+  const errMsg = error instanceof Error ? error.message : String(error);
   const errInfo: FirestoreErrorInfo = {
-    error: error instanceof Error ? error.message : String(error),
+    error: errMsg,
     authInfo: {
       userId: auth.currentUser?.uid,
       email: auth.currentUser?.email,
@@ -69,7 +70,18 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
     operationType,
     path
   };
-  console.warn(`Firestore Real-Time Notice [${operationType} on ${path}]:`, errInfo.error);
+
+  const isPermissionError = errMsg.includes('permission') || errMsg.includes('PERMISSION_DENIED');
+  const isOfflineOrUnavailable = errMsg.includes('unavailable') || errMsg.includes('offline') || (error as any)?.code === 'unavailable';
+
+  if (isPermissionError) {
+    console.error('Firestore Error: ', JSON.stringify(errInfo));
+    throw new Error(JSON.stringify(errInfo));
+  } else if (isOfflineOrUnavailable) {
+    console.warn(`Firestore Real-Time Notice [${operationType} on ${path}]: Operating in offline mode.`, errMsg);
+  } else {
+    console.error('Firestore Error: ', JSON.stringify(errInfo));
+  }
 }
 
 // REAL-TIME FIRESTORE SUBSCRIPTION MANAGERS
